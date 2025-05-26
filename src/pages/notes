@@ -1,0 +1,87 @@
+import React from 'react';
+
+const Profile = () => {
+  const userName = localStorage.getItem('username');
+  const userEmail = localStorage.getItem('userEmail');
+  
+  return (
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-2xl font-semibold mb-6">My Profile</h1>
+      
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          <img 
+            src="https://img-wrapper.vercel.app/image?url=https://s3-alpha-sig.figma.com/img/d565/9814/410c0e68cc5a1fddaf59dbaa4c8f4c01?Expires=1745798400&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=NJuUfBNqkkRBKsQRXkDw1otRahyF1W1KZOWcV1UdeBMVjDhBiES3oKt0AZSYa2AAwpyIudBUZ-c9x2S5ZLPjcgNxaWxaxFQZTMZ6f2kBSWdlwnWPTWHAYMQKpMU4PBXC75uy7rHrEOm3CfB2xTBTkTi8eIlDdFppLHHuh2rkR14CWS~2IRSOqCajDIYjKVKbJFCVDqFxG2YNFWgDQ84Mf8kE5ZffEUfC4GzeKHLJA~gn1mhopFAZ0jERz-HgmhkFZfZzbV-fiV1-AWtGL2l81G-w3TrFgxMe-Nof5KI6nECLT3F8RjxudsTLj3BHXBUVXS4C87iUdVzHTZha8kmsOA__" 
+            alt={userName} 
+            className="w-24 h-24 rounded-full object-cover"
+          />
+          <div className="flex-1 text-center sm:text-left">
+            <h2 className="text-xl font-semibold">{userName}</h2>
+            <p className="text-gray-500 dark:text-gray-400">Social Media Manager</p>
+            <p className="mt-2">{userEmail}</p>
+            <div className="mt-4">
+              <button className="bg-[#F97316] hover:bg-[#F97316]/80 text-white py-2 px-4 rounded-md mr-2">
+                Edit Profile
+              </button>
+              <button className="border border-gray-300 dark:border-gray-600 py-2 px-4 rounded-md">
+                Change Password
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">Account Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Full Name
+            </label>
+            <input 
+              type="text" 
+              value={userName} 
+              readOnly
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Email
+            </label>
+            <input 
+              type="email" 
+              value={userEmail} 
+              readOnly
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Phone Number
+            </label>
+            <input 
+              type="tel" 
+              value="+1 (555) 123-4567" 
+              readOnly
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Company
+            </label>
+            <input 
+              type="text" 
+              value="Social Media Pro" 
+              readOnly
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;

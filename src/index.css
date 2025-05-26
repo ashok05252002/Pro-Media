@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Poppins', sans-serif;
+  
+  /* Theme color variables */
+  --color-primary: #F97316;
+  --color-secondary: #64748B;
+  --color-accent: #FFB31F;
+  --color-success: #28AA7A;
+  --color-danger: #EC5347;
+  --color-info: #009BD3;
+  --color-warning: #FFB31F;
+  --color-light-accent: #FFC9CA;
+  --color-dark-accent: #FDE5E3;
+}
+
+body {
+  @apply font-poppins;
+}
+
+.dark {
+  @apply bg-primary-dark text-primary-light;
+}
+
+.light {
+  @apply bg-primary-light text-primary-dark;
+}
+
+/* Theme utility classes */
+.bg-theme-primary {
+  background-color: var(--color-primary);
+}
+
+.text-theme-primary {
+  color: var(--color-primary);
+}
+
+.border-theme-primary {
+  border-color: var(--color-primary);
+}
+
+.bg-theme-secondary {
+  background-color: var(--color-secondary);
+}
+
+.text-theme-secondary {
+  color: var(--color-secondary);
+}
+
+.bg-theme-accent {
+  background-color: var(--color-accent);
+}
+
+.text-theme-accent {
+  color: var(--color-accent);
+}
+
+.bg-theme-success {
+  background-color: var(--color-success);
+}
+
+.text-theme-success {
+  color: var(--color-success);
+}
+
+.bg-theme-danger {
+  background-color: var(--color-danger);
+}
+
+.text-theme-danger {
+  color: var(--color-danger);
+}
+
+.bg-theme-light-accent {
+  background-color: var(--color-light-accent);
+}
+
+.bg-theme-dark-accent {
+  background-color: var(--color-dark-accent);
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-theme-primary hover:bg-opacity-90 text-white font-medium py-2 px-4 rounded-md transition-colors;
+}
+
+.btn-secondary {
+  @apply bg-theme-secondary hover:bg-opacity-90 text-white font-medium py-2 px-4 rounded-md transition-colors;
+}
+
+.btn-outline {
+  @apply border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 py-2 px-4 rounded-md transition-colors;
+}

@@ -1,0 +1,106 @@
+body {
+  background-color: #e8ecf4;
+  height: 80vh;
+}
+.App1 {
+  font-family: Inter;
+  text-align: center;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+  margin: 6%;
+}
+.App1 > img {
+  margin-top: 3%;
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  height: 60px;
+  width: 100px;
+  margin-bottom: 2%;
+}
+
+.userform {
+  display: flex;
+}
+.form {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+}
+.userForm-container {
+  width: 75%;
+  margin-left: 50px;
+  padding-left:50px;
+  
+  margin-bottom:25;
+}
+label {
+  text-align: left;
+  font-weight: bold;
+  font-size: medium;
+}
+label-left-link{
+  justify-content: left;
+}
+input {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+.userForm-container-footer {
+  display: flex;
+  margin: auto;
+  width: 100%;
+}
+.button-useform {
+  width: 30%;
+  background-color: #664de5;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+ 
+}
+span {
+  font-weight: lighter;
+  color: grey;
+}
+.card-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.card-input-element {
+  display: none;
+}
+
+.card-input {
+  margin: 10px;
+  padding: 5px;
+  border: 1px solid lightgray;
+  border-radius: 5%;
+  justify-content: space-between;
+  margin: 5px;
+}
+
+.card-input:hover {
+  cursor: pointer;
+}
+.card-input-element:checked + .card-input {
+  box-shadow: 0 0 1px 1px #664de5;
+}
+.panel-heading {
+  font-size: 15px;
+}
+.panel-body {
+  font-size: 12px;
+  font-weight: lighter;
+}
