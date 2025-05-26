@@ -5,11 +5,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
+  "dev": "vite",
+  "build": "vite build",
+  "predeploy": "vite build",
+  "deploy": "gh-pages -d dist",
+  "lint": "eslint .",
+  "preview": "vite preview"
+},
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -38,5 +40,4 @@
     "tailwindcss": "^3.4.1",
     "vite": "^5.4.2"
   }
-  
 }

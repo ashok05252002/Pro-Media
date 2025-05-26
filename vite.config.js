@@ -2,40 +2,43 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  plugins: [react
-    ({
-    fastRefresh: false // Try disabling if issues persist
-  })
+  base: '/Pro-Media/', // ✅ Important for GitHub Pages if using username.github.io
+
+  plugins: [
+    react({
+      fastRefresh: false
+    })
   ],
+  
   server: {
-    host: true, // Listen on all network interfaces
+    host: true,
     port: 3000,
-    strictPort: true, // Don't try fallback ports
+    strictPort: true,
     hmr: {
-      clientPort: 3000, // Must match your dev server port
+      clientPort: 3000,
       protocol: 'ws',
       timeout: 5000,
-      overlay: false // Disable error overlay if it causes issues
+      overlay: false
     },
     watch: {
-      usePolling: true, // Essential for Docker/WSL
-      interval: 1000    // Polling interval in ms
+      usePolling: true,
+      interval: 1000
     },
-    cors: true, // Enable CORS for all origins
-    open: false // Disable automatic browser opening
+    cors: true,
+    open: false
   },
+  
   optimizeDeps: {
     exclude: ['lucide-react'],
-    include: [ // Add any other dependencies that need optimization
-      'react',
-      'react-dom'
-    ]
+    include: ['react', 'react-dom']
   },
+  
   build: {
-    chunkSizeWarningLimit: 1500, // Increase chunk size warning limit
-    sourcemap: true // Helpful for debugging
+    chunkSizeWarningLimit: 1500,
+    sourcemap: true
   },
-  clearScreen: false // Keep previous console output visible
+  
+  clearScreen: false
 });
 
 
