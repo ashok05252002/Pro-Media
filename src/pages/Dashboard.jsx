@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { Plus, BarChart2, TrendingUp, Users, Calendar, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, BarChart2, TrendingUp, Users, Calendar, ArrowUp, ArrowDown, Briefcase } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { extCompanyProductData } from '../API/api';
@@ -185,6 +185,13 @@ const Dashboard = () => {
           <span className= "text-white"> 
             {registerPrdct?"Register My Business":"Add My Business"}
           </span>
+        </button>
+        <button 
+          onClick={() => navigate('/add-business')}
+          className="flex items-center gap-2 px-4 py-2 bg-theme-primary hover:bg-opacity-90 text-white rounded-md shadow-sm transition-colors"
+        >
+          <Briefcase className="w-4 h-4" />
+          <span className='text-white'>Add Business</span>
         </button>
       </div>
 

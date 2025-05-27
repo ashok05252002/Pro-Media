@@ -30,7 +30,7 @@ import ViewPosts from './pages/ViewPosts.jsx';
 import ViewComments from './pages/ViewComments.jsx';
 import NotFoundPage from './pages/NotFoundPage';
 import ServerErrorPage from './pages/ServerErrorPage';
-
+import AddBusinessPage from './pages/AddBusinessPage';
 
 import axios from 'axios';
 import "./styles.css";
@@ -87,6 +87,7 @@ function App() {
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/add-business" element={<AddBusinessPage />} />
               </Route>
             )}
 
