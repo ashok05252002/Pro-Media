@@ -27,32 +27,43 @@ export const extCompanyLogin = (userData) => {
 
 export const extCompanyUserRegister = (userInput) => {
     return axios.post(`/company/company-register`, {
+            // "company": {
+            // "name": userInput.companyName,
+            // "type": userInput.companyType,
+            // "website": userInput.website,
+            // "status": "A",
+            // "verification_flag": 1,
+            // "verified_by_id": 1
+            // },
+        
+            // "company_address": {
+            // "phone1": userInput.phone_1,
+            // "phone2": userInput.phone_2,
+            // "email": userInput.email,
+            // "address_line1": userInput.addressLine1,
+            // "address_line2": userInput.addressLine2,
+            // "state": userInput.state,
+            // "zipcode": userInput.zipcode,
+            // "country": userInput.country,
+            // "status": "A"
+            // },
+            // "user": {
+            // "first_name": userInput.firstname,
+            // "last_name": userInput.lastname,
+            // "phone": "",
+            // "role": "admin",
+            // "status": "A",
+            // }
             "company": {
             "name": userInput.companyName,
             "type": userInput.companyType,
-            "website": userInput.website,
-            "status": "A",
-            "verification_flag": 1,
-            "verified_by_id": 1
+            "size":userInput.employeeSize,
+            "companyEmail":userInput.companyEmail,
+             
             },
         
-            "company_address": {
-            "phone1": userInput.phone_1,
-            "phone2": userInput.phone_2,
-            "email": userInput.email,
-            "address_line1": userInput.addressLine1,
-            "address_line2": userInput.addressLine2,
-            "state": userInput.state,
-            "zipcode": userInput.zipcode,
-            "country": userInput.country,
-            "status": "A"
-            },
             "user": {
-            "first_name": userInput.firstname,
-            "last_name": userInput.lastname,
-            "phone": "",
-            "role": "admin",
-            "status": "A",
+            "fullName": userInput.fullName,
             }
         },
         {
@@ -60,8 +71,8 @@ export const extCompanyUserRegister = (userInput) => {
 
                 "User": JSON.stringify({
                             "email": userInput.userEmail,
-                            "password":userInput.pwd,
-                            "username": userInput.username,
+                            "password":userInput.password,
+                            
                 })
             },
         }
