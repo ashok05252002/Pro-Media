@@ -1,30 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Building, MapPin, UserCircle, CheckCircle, ArrowRight, ArrowLeft, Mail, Lock } from 'lucide-react';
+import { Building, UserCircle, CheckCircle, ArrowRight, ArrowLeft, Mail, Lock, ShieldCheck } from 'lucide-react'; // Added ShieldCheck
 import { useTheme } from '../contexts/ThemeContext';
 
 const Stepper = ({ currentStep }) => {
   const steps = [
-    { name: 'Company Details', icon: <Building className="w-5 h-5 text-white" /> },
-    { name: 'Account Creation', icon: <UserCircle className="w-5 h-5 text-white" /> },
-    { name: 'Success', icon: <CheckCircle className="w-5 h-5 text-white" /> },
+    { name: 'Company Details', icon: <Building className="w-5 h-5" /> }, // Icon color will be handled by class
+    { name: 'Account Creation', icon: <UserCircle className="w-5 h-5" /> },
+    { name: 'Verification', icon: <ShieldCheck className="w-5 h-5" /> }, // Changed icon and name
   ];
 
-  const iconColorLogic = (stepIdx, currentStep) => {
-    if (stepIdx < currentStep -1) return 'text-white'; // Completed step icon
-    if (stepIdx === currentStep -1) return 'text-theme-primary'; // Current step icon (inside border)
-    return 'text-gray-400 dark:text-gray-500'; // Future step icon
-  };
-
-
   return (
-    <nav aria-label="Progress" className="mb-12"> {/* Increased bottom margin for better spacing */}
-      <ol role="list" className="flex items-center gap-4 sm:gap-6 lg:gap-20">
+    <nav aria-label="Progress" className="mb-12">
+      <ol role="list" className="flex items-center gap-24">
         {steps.map((step, stepIdx) => (
-          <li key={step.name} className={`relative ${stepIdx !== steps.length - 1 ? 'flex-1' : ''}`}> {/* Use flex-1 for li to distribute space */}
+          <li key={step.name} className={`relative ${stepIdx !== steps.length - 1 ? 'flex-1' : ''}`}>
             {stepIdx < currentStep -1 ? ( // Completed step
               <>
-                <div className="absolute inset-0 top-1/2 transform -translate-y-1/2 flex items-center" aria-hidden="true">
+                <div className="absolute inset-0 w-40 top-1/2 transform -translate-y-1/2 flex items-center" aria-hidden="true">
                   <div className="h-0.5 w-full bg-theme-primary"></div>
                 </div>
                 <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-theme-primary hover:bg-opacity-90">
@@ -34,8 +27,8 @@ const Stepper = ({ currentStep }) => {
               </>
             ) : stepIdx === currentStep -1 ? ( // Current step
               <>
-                <div className="absolute inset-0 top-1/2 transform -translate-y-1/2 flex items-center" aria-hidden="true">
-                  <div className={`h-0.5 w-full ${stepIdx === 0 ? 'bg-transparent' : 'bg-gray-200 dark:bg-gray-700'}`}></div> {/* No line before first step */}
+                <div className="absolute inset-0 top-1/2  transform -translate-y-1/2 flex items-center" aria-hidden="true">
+                  <div className={`h-0.5 w-full ${stepIdx === 0 ? 'bg-transparent' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
                 </div>
                 <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-theme-primary bg-white dark:bg-gray-800">
                   {React.cloneElement(step.icon, { className: "w-5 h-5 text-theme-primary"})}
@@ -53,9 +46,8 @@ const Stepper = ({ currentStep }) => {
                  <span className="absolute top-full left-1/2 -translate-x-1/2 text-xs text-center mt-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">{step.name}</span>
               </>
             )}
-             {/* Connector line for all but the last item */}
             {stepIdx < steps.length - 1 && (
-              <div className="absolute inset-0 top-1/2 left-full transform -translate-y-1/2 w-24 hidden sm:block" aria-hidden="true"> {/* Hide on small screens if it causes overflow */}
+              <div className="absolute inset-0 w-24 top-1/2 left-full transform -translate-y-1/2 w-24 hidden sm:block" aria-hidden="true">
                  <div className={`h-0.5 w-full ${stepIdx < currentStep - 1 ? 'bg-theme-primary' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
               </div>
             )}
@@ -66,7 +58,7 @@ const Stepper = ({ currentStep }) => {
   );
 };
 
-const InputField = ({ id, label, type, value, onChange, error, icon, required = true, placeholder }) => (
+const InputField = ({ id, label, type, value, onChange, error, icon, required = true, placeholder, maxLength }) => (
   <div>
     <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
       {label} {required && <span className="text-red-500">*</span>}
@@ -80,6 +72,7 @@ const InputField = ({ id, label, type, value, onChange, error, icon, required = 
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        maxLength={maxLength}
         className={`w-full ${icon ? 'pl-10' : 'px-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${
           error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
         }`}
@@ -124,8 +117,10 @@ const RegisterPage = () => {
     userEmail: '',
     password: '',
     confirmPassword: '',
+    verificationCode: '',
   });
   const [errors, setErrors] = useState({});
+  const [codeVerified, setCodeVerified] = useState(false);
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
 
@@ -163,20 +158,49 @@ const RegisterPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleVerifyCode = () => {
+    const newErrors = {};
+    if (!formData.verificationCode.trim()) {
+      newErrors.verificationCode = 'Verification code is required.';
+    } else if (!/^\d{6}$/.test(formData.verificationCode)) {
+      newErrors.verificationCode = 'Code must be 6 digits.';
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    
+    // Simulate API call for code verification
+    console.log("Verifying code:", formData.verificationCode);
+    // For demo, assume code '123456' is correct
+    if (formData.verificationCode === '123456') {
+      setCodeVerified(true);
+      setErrors({});
+      console.log("Registration Data (after code verification):", formData);
+    } else {
+      setErrors({ verificationCode: 'Invalid verification code. Try 123456.' });
+    }
+  };
+
   const nextStep = () => {
     if (currentStep === 1 && validateStep1()) {
       setCurrentStep(2);
+      setErrors({});
     } else if (currentStep === 2 && validateStep2()) {
-      // Simulate registration success
-      console.log("Registration Data:", formData);
       setCurrentStep(3);
+      setCodeVerified(false); // Reset verification status when entering step 3
+      setErrors({});
+      // Simulate sending verification code email
+      console.log("Simulating sending verification code to:", formData.userEmail);
     }
   };
 
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-      setErrors({}); // Clear errors when going back
+      setCodeVerified(false); // Reset verification if going back from step 3
+      setErrors({});
     }
   };
 
@@ -189,7 +213,7 @@ const RegisterPage = () => {
         </div>
 
         <div className={`py-8 px-6 sm:px-10 shadow-xl rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-          <div className="flex justify-center  w-100px"> {/* Centering wrapper for Stepper */}
+          <div className="flex justify-center w-full">
             <Stepper currentStep={currentStep} />
           </div>
 
@@ -218,42 +242,74 @@ const RegisterPage = () => {
           )}
 
           {currentStep === 3 && (
-            <div className="text-center py-8">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-2xl font-semibold mb-2">Registration Successful!</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Your account has been created. You can now log in to manage your social media.
-              </p>
-              <button
-                onClick={() => navigate('/login')}
-                className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-theme-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-primary"
-              >
-                Go to Login
-              </button>
-            </div>
+            <>
+              {!codeVerified ? (
+                <div className="space-y-6">
+                  <p className="text-center text-gray-600 dark:text-gray-400">
+                    A 6-digit verification code has been sent to {formData.userEmail}. Please enter it below. (Hint: try 123456)
+                  </p>
+                  <InputField 
+                    id="verificationCode" 
+                    label="Verification Code" 
+                    type="text" 
+                    value={formData.verificationCode} 
+                    onChange={handleChange} 
+                    error={errors.verificationCode} 
+                    icon={<ShieldCheck />} 
+                    placeholder="Enter 6-digit code"
+                    maxLength={6}
+                  />
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-2xl font-semibold mb-2">Verification Successful!</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    Your account has been created and verified. You can now log in.
+                  </p>
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-theme-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-primary"
+                  >
+                    Go to Login
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
-          {currentStep < 3 && (
-            <div className="mt-10 flex justify-between">
-              <button
-                type="button"
-                onClick={prevStep}
-                disabled={currentStep === 1}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-primary disabled:opacity-50"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Previous
-              </button>
+          <div className="mt-10 flex justify-between">
+            <button
+              type="button"
+              onClick={prevStep}
+              disabled={currentStep === 1 || (currentStep === 3 && codeVerified)}
+              className={`inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-primary ${ (currentStep === 1 || (currentStep === 3 && codeVerified)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Previous
+            </button>
+            
+            {currentStep < 3 && (
               <button
                 type="button"
                 onClick={nextStep}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-theme-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-primary"
               >
-                {currentStep === 2 ? 'Complete Registration' : 'Next'}
+                Next
                 <ArrowRight className="w-4 h-4 ml-2" />
               </button>
-            </div>
-          )}
+            )}
+            {currentStep === 3 && !codeVerified && (
+              <button
+                type="button"
+                onClick={handleVerifyCode}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-theme-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-primary"
+              >
+                Verify Code
+                <ShieldCheck className="w-4 h-4 ml-2" />
+              </button>
+            )}
+          </div>
         </div>
          {currentStep < 3 && (
             <div className="mt-6 text-center text-sm">
