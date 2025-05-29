@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   // Deploying to https://ashok05252002.github.io/Pro-Media/
-  base: '/Pro-Media/',
+  // base: '/Pro-Media/',
 
   plugins: [
     react({

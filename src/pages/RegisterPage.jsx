@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Building, UserCircle, CheckCircle, ArrowRight, ArrowLeft, Mail, Lock, ShieldCheck } from 'lucide-react'; // Added ShieldCheck
+import { Building, UserCircle, CheckCircle, ArrowRight, ArrowLeft, Mail, Lock, ShieldCheck, RefreshCw } from 'lucide-react'; // Added ShieldCheck
 import { useTheme } from '../contexts/ThemeContext';
+import { extCompanyUserRegister, extCompanyUserRegVerifyOTP } from "../API/api";
 
 const Stepper = ({ currentStep }) => {
   const steps = [
@@ -121,11 +122,26 @@ const RegisterPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [codeVerified, setCodeVerified] = useState(false);
+  const [resendTimer, setResendTimer] = useState(30);
+  const [canResendCode, setCanResendCode] = useState(false);
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
 
   const companyTypes = ["Software", "Marketing", "E-commerce", "Consulting", "Healthcare", "Education", "Other"];
   const employeeSizes = ["1-10", "11-50", "51-200", "201-500", "500+"];
+
+  useEffect(() => {
+    let timerId;
+    if (currentStep === 3 && !codeVerified && !canResendCode && resendTimer > 0) {
+      timerId = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0) {
+      setCanResendCode(true);
+      clearInterval(timerId);
+    }
+    return () => clearInterval(timerId);
+  }, [currentStep, codeVerified, canResendCode, resendTimer]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -173,14 +189,38 @@ const RegisterPage = () => {
     
     // Simulate API call for code verification
     console.log("Verifying code:", formData.verificationCode);
+    const userData = {
+                email: formData.userEmail,
+                otp: formData.verificationCode,
+              };
+    console.log("Verifying code1:", userData);
+    extCompanyUserRegVerifyOTP(userData)
+      .then((response) => {
+        console.log("OTP Verified", response);
+        if (response.status === (200 || 201)){
+          navigate("/")
+        }
+        
+      }).catch(error => {
+              console.error("Error registering verification Code:", error);
+      });
     // For demo, assume code '123456' is correct
-    if (formData.verificationCode === '123456') {
-      setCodeVerified(true);
-      setErrors({});
-      console.log("Registration Data (after code verification):", formData);
-    } else {
-      setErrors({ verificationCode: 'Invalid verification code. Try 123456.' });
-    }
+    // if (formData.verificationCode === '123456') {
+    //   setCodeVerified(true);
+    //   setErrors({});
+    //   console.log("Registration Data (after code verification):", formData);
+    // } else {
+    //   setErrors({ message:'Invalid verification code. Try 123456.' });
+    // }
+  };
+
+  const handleResendCode = () => {
+    console.log("Simulating resending verification code to:", formData.userEmail);
+    setResendTimer(30);
+    setCanResendCode(false);
+    setFormData(prev => ({ ...prev, verificationCode: '' })); // Clear previous code
+    setErrors(prev => ({ ...prev, verificationCode: '' })); // Clear code error
+    // Optionally, show a temporary message like "New code sent!"
   };
 
   const nextStep = () => {
@@ -188,8 +228,42 @@ const RegisterPage = () => {
       setCurrentStep(2);
       setErrors({});
     } else if (currentStep === 2 && validateStep2()) {
-      setCurrentStep(3);
+     
       setCodeVerified(false); // Reset verification status when entering step 3
+      extCompanyUserRegister(formData)
+      .then((response) => {
+        console.log(response);
+        if (response.status === 200 || response.status === 201) {
+          console.log("Submitted successfully");
+          setCurrentStep(3);
+          setCodeVerified(false); 
+      setResendTimer(30); // Reset timer for step 3
+      setCanResendCode(false);
+          setErrors({});
+          // const userData = {
+          //       email: userInput.userEmail,
+          //       otp: userInput.OTPCode,
+          //     };
+          
+          //     extCompanyUserRegVerifyOTP(userInput)
+          //       .then((response) => {
+          //         console.log("OTP Verified", response);
+          //         if (response.status === (200 || 201)){
+          //           navigate("/")
+          //         }
+                  
+          //       }).catch(error => {
+          //               console.error("Error registering company User:", error);
+          //       });
+        }
+        else{
+            setErrors({message:"Error registering company User:"})
+        }
+        
+      }).catch(error => {
+              setErrors({message:error.message})
+              console.error("Error registering company User:", error);
+      });
       setErrors({});
       // Simulate sending verification code email
       console.log("Simulating sending verification code to:", formData.userEmail);
@@ -216,6 +290,9 @@ const RegisterPage = () => {
           <div className="flex justify-center w-full">
             <Stepper currentStep={currentStep} />
           </div>
+          <h5>
+            {errors?.message?errors.message:""}
+          </h5>
 
           {currentStep === 1 && (
             <form className="space-y-6" noValidate>
@@ -259,6 +336,21 @@ const RegisterPage = () => {
                     placeholder="Enter 6-digit code"
                     maxLength={6}
                   />
+                  <div className="text-center">
+                    <button
+                      onClick={handleResendCode}
+                      disabled={!canResendCode}
+                      className={`text-sm font-medium ${canResendCode ? 'text-theme-primary hover:text-opacity-80' : 'text-gray-500 dark:text-gray-400 cursor-not-allowed'}`}
+                    >
+                      {canResendCode ? (
+                        <>
+                          <RefreshCw className="inline w-3 h-3 mr-1" /> Resend Code
+                        </>
+                      ) : (
+                        `Resend in ${resendTimer}s`
+                      )}
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8">
