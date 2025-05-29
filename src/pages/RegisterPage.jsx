@@ -202,8 +202,11 @@ const RegisterPage = () => {
           setCodeVerified(true);
           setErrors({});
          
-        }else {
-            setErrors({ message:'Invalid verification code. Try 123456.' });
+        }else if(response.status === 401)
+        {
+          setCanResendCode(false);  
+          setErrors({ message:'Invalid verification code. Pls Resend Code' });
+            
         }
         
       }).catch(error => {
@@ -225,6 +228,26 @@ const RegisterPage = () => {
     setCanResendCode(false);
     setFormData(prev => ({ ...prev, verificationCode: '' })); // Clear previous code
     setErrors(prev => ({ ...prev, verificationCode: '' })); // Clear code error
+    extCompanyUserRegResendOTP(formData)
+      .then((response) => {
+        console.log("OTP Resend Verified", response);
+        if (response.status === (200 || 201)){
+          // navigate("/")
+          setCanResendCode(false)
+          setErrors({});
+          console.log("ResendCode:", response)
+         
+        }else 
+        {
+          setCanResendCode(true);  
+          console.log("ResendCode:", response)
+            
+        }
+        
+      }).catch(error => {
+              console.error("Error registering verification Code:", error);
+      });
+
     // Optionally, show a temporary message like "New code sent!"
   };
 
@@ -242,8 +265,8 @@ const RegisterPage = () => {
           console.log("Submitted successfully");
           setCurrentStep(3);
           setCodeVerified(false); 
-      setResendTimer(30); // Reset timer for step 3
-      setCanResendCode(false);
+          setResendTimer(30); // Reset timer for step 3
+          setCanResendCode(false);
           setErrors({});
           // const userData = {
           //       email: userInput.userEmail,
