@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Building, UserCircle, CheckCircle, ArrowRight, ArrowLeft, Mail, Lock, ShieldCheck } from 'lucide-react'; // Added ShieldCheck
+import { Building, UserCircle, CheckCircle, ArrowRight, ArrowLeft, Mail, Lock, ShieldCheck, RefreshCw } from 'lucide-react'; // Added ShieldCheck
 import { useTheme } from '../contexts/ThemeContext';
 import { extCompanyUserRegister, extCompanyUserRegVerifyOTP, extCompanyUserRegResendOTP, } from "../API/api";
 
@@ -122,11 +122,26 @@ const RegisterPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [codeVerified, setCodeVerified] = useState(false);
+  const [resendTimer, setResendTimer] = useState(30);
+  const [canResendCode, setCanResendCode] = useState(false);
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
 
   const companyTypes = ["Software", "Marketing", "E-commerce", "Consulting", "Healthcare", "Education", "Other"];
   const employeeSizes = ["1-10", "11-50", "51-200", "201-500", "500+"];
+
+  useEffect(() => {
+    let timerId;
+    if (currentStep === 3 && !codeVerified && !canResendCode && resendTimer > 0) {
+      timerId = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0) {
+      setCanResendCode(true);
+      clearInterval(timerId);
+    }
+    return () => clearInterval(timerId);
+  }, [currentStep, codeVerified, canResendCode, resendTimer]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -204,6 +219,15 @@ const RegisterPage = () => {
     // }
   };
 
+  const handleResendCode = () => {
+    console.log("Simulating resending verification code to:", formData.userEmail);
+    setResendTimer(30);
+    setCanResendCode(false);
+    setFormData(prev => ({ ...prev, verificationCode: '' })); // Clear previous code
+    setErrors(prev => ({ ...prev, verificationCode: '' })); // Clear code error
+    // Optionally, show a temporary message like "New code sent!"
+  };
+
   const nextStep = () => {
     if (currentStep === 1 && validateStep1()) {
       setCurrentStep(2);
@@ -217,6 +241,9 @@ const RegisterPage = () => {
         if (response.status === 200 || response.status === 201) {
           console.log("Submitted successfully");
           setCurrentStep(3);
+          setCodeVerified(false); 
+      setResendTimer(30); // Reset timer for step 3
+      setCanResendCode(false);
           setErrors({});
           // const userData = {
           //       email: userInput.userEmail,
@@ -314,6 +341,21 @@ const RegisterPage = () => {
                     placeholder="Enter 6-digit code"
                     maxLength={6}
                   />
+                  <div className="text-center">
+                    <button
+                      onClick={handleResendCode}
+                      disabled={!canResendCode}
+                      className={`text-sm font-medium ${canResendCode ? 'text-theme-primary hover:text-opacity-80' : 'text-gray-500 dark:text-gray-400 cursor-not-allowed'}`}
+                    >
+                      {canResendCode ? (
+                        <>
+                          <RefreshCw className="inline w-3 h-3 mr-1" /> Resend Code
+                        </>
+                      ) : (
+                        `Resend in ${resendTimer}s`
+                      )}
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8">
