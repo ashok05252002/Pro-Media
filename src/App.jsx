@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import { HashRouter  as Router, Routes, Route, Navigate , useLocation} from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate , useLocation} from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { SidebarProvider } from './contexts/SidebarContext';
 import Layout from './components/Layout';
@@ -31,6 +31,7 @@ import ViewComments from './pages/ViewComments.jsx';
 import NotFoundPage from './pages/NotFoundPage';
 import ServerErrorPage from './pages/ServerErrorPage';
 import AddBusinessPage from './pages/AddBusinessPage';
+import Register from "./pages/RegisterPage.jsx";
 
 import axios from 'axios';
 import "./styles.css";
@@ -58,7 +59,8 @@ function App() {
             <Route path = "/" element={<Login/>}/>
             <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
             {/* <Route path="/register" element={!isAuthenticated ? <UserForm /> : <Navigate to="/dashboard" />} /> */}
-            <Route path="/register" element={<UserForm/>}/>
+            {/* <Route path="/register" element={<UserForm/>}/> */}
+            <Route path="/register" element={<Register/>}/>
             <Route path="/forgotpwd" element = {<ForgotPwd/>} />
             <Route path="/auth/facebook/callback" element={<FacebookCallback />} />
             <Route path="/oauth2callback" element={<YoutubeCallback />} />

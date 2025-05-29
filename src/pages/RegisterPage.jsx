@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Building, UserCircle, CheckCircle, ArrowRight, ArrowLeft, Mail, Lock, ShieldCheck } from 'lucide-react'; // Added ShieldCheck
 import { useTheme } from '../contexts/ThemeContext';
+import { extCompanyUserRegister, extCompanyUserRegVerifyOTP } from "../API/api";
 
 const Stepper = ({ currentStep }) => {
   const steps = [
@@ -173,14 +174,29 @@ const RegisterPage = () => {
     
     // Simulate API call for code verification
     console.log("Verifying code:", formData.verificationCode);
+    const userData = {
+                email: formData.userEmail,
+                otp: formData.verificationCode,
+              };
+    console.log("Verifying code1:", userData);
+    extCompanyUserRegVerifyOTP(userData)
+      .then((response) => {
+        console.log("OTP Verified", response);
+        if (response.status === (200 || 201)){
+          navigate("/")
+        }
+        
+      }).catch(error => {
+              console.error("Error registering verification Code:", error);
+      });
     // For demo, assume code '123456' is correct
-    if (formData.verificationCode === '123456') {
-      setCodeVerified(true);
-      setErrors({});
-      console.log("Registration Data (after code verification):", formData);
-    } else {
-      setErrors({ verificationCode: 'Invalid verification code. Try 123456.' });
-    }
+    // if (formData.verificationCode === '123456') {
+    //   setCodeVerified(true);
+    //   setErrors({});
+    //   console.log("Registration Data (after code verification):", formData);
+    // } else {
+    //   setErrors({ message:'Invalid verification code. Try 123456.' });
+    // }
   };
 
   const nextStep = () => {
@@ -188,8 +204,39 @@ const RegisterPage = () => {
       setCurrentStep(2);
       setErrors({});
     } else if (currentStep === 2 && validateStep2()) {
-      setCurrentStep(3);
+     
       setCodeVerified(false); // Reset verification status when entering step 3
+      extCompanyUserRegister(formData)
+      .then((response) => {
+        console.log(response);
+        if (response.status === 200 || response.status === 201) {
+          console.log("Submitted successfully");
+          setCurrentStep(3);
+          setErrors({});
+          // const userData = {
+          //       email: userInput.userEmail,
+          //       otp: userInput.OTPCode,
+          //     };
+          
+          //     extCompanyUserRegVerifyOTP(userInput)
+          //       .then((response) => {
+          //         console.log("OTP Verified", response);
+          //         if (response.status === (200 || 201)){
+          //           navigate("/")
+          //         }
+                  
+          //       }).catch(error => {
+          //               console.error("Error registering company User:", error);
+          //       });
+        }
+        else{
+            setErrors({message:"Error registering company User:"})
+        }
+        
+      }).catch(error => {
+              setErrors({message:error.message})
+              console.error("Error registering company User:", error);
+      });
       setErrors({});
       // Simulate sending verification code email
       console.log("Simulating sending verification code to:", formData.userEmail);
@@ -216,6 +263,9 @@ const RegisterPage = () => {
           <div className="flex justify-center w-full">
             <Stepper currentStep={currentStep} />
           </div>
+          <h5>
+            {errors?.message?errors.message:""}
+          </h5>
 
           {currentStep === 1 && (
             <form className="space-y-6" noValidate>
