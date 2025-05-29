@@ -32,6 +32,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import ServerErrorPage from './pages/ServerErrorPage';
 import AddBusinessPage from './pages/AddBusinessPage';
 import Register from "./pages/RegisterPage.jsx";
+import PostDetailsAndCommentsPage from './pages/PostDetailsAndCommentsPage';
 
 import axios from 'axios';
 import "./styles.css";
@@ -90,6 +91,7 @@ function App() {
                 <Route path="/support" element={<Support />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/add-business" element={<AddBusinessPage />} />
+                <Route path="post/:postId/details-and-comments" element={<PostDetailsAndCommentsPage />} />
               </Route>
             )}
 
