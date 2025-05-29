@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck, RefreshCw, Mail } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { extCompanyUserRegResendOTP,extCompanyUserRegVerifyOTP } from '../API/api';
 
 const InputField = ({ id, label, type, value, onChange, error, icon, required = true, placeholder, maxLength }) => (
   <div>
@@ -36,7 +37,7 @@ const VerifyEmailPage = () => {
   
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
-  
+  localStorage.setItem("isAuthenticated", true)
   const emailForVerification = localStorage.getItem('emailForVerification');
 
   useEffect(() => {
@@ -80,17 +81,45 @@ const VerifyEmailPage = () => {
 
     // Simulate API call
     setTimeout(() => {
-      if (verificationCode === '123456') { // Mock correct code
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userEmail', emailForVerification);
-        // Assuming username is derived or was stored temporarily. For simplicity, using a default.
-        localStorage.setItem('userName', emailForVerification.split('@')[0] || 'User'); 
-        localStorage.removeItem('emailForVerification');
-        window.location.href = '/'; // Force reload to update App state
-      } else {
-        setError('Invalid verification code. Hint: try 123456');
-        setIsLoading(false);
-      }
+      console.log("Verifying code:", verificationCode);
+      const userData = {
+                email: emailForVerification,
+                otp: verificationCode,
+              };
+      console.log("Verifying code1:", userData);
+      extCompanyUserRegVerifyOTP(userData)
+        .then((response) => {
+          console.log("OTP Verified", response);
+          if (response.status === (200 || 201)){
+            // navigate("/")
+            setVerificationCode(true);
+            setError('');
+            navigate("/")
+            
+          }else if(response.status === 401)
+          {
+            setCanResendCode(false);  
+            setError('Invalid verification code. Pls Resend Code');
+              
+          }
+          
+        }).catch(error => {
+                console.error("Error registering verification Code:", error);
+                setError('Invalid verification code. Pls Resend Code');
+                setIsLoading(false)
+        });
+
+      // if (verificationCode === '123456') { // Mock correct code
+      //   // localStorage.setItem('isAuthenticated', 'true');
+      //   localStorage.setItem('userEmail', emailForVerification);
+      //   // Assuming username is derived or was stored temporarily. For simplicity, using a default.
+      //   localStorage.setItem('userName', emailForVerification.split('@')[0] || 'User'); 
+      //   localStorage.removeItem('emailForVerification');
+      //   window.location.href = '/'; // Force reload to update App state
+      // } else {
+      //   setError('Invalid verification code. Hint: try 123456');
+      //   setIsLoading(false);
+      // }
     }, 1000);
   };
 
@@ -103,6 +132,30 @@ const VerifyEmailPage = () => {
     setCanResendCode(false);
     setVerificationCode('');
     setError('');
+    const userData = {
+                userEmail: emailForVerification,
+
+
+              };
+    extCompanyUserRegResendOTP(userData)
+          .then((response) => {
+            console.log("OTP Resend Verified", response);
+            if (response.status === (200 || 201)){
+              // navigate("/")
+              setCanResendCode(false)
+              setError('');
+              console.log("ResendCode:", response)
+             
+            }else 
+            {
+              setCanResendCode(true);  
+              console.log("ResendCode:", response)
+                
+            }
+            
+          }).catch(error => {
+                  console.error("Error registering verification Code:", error);
+          });
   };
 
   if (!emailForVerification) {
