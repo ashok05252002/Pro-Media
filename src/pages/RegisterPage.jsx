@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Building, UserCircle, CheckCircle, ArrowRight, ArrowLeft, Mail, Lock, ShieldCheck } from 'lucide-react'; // Added ShieldCheck
 import { useTheme } from '../contexts/ThemeContext';
-import { extCompanyUserRegister, extCompanyUserRegVerifyOTP } from "../API/api";
+import { extCompanyUserRegister, extCompanyUserRegVerifyOTP, extCompanyUserRegResendOTP, } from "../API/api";
 
 const Stepper = ({ currentStep }) => {
   const steps = [
@@ -183,7 +183,12 @@ const RegisterPage = () => {
       .then((response) => {
         console.log("OTP Verified", response);
         if (response.status === (200 || 201)){
-          navigate("/")
+          // navigate("/")
+          setCodeVerified(true);
+          setErrors({});
+         
+        }else {
+            setErrors({ message:'Invalid verification code. Try 123456.' });
         }
         
       }).catch(error => {

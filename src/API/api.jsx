@@ -81,11 +81,20 @@ export const extCompanyUserRegister = (userInput) => {
 };
 
 export const extCompanyUserRegVerifyOTP = (userInput) => {
-    return axios.post(`/company/verify-otp`, {
-        "email":userInput.userEmail,
-        "otp":userInput.OTPCode
+    console.log ("userInput", userInput)
+    return axios.post(`/company/verify-otp`, {  
+        "email":userInput.email,
+        "otp":userInput.otp
      })  
 };
+
+export const extCompanyUserRegResendOTP = (userInput) => {
+    console.log ("userInput", userInput)
+    return axios.post(`/company/resend-otp`, {  
+        "email":userInput.userEmail,
+        
+     })  
+}
 
 export const extCompanyUserForgetpwd = (email) => {
     return axios.post(`/company/forgetpasswrd`, {email })  
