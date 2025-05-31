@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building, PlusCircle, Link as LinkIcon, Facebook, Instagram, Twitter, Linkedin, Youtube, ChevronDown, CheckCircle, ExternalLink, ArrowRight } from 'lucide-react';
 import LinkPlatformModal from '../components/LinkPlatformModal';
+import { loginWithSocial } from '../services/SocialAuth';
 
 const socialPlatforms = [
   { id: 'facebook', name: 'Facebook', icon: <Facebook className="w-5 h-5 text-blue-600" /> },
@@ -76,20 +77,34 @@ const AddBusinessPage = () => {
     setShowLinkModal(true);
   };
 
-  const handleSavePlatformLink = (platformId, data) => {
+  const handleSavePlatformLink = async (platformId, data) => {
     const platformName = socialPlatforms.find(p => p.id === platformId)?.name.toLowerCase() || platformId;
     const defaultDisplayLink = data.productPageUrl || (data.pageName ? `https://${platformName}.com/${data.pageName}` : '');
 
-    setPlatformDetails(prev => ({
-      ...prev,
-      [platformId]: { 
-        ...data, 
-        isLinked: true,
-        displayLink: data.productPageUrl || defaultDisplayLink
-      }
-    }));
-    setShowLinkModal(false);
-    setPlatformToLink(null);
+    console.log(data);
+    console.log(platformId );
+    console.log(platformName);
+    console.log(defaultDisplayLink);
+    
+  const { code } = await loginWithSocial('linkedin', {
+      pagename: data.pageName,
+      producturl: data.productPageUrl,
+    });
+    console.log(`loginresponse -->> ${code}`);
+    
+    // setPlatformDetails(prev => ({
+    //   ...prev,
+    //   [platformId]: { 
+    //     ...data, 
+    //     isLinked: true,
+    //     displayLink: data.productPageUrl || defaultDisplayLink
+    //   }
+    // }));
+
+    // console.log(platformDetails);
+    
+    // setShowLinkModal(false);
+    // setPlatformToLink(null);
   };
 
   const handleSubmitBusiness = () => {

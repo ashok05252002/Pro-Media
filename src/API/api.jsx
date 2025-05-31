@@ -183,17 +183,11 @@ export const extCompanyAuthLinkedin = (inputData) => {
     return axios.post(`/ext-product/add_datasource`, {
             "auth_code":inputData.code,
             "product_id": inputData.product_id,
-            "data_source_id":7668 , //inputData.data_source_id,
+            "data_source_id":7668 ,  
             "product_url":inputData.product_url,
             "page_name":inputData.page_name,
             
-        },
-        // {
-        //        headers:{
-
-        //               "authCode":inputData.code,
-        //         }
-        // }   
+        },  
     )  
 };
 

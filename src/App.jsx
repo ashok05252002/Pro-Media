@@ -91,7 +91,7 @@ function App() {
                 <Route path="/support" element={<Support />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/add-business" element={<AddBusinessPage />} />
-                <Route path="post/:postId/details-and-comments" element={<PostDetailsAndCommentsPage />} />
+                {/* <Route path="post/:postId/details-and-comments" element={<PostDetailsAndCommentsPage />} /> */}
               </Route>
             )}
 
