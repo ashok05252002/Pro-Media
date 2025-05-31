@@ -105,8 +105,12 @@ const RegProduct = (props) => {
      const scopes = [
     'profile',      // Basic profile info (formerly 'profile')
     'w_member_social',    // Posting permissions
-    'r_organization_admin' // Organization admin access
-  ].join(' '); // Space separated
+    'r_organization_admin', // Organization admin access
+    'w_organization_social',
+    'r_organization_social',
+    'rw_organization_admin',
+    'r_organization_admin'
+    ].join(' '); // Space separated
 
       // Generate random state for CSRF protection
       const state = Math.random().toString(36).substring(2, 15);

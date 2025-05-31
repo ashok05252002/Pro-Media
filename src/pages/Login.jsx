@@ -6,11 +6,11 @@ import { extCompanyLogin, extCompanyUserRegResendOTP } from '../API/api';
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    // email: "demo@gmail.com",
-    // password: "DemoPassword",
+    email: "demo@gmail.com",
+    password: "DemoPassword",
 
-    email: "kdharini25@gmail.com",
-    password: "Password@123",
+    // email: "kdharini25@gmail.com",
+    // password: "Password@123",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
