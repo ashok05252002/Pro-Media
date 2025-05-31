@@ -32,8 +32,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import ServerErrorPage from './pages/ServerErrorPage';
 import AddBusinessPage from './pages/AddBusinessPage';
 import Register from "./pages/RegisterPage.jsx";
-import PostDetailsAndCommentsPage from './pages/PostDetailsAndCommentsPage';
-
+import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import axios from 'axios';
 import "./styles.css";
 
@@ -62,6 +61,7 @@ function App() {
             {/* <Route path="/register" element={!isAuthenticated ? <UserForm /> : <Navigate to="/dashboard" />} /> */}
             {/* <Route path="/register" element={<UserForm/>}/> */}
             <Route path="/register" element={<Register/>}/>
+            <Route path="/VerifyEmailPage" element={<VerifyEmailPage/>}/>
             <Route path="/forgotpwd" element = {<ForgotPwd/>} />
             <Route path="/auth/facebook/callback" element={<FacebookCallback />} />
             <Route path="/oauth2callback" element={<YoutubeCallback />} />
@@ -100,7 +100,7 @@ function App() {
 
             {/* error pages  */}
              <Route path="/500" element={<ServerErrorPage />} />
-            <Route path="*" element={<NotFoundPage />} />
+            {/* <Route path="*" element={<NotFoundPage />} /> */}
             
           </Routes>
         </Router>
