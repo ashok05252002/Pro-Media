@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link as LinkIconLucide, Smile, Calendar, Clock, Globe, Facebook, Instagram, Twitter, Linkedin, Youtube, Save, Send, X, Check, Trash2, Video as VideoIcon, AlertTriangle, FileUp } from 'lucide-react';
+import { Link as LinkIconLucide, Smile, Calendar, Clock, Globe, Facebook, Instagram, Twitter, Linkedin, Youtube, Save, Send, X, Check, Trash2, Video as VideoIcon, AlertTriangle, FileUp, Type as TypeIcon } from 'lucide-react'; // Added TypeIcon
 import ConfirmationModal from '../components/ConfirmationModal';
 import VideoUploadModal from '../components/VideoUploadModal';
 import MediaUploadModal from '../components/MediaUploadModal';
 
 const PostCreation = () => {
   const [postContent, setPostContent] = useState('');
+  const [youtubeTitle, setYoutubeTitle] = useState(''); // New state for YouTube title
   const [selectedPlatforms, setSelectedPlatforms] = useState({
     facebook: true,
     instagram: true,
@@ -60,43 +61,83 @@ const PostCreation = () => {
   const emojis = ['😀', '😂', '😍', '🥰', '😎', '🙌', '👍', '🎉', '🔥', '❤️', '💯', '✨', '🌟', '💪', '🤔', '👏', 
                   '😊', '🥳', '😇', '🤩', '😋', '🙂', '😄', '😃', '😁', '😆', '😅', '🤣', '😭', '😘', '🤗', '😉'];
   
+  const isOnlyYouTubeSelected = selectedPlatforms.youtube && !selectedPlatforms.facebook && !selectedPlatforms.instagram && !selectedPlatforms.twitter && !selectedPlatforms.linkedin;
+  const isAnyNonYouTubeSelected = selectedPlatforms.facebook || selectedPlatforms.instagram || selectedPlatforms.twitter || selectedPlatforms.linkedin;
+
   const togglePlatform = (platformId) => {
     setSelectedPlatforms(prev => {
       let newSelection = { ...prev };
       let warning = '';
       const isCurrentlySelected = prev[platformId];
+      const currentlyOnlyYouTube = prev.youtube && !prev.facebook && !prev.instagram && !prev.twitter && !prev.linkedin;
 
       if (platformId === 'youtube') {
-        if (!isCurrentlySelected) {
+        if (!isCurrentlySelected) { // Selecting YouTube
           newSelection = { youtube: true, facebook: false, instagram: false, twitter: false, linkedin: false };
           setSelectedMediaFile(null);
           setSelectedMediaPreviewUrl(null);
           setSelectedMediaType(null);
           warning = 'YouTube selected. Other platforms deselected. Only video uploads are supported for YouTube.';
-        } else {
+        } else { // Deselecting YouTube
           newSelection.youtube = false;
-           const anyOtherSelected = Object.keys(newSelection).some(key => key !== 'youtube' && newSelection[key]);
-          if (!anyOtherSelected) newSelection.facebook = true; // Default back if nothing else selected
+          setYoutubeTitle(''); // Clear YouTube title when YouTube is deselected
+          // If nothing else is selected, default to Facebook or clear all media
+          const anyOtherSelected = Object.keys(newSelection).some(key => key !== 'youtube' && newSelection[key]);
+          if (!anyOtherSelected) {
+            newSelection.facebook = true; // Default back if nothing else selected
+             setSelectedVideoFile(null); // Clear YT video if no platforms are left
+             setSelectedVideoPreviewUrl(null);
+          }
         }
-      } else {
+      } else { // Selecting/deselecting a non-YouTube platform
         newSelection[platformId] = !isCurrentlySelected;
-        if (newSelection[platformId] && prev.youtube) {
+        if (newSelection[platformId] && currentlyOnlyYouTube) { // If YouTube was the only one selected and now a non-YT is selected
           newSelection.youtube = false;
           setSelectedVideoFile(null);
           setSelectedVideoPreviewUrl(null);
-          warning = `${platforms.find(p => p.id === platformId).name} selected. YouTube deselected. Image, Video, or GIF uploads are supported for this platform.`;
+          setYoutubeTitle(''); // Clear YouTube title
+          warning = `${platforms.find(p => p.id === platformId).name} selected. YouTube deselected.`;
+        } else if (!newSelection[platformId] && prev.youtube) {
+          // If deselecting a non-YT platform and YT is still selected, ensure YT becomes the only one.
+          const otherSelectedCount = Object.values(newSelection).filter(v => v).length - (newSelection.youtube ? 1 : 0);
+          if (newSelection.youtube && otherSelectedCount === 0) { // If YT is selected and no OTHER platforms are
+             setSelectedMediaFile(null); // Clear general media
+             setSelectedMediaPreviewUrl(null);
+             setSelectedMediaType(null);
+             warning = `Only YouTube selected. General media cleared.`;
+          }
         }
       }
+      
+      // If no platforms are selected after a toggle, default to Facebook
+      const isAnyPlatformSelected = Object.values(newSelection).some(isSelected => isSelected);
+      if (!isAnyPlatformSelected) {
+        newSelection.facebook = true;
+        setSelectedVideoFile(null); // Clear YT video
+        setSelectedVideoPreviewUrl(null);
+        setYoutubeTitle('');
+        // General media is already cleared if YouTube was previously sole selection
+      }
+
 
       if (warning) {
         setPlatformWarningMessage(warning);
         setShowPlatformWarning(true);
       } else if (showPlatformWarning && !Object.values(newSelection).some(v => v) && platformId === 'youtube' && isCurrentlySelected) {
+        // This condition might need adjustment if warning should persist or clear differently
         setShowPlatformWarning(false);
       }
       return newSelection;
     });
   };
+
+  useEffect(() => {
+    // Clear YouTube title if YouTube is not the ONLY selected platform
+    if (!isOnlyYouTubeSelected && youtubeTitle) {
+      setYoutubeTitle('');
+    }
+  }, [selectedPlatforms, isOnlyYouTubeSelected, youtubeTitle]);
+
 
   const handleAddEmoji = (emoji) => {
     setPostContent(prev => prev + emoji);
@@ -130,6 +171,7 @@ const PostCreation = () => {
 
   const resetPostState = () => {
     setPostContent('');
+    setYoutubeTitle('');
     setSelectedMediaFile(null);
     setSelectedMediaPreviewUrl(null);
     setSelectedMediaType(null);
@@ -147,13 +189,13 @@ const PostCreation = () => {
   };
 
   const handleSaveDraft = () => {
-    console.log('Saving draft:', { postContent, selectedMediaFile, selectedVideoFile, selectedPlatforms });
+    console.log('Saving draft:', { postContent, youtubeTitle, selectedMediaFile, selectedVideoFile, selectedPlatforms });
     setShowSaveDraftConfirmModal(false);
   };
 
   const handleSchedule = () => {
     if (scheduleDate && scheduleTime) {
-      console.log('Post scheduled for:', scheduleDate, scheduleTime, { postContent, selectedMediaFile, selectedVideoFile, selectedPlatforms });
+      console.log('Post scheduled for:', scheduleDate, scheduleTime, { postContent, youtubeTitle, selectedMediaFile, selectedVideoFile, selectedPlatforms });
       setShowScheduleModal(false);
       alert(`Post scheduled for ${scheduleDate} at ${scheduleTime}`);
     } else {
@@ -162,7 +204,7 @@ const PostCreation = () => {
   };
 
   const handlePostNow = () => {
-    console.log('Post published now:', { postContent, selectedMediaFile, selectedVideoFile, selectedPlatforms });
+    console.log('Post published now:', { postContent, youtubeTitle, selectedMediaFile, selectedVideoFile, selectedPlatforms });
     setShowPostPreviewModal(false);
     alert('Post published successfully!');
   };
@@ -173,9 +215,6 @@ const PostCreation = () => {
       .map(platform => platform.name)
       .join(', ');
   };
-
-  const isOnlyYouTubeSelected = selectedPlatforms.youtube && !selectedPlatforms.facebook && !selectedPlatforms.instagram && !selectedPlatforms.twitter && !selectedPlatforms.linkedin;
-  const isAnyNonYouTubeSelected = selectedPlatforms.facebook || selectedPlatforms.instagram || selectedPlatforms.twitter || selectedPlatforms.linkedin;
   
   return (
     <div className="max-w-4xl mx-auto">
@@ -201,14 +240,14 @@ const PostCreation = () => {
                 className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-theme-secondary hover:bg-opacity-90 text-white rounded-md"
             >
                 <Calendar className="w-4 h-4" />
-                <span className='text-white'>Schedule</span>
+                <span>Schedule</span>
             </button>
             <button 
                 onClick={() => setShowPostPreviewModal(true)} 
                 className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-theme-primary hover:bg-opacity-90 text-white rounded-md"
             >
                 <Send className="w-4 h-4" />
-                <span className='text-white'>Post Now</span>
+                <span>Post Now</span>
             </button>
         </div>
       </div>
@@ -228,10 +267,33 @@ const PostCreation = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            {isOnlyYouTubeSelected && (
+              <div className="mb-4">
+                <label htmlFor="youtubeTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Title (for YouTube) <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <TypeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    id="youtubeTitle"
+                    value={youtubeTitle}
+                    onChange={(e) => setYoutubeTitle(e.target.value)}
+                    placeholder="Enter YouTube video title"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700"
+                    required={isOnlyYouTubeSelected}
+                  />
+                </div>
+              </div>
+            )}
             <div className="mb-4">
+              <label htmlFor="postContent" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {isOnlyYouTubeSelected ? 'Description (for YouTube)' : 'Post Content'}
+              </label>
               <textarea
-                className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary min-h-[200px] dark:bg-gray-700"
-                placeholder="What would you like to share today?"
+                id="postContent"
+                className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary min-h-[150px] dark:bg-gray-700"
+                placeholder={isOnlyYouTubeSelected ? "Describe your video..." : "What would you like to share today?"}
                 value={postContent}
                 onChange={(e) => setPostContent(e.target.value)}
               ></textarea>
@@ -343,8 +405,9 @@ const PostCreation = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <h3 className="text-lg font-medium mb-4">Post Preview</h3>
             <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 min-h-[150px] overflow-auto max-h-[300px]">
-              {postContent || (selectedMediaPreviewUrl && isAnyNonYouTubeSelected) || (selectedVideoPreviewUrl && isOnlyYouTubeSelected) ? (
+              { (isOnlyYouTubeSelected && youtubeTitle) || postContent || (selectedMediaPreviewUrl && isAnyNonYouTubeSelected) || (selectedVideoPreviewUrl && isOnlyYouTubeSelected) ? (
                 <div>
+                  {isOnlyYouTubeSelected && youtubeTitle && <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{youtubeTitle}</h4>}
                   {postContent && <p className="text-gray-800 dark:text-gray-200 mb-3 break-words">{postContent}</p>}
                   {selectedMediaPreviewUrl && isAnyNonYouTubeSelected && (
                     selectedMediaType === 'image' ? 
@@ -396,7 +459,7 @@ const PostCreation = () => {
               <div className="mb-4"><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Date</label><input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700" min={new Date().toISOString().split('T')[0]}/></div>
               <div className="mb-4"><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Time</label><input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700"/></div>
               <div className="mb-4"><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Platforms</label><div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md"><p className="text-sm">{getSelectedPlatformsList() || 'No platforms selected'}</p></div></div>
-              <div className="flex justify-end gap-3 mt-6"><button onClick={() => setShowScheduleModal(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button><button onClick={handleSchedule} disabled={!scheduleDate || !scheduleTime} className="px-4 py-2 bg-theme-primary hover:bg-opacity-90 text-white rounded-md disabled:opacity-50">Schedule Post</button></div>
+              <div className="flex justify-end gap-3 mt-6"><button onClick={() => setShowScheduleModal(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button><button onClick={handleSchedule} disabled={!scheduleDate || !scheduleTime || (isOnlyYouTubeSelected && !youtubeTitle.trim())} className="px-4 py-2 bg-theme-primary hover:bg-opacity-90 text-white rounded-md disabled:opacity-50">Schedule Post</button></div>
             </div>
           </div>
         </div>
@@ -406,7 +469,9 @@ const PostCreation = () => {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg">
             <div className="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center"><h3 className="text-lg font-medium">Post Preview</h3><button onClick={() => setShowPostPreviewModal(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"><X className="w-5 h-5" /></button></div>
             <div className="p-5">
-              <div className="mb-6"><h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your post will appear like this:</h4><div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-900"><p className="text-gray-800 dark:text-gray-200 mb-3 break-words">{postContent}</p>
+              <div className="mb-6"><h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your post will appear like this:</h4><div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-900">
+                {isOnlyYouTubeSelected && youtubeTitle && <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{youtubeTitle}</h4>}
+                <p className="text-gray-800 dark:text-gray-200 mb-3 break-words">{postContent}</p>
               {selectedMediaPreviewUrl && isAnyNonYouTubeSelected && (
                 selectedMediaType === 'image' ? 
                 <img src={selectedMediaPreviewUrl} alt="Preview" className="w-full max-h-60 object-contain rounded-md mb-2 bg-gray-100 dark:bg-gray-700"/> :
@@ -417,7 +482,7 @@ const PostCreation = () => {
               )}
               {selectedVideoPreviewUrl && isOnlyYouTubeSelected && (<video controls src={selectedVideoPreviewUrl} className="w-full max-h-60 rounded-md bg-black">Your browser does not support the video tag.</video>)}</div></div>
               <div className="mb-4"><h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Will be posted to:</h4><div className="flex flex-wrap gap-2">{platforms.map((platform) => (selectedPlatforms[platform.id] && (<div key={platform.id} className="flex items-center gap-1 px-2 py-1 rounded-full text-xs" style={{ backgroundColor: platform.bgColor, color: platform.color }}>{platform.icon}<span>{platform.name}</span></div>)))}</div></div>
-              <div className="flex justify-end gap-3 mt-6"><button onClick={() => setShowPostPreviewModal(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button><button onClick={handlePostNow} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center gap-1"><Check className="w-4 h-4" />Publish Now</button></div>
+              <div className="flex justify-end gap-3 mt-6"><button onClick={() => setShowPostPreviewModal(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button><button onClick={handlePostNow} disabled={isOnlyYouTubeSelected && !youtubeTitle.trim()} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center gap-1 disabled:opacity-50"><Check className="w-4 h-4" />Publish Now</button></div>
             </div>
           </div>
         </div>
