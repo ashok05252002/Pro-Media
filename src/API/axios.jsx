@@ -3,7 +3,6 @@ import axios from 'axios';
  // url: "https://e8fb-59-90-29-196.ngrok-free.app/company/login",
 
 const instance = axios.create({
-    
     baseURL: import.meta.env.VITE_BASE_API_URL,
     headers: {
       'Content-Type': 'application/json',

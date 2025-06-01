@@ -24,12 +24,14 @@ const openPopup = (url, title, width, height) => {
     });
 };
 
-export const loginWithSocial = async (type, { pagename, producturl}) => {
+export const loginWithSocial = async (type, { pagename, producturl, productid}) => {
     const state = generateRandomState();
+    console.log(productid);
+    
     sessionStorage.setItem('linkedin_oauth_state', state);
     sessionStorage.setItem('product_url', producturl);
     sessionStorage.setItem('page_name', pagename);
-    sessionStorage.setItem('product_id', 2);
+    sessionStorage.setItem('product_id', productid);
     let authUrl = ''; 
     switch (type) {
         case 'linkedin': {

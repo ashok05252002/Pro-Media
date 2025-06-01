@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Building, PlusCircle, Link as LinkIcon, Facebook, Instagram, Twitter, Linkedin, Youtube, ChevronDown, CheckCircle, ExternalLink, ArrowRight } from 'lucide-react';
 import LinkPlatformModal from '../components/LinkPlatformModal';
 import { loginWithSocial } from '../services/SocialAuth';
+import { extCompanyRegorAddPrdct } from '../API/api';
+
+import { toast } from 'react-toastify';
 
 const socialPlatforms = [
   { id: 'facebook', name: 'Facebook', icon: <Facebook className="w-5 h-5 text-blue-600" /> },
@@ -12,14 +15,16 @@ const socialPlatforms = [
 ];
 
 const mockExistingBusinesses = [
-  { id: 'comp1', name: 'TechCorp Solutions', linkedPlatforms: {
+  {
+    id: 'comp1', name: 'TechCorp Solutions', linkedPlatforms: {
       facebook: { pageName: 'TechCorp Official', productPageUrl: 'https://facebook.com/TechCorpOfficial', displayLink: 'https://facebook.com/TechCorpOfficial' },
       instagram: null,
       twitter: { pageName: '@TechCorp', productPageUrl: 'https://twitter.com/TechCorp', displayLink: 'https://twitter.com/TechCorp' },
-      youtube: { pageName: 'TechCorp TV', productPageUrl: 'https://youtube.com/TechCorpTV', displayLink: 'https://youtube.com/TechCorpTV'}
-    } 
+      youtube: { pageName: 'TechCorp TV', productPageUrl: 'https://youtube.com/TechCorpTV', displayLink: 'https://youtube.com/TechCorpTV' }
+    }
   },
-  { id: 'comp2', name: 'Innovate Hub', linkedPlatforms: {
+  {
+    id: 'comp2', name: 'Innovate Hub', linkedPlatforms: {
       instagram: { pageName: 'InnovateHubIG', productPageUrl: 'https://instagram.com/InnovateHubIG', displayLink: 'https://instagram.com/InnovateHubIG' },
     }
   },
@@ -31,7 +36,8 @@ const AddBusinessPage = () => {
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [newBusinessName, setNewBusinessName] = useState('');
   const [businessNameConfirmed, setBusinessNameConfirmed] = useState(false);
-  
+  const [productDetail, setProductDetail] = useState({})
+
   const initialPlatformState = socialPlatforms.reduce((acc, platform) => {
     acc[platform.id] = { pageName: '', productPageUrl: '', isLinked: false, displayLink: '' };
     return acc;
@@ -63,12 +69,13 @@ const AddBusinessPage = () => {
       }
     } else if (businessType === 'new') {
       setPlatformDetails(initialPlatformState);
-      setBusinessNameConfirmed(false); 
-    } else { 
+      setBusinessNameConfirmed(false);
+    } else {
       setBusinessNameConfirmed(false);
       setNewBusinessName('');
       setSelectedCompanyId('');
       setPlatformDetails(initialPlatformState);
+      setProductDetail({})
     }
   }, [selectedCompanyId, businessType]);
 
@@ -82,29 +89,33 @@ const AddBusinessPage = () => {
     const defaultDisplayLink = data.productPageUrl || (data.pageName ? `https://${platformName}.com/${data.pageName}` : '');
 
     console.log(data);
-    console.log(platformId );
+    console.log(platformId);
     console.log(platformName);
     console.log(defaultDisplayLink);
-    
-  const { code } = await loginWithSocial('linkedin', {
+
+    const { code } = await loginWithSocial('linkedin', {
       pagename: data.pageName,
       producturl: data.productPageUrl,
+      productid: productDetail.product_id
+
     });
     console.log(`loginresponse -->> ${code}`);
-    
-    // setPlatformDetails(prev => ({
-    //   ...prev,
-    //   [platformId]: { 
-    //     ...data, 
-    //     isLinked: true,
-    //     displayLink: data.productPageUrl || defaultDisplayLink
-    //   }
-    // }));
+    if (code != null) {
+      setPlatformDetails(prev => ({
+        ...prev,
+        [platformId]: {
+          ...data,
+          isLinked: true,
+          displayLink: data.productPageUrl || defaultDisplayLink
+        }
+      }));
+      setShowLinkModal(false);
+      setPlatformToLink(null);
+    }
+
 
     // console.log(platformDetails);
-    
-    // setShowLinkModal(false);
-    // setPlatformToLink(null);
+
   };
 
   const handleSubmitBusiness = () => {
@@ -120,15 +131,27 @@ const AddBusinessPage = () => {
     }
     console.log("Submitting Business Data:", submissionData);
     alert('Business details submitted! (Check console for data)');
-    setBusinessType(null); 
+    setBusinessType(null);
   };
 
-  const handleConfirmBusinessName = () => {
+  const handleConfirmBusinessName = async () => {
+    console.log("handleConfirmBusinessName");
     if (newBusinessName.trim() === '') {
       alert('Please enter a business name.');
       return;
     }
-    setBusinessNameConfirmed(true);
+
+    try {
+      const result = await extCompanyRegorAddPrdct(newBusinessName); // make sure 'params' is defined
+      console.log("Business added successfully", result);
+      if (result.status === 201) {
+        setProductDetail(result.data ?? {});
+        toast.success('Business added successfully!');
+        setBusinessNameConfirmed(true);
+      }
+    } catch (error) {
+      console.error("Add business error:", error);
+    }
   };
 
   const renderPlatformList = () => {
@@ -149,15 +172,15 @@ const AddBusinessPage = () => {
 
           if (isLinked) {
             return (
-              <div 
-                key={platform.id} 
+              <div
+                key={platform.id}
                 className="p-4 border border-green-500 dark:border-green-600 rounded-lg flex items-center justify-between bg-green-50 dark:bg-green-900/30 shadow-md"
               >
                 <div className="flex items-center gap-3 flex-grow min-w-0">
                   {platform.icon}
                   <div className="flex flex-col min-w-0">
-                    <span 
-                      className="font-semibold text-gray-800 dark:text-gray-100 truncate" 
+                    <span
+                      className="font-semibold text-gray-800 dark:text-gray-100 truncate"
                       title={details.pageName}
                     >
                       {details.pageName}
@@ -165,7 +188,7 @@ const AddBusinessPage = () => {
                     <span className="text-xs text-gray-500 dark:text-gray-400">{platform.name}</span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                   {details.displayLink && (
@@ -190,8 +213,8 @@ const AddBusinessPage = () => {
             );
           } else {
             return (
-              <div 
-                key={platform.id} 
+              <div
+                key={platform.id}
                 className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -238,7 +261,7 @@ const AddBusinessPage = () => {
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-lg shadow-xl">
-          <button 
+          <button
             onClick={() => setBusinessType(null)}
             className="text-sm text-theme-primary hover:underline mb-6"
           >
@@ -308,7 +331,7 @@ const AddBusinessPage = () => {
               )}
             </div>
           )}
-          
+
           {((businessType === 'new' && businessNameConfirmed) || (businessType === 'existing' && selectedCompanyId)) ? (
             <button
               onClick={handleSubmitBusiness}

@@ -16,7 +16,9 @@ const LinkedInCallback = () => {
     const product_url = sessionStorage.getItem("product_url");
     const product_id = sessionStorage.getItem("product_id");
     const page_name = sessionStorage.getItem("page_name");
-    
+    console.log(state);
+    console.log(storedState);
+
 
     if (!state || state !== storedState) {
       setMessage("Invalid or missing state. Possible CSRF attack.");
@@ -48,11 +50,17 @@ const LinkedInCallback = () => {
       .then((res) => {
         console.log("✅ Access Token:", res.data.access_token);
         setMessage("Authentication successful!");
-        navigate("/reg_prdt_success");
+        // navigate("/reg_prdt_success");
+        if (window.opener) {
+          window.opener.postMessage({ type: 'linkedin_auth', code: code }, window.location.origin);
+        }
       })
       .catch((err) => {
         console.error("❌ LinkedIn Auth Error:", err);
         setMessage("Authentication failed.");
+        if (window.opener) {
+          window.opener.postMessage({ type: 'linkedin_auth', code: code }, window.location.origin);
+        }
         // navigate("/reg_prdt_success");
       });
   }, [searchParams, navigate]);

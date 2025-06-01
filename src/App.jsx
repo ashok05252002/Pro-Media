@@ -1,5 +1,5 @@
-import React, {useEffect} from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate , useLocation} from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { SidebarProvider } from './contexts/SidebarContext';
 import Layout from './components/Layout';
@@ -35,11 +35,13 @@ import Register from "./pages/RegisterPage.jsx";
 import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import axios from 'axios';
 import "./styles.css";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 function App() {
   // For demo purposes, start as logged in
-  
+
   var isAuthenticated = localStorage.getItem('authToken') !== null;
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -51,35 +53,44 @@ function App() {
   return (
     <ThemeProvider>
       <SidebarProvider >
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="colored"
+        />
         <Router future={{
-                  v7_relativeSplatPath: true, // Opt into the new splat path behavior
-                  v7_startTransition: true,   // If you also saw the previous warning
-                }}>
+          v7_relativeSplatPath: true, // Opt into the new splat path behavior
+          v7_startTransition: true,   // If you also saw the previous warning
+        }}>
           <Routes>
-            <Route path = "/" element={<Login/>}/>
+            <Route path="/" element={<Login />} />
             <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
             {/* <Route path="/register" element={!isAuthenticated ? <UserForm /> : <Navigate to="/dashboard" />} /> */}
             {/* <Route path="/register" element={<UserForm/>}/> */}
-            <Route path="/register" element={<Register/>}/>
-            <Route path="/VerifyEmailPage" element={<VerifyEmailPage/>}/>
-            <Route path="/forgotpwd" element = {<ForgotPwd/>} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/VerifyEmailPage" element={<VerifyEmailPage />} />
+            <Route path="/forgotpwd" element={<ForgotPwd />} />
             <Route path="/auth/facebook/callback" element={<FacebookCallback />} />
             <Route path="/oauth2callback" element={<YoutubeCallback />} />
-            <Route path="/auth/twitter/callback" element={<TWTCallbackWrapper/>} />
+            <Route path="/auth/twitter/callback" element={<TWTCallbackWrapper />} />
             <Route path="/auth/linkedin/callback" element={<LinkedinCallback />} />
-              {/* ✅ Wrap authenticated routes inside Layout */}
-              {isAuthenticated && (
+            {/* ✅ Wrap authenticated routes inside Layout */}
+            {isAuthenticated && (
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/regproduct" element={<RegProduct />} />
                 <Route path="/reg_prdt_success" element={
-                                                          <PrivateRoute isAuthenticated={isAuthenticated}>
-                                                          <RegProductSuccess />
-                                                        </PrivateRoute>
-                                                        } />
+                  <PrivateRoute isAuthenticated={isAuthenticated}>
+                    <RegProductSuccess />
+                  </PrivateRoute>
+                } />
                 <Route path="/channels" element={<MyChannels />} />
-                                                                          
-                <Route path="/platform/:name" element={<PlatformTable />} />                                                        
+
+                <Route path="/platform/:name" element={<PlatformTable />} />
                 <Route path="/ViewPost" element={<ViewPosts />} />
                 <Route path="/ViewComments" element={<ViewComments />} />
                 <Route path="/products" element={<MyProducts />} />
@@ -99,9 +110,9 @@ function App() {
             {/* <Route path="*" element={<Navigate to="/" />} /> */}
 
             {/* error pages  */}
-             <Route path="/500" element={<ServerErrorPage />} />
+            <Route path="/500" element={<ServerErrorPage />} />
             {/* <Route path="*" element={<NotFoundPage />} /> */}
-            
+
           </Routes>
         </Router>
       </SidebarProvider>
@@ -113,8 +124,8 @@ export default App;
 
 
 
-{/* <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}> */}
-              {/* <Route exact path = "/dashboard" element={<Dashboard />} />
+{/* <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}> */ }
+{/* <Route exact path = "/dashboard" element={<Dashboard />} />
               <Route exact path="/channels" element={<MyChannels />} />
               <Route exact path="/products" element={<MyProducts />} />
               <Route exact path="/post-creation" element={<PostCreation />} />
@@ -124,5 +135,5 @@ export default App;
               <Route exact path="/settings" element={<Settings />} />
               <Route exact path="/support" element={<Support />} />
               <Route exact path="/profile" element={<Profile />} /> */}
-            {/* </Route> */}
-            {/* <Route path="*" element={<Navigate to="/" />} /> */}
+{/* </Route> */ }
+{/* <Route path="*" element={<Navigate to="/" />} /> */ }
