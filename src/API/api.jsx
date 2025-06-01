@@ -283,7 +283,7 @@ export const extCompanyPrdctListCommentsByPlatform = (postId,platform) => {
     case 'youtube':
       return axios.post(`/youtube/listcomments/get-reviews/${postId}`);
     case 'instagram':
-      return axios.post(`/instagram/listComments/${postId}`);
+      return axios.get(`/instagram/listComments/${postId}`);
     default:
       return Promise.reject(new Error(`Unsupported platform: ${selectedPlatform}`));
   }
