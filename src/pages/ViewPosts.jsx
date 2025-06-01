@@ -726,11 +726,10 @@ const fetchAllData = async () => {
   const clearAllFiltersComments = () => { clearDateFiltersComments(); setSelectedPostFilterComments('all'); setSearchQueryComments(''); };
 
   const handleReplyClickComments = (commentId) => { setReplyingToCommentId(commentId === replyingToCommentId ? null : commentId); setCurrentReplyText(''); };
-  const handleSendReplyComments = (commentId, reviewId, extDSId, platformType) => {
-    // console.log("HANDLESENDREPLy Comments:", currentReplyText, commentId, reviewId, extDSId, platformType)
+  const handleSendReplyComments = (reviewId, extDSId, platformType) => {
+    // console.log("HANDLESENDREPLy Comments:", currentReplyText, reviewId, extDSId, platformType)
     if (!currentReplyText.trim()) return;
     const cmtData= {
-        "commentId":commentId,
         "reviewId":reviewId,
         "extDSId":extDSId,
         "replyText":currentReplyText,
@@ -915,18 +914,17 @@ const fetchAllData = async () => {
                   const post = productPosts.find(p => p.id === comment.product_data_source_video_id);
                   
                   return (
-                    <div key={comment.id}>
+                    <div key={comment.review_id}>
                       <CommentItem comment={comment} postTitle={selectedPostFilterComments === 'all' ? post?.video_title : undefined} platform={comment.platformType || 'Unknown'} onReplyClick={handleReplyClickComments}/>
 
-                      {replyingToCommentId === comment.id && (
+                      {replyingToCommentId === comment.review_id && (
                         <div className="p-4 ml-14 bg-gray-50 dark:bg-gray-700/30 rounded-b-md">
                           <textarea value={currentReplyText} onChange={(e) => setCurrentReplyText(e.target.value)} placeholder={`Replying to ${comment.reviewer_name}...`} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700 text-sm" rows="2"/>
                           <div className="mt-2 flex justify-end gap-2">
                             <button onClick={() => setReplyingToCommentId(null)} 
                               className="px-3 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600">
                               Cancel</button>
-                              <button onClick={() => handleSendReplyComments(
-                                                      comment.id, 
+                              <button onClick={() => handleSendReplyComments( 
                                                       comment.review_id, 
                                                       comment.product_data_source_id,
                                                       comment.platformType

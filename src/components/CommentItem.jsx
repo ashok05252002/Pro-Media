@@ -95,7 +95,7 @@ const CommentItem = ({ comment, postTitle, platform, onReplyClick }) => {
               <span className="text-xs">{comment?.likes}</span>
             </div>
             <button 
-              onClick={() => onReplyClick(comment.id)}
+              onClick={() => onReplyClick(comment.review_id)}
               className="text-xs text-theme-primary hover:underline font-medium"
             >
               Reply

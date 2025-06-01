@@ -199,11 +199,10 @@ const PostDetailsAndCommentsPage = () => {
     setCurrentReplyText('');
   };
 
-  const handleSendReplyCmt = (commentId, reviewId, extDSId, platformType) => {
-      // console.log("HANDLESENDREPLy Comments:", currentReplyText, commentId, reviewId, extDSId, platformType)
+  const handleSendReplyCmt = (reviewId, extDSId, platformType) => {
+      console.log("HANDLESENDREPLy Comments:", currentReplyText, commentId, reviewId, extDSId, platformType)
       if (!currentReplyText.trim()) return;
       const cmtData= {
-          "commentId":commentId,
           "reviewId":reviewId,
           "extDSId":extDSId,
           "replyText":currentReplyText,
@@ -241,7 +240,7 @@ const PostDetailsAndCommentsPage = () => {
     
     // Simulate adding reply to the specific comment's replies array
     const updatedComments = comments.map(comment => {
-      if (comment.id === replyingToCommentId) {
+      if (comment.review_id === replyingToCommentId) {
         const newReply = {
           id: Date.now(), 
           user: 'Current User (Demo)',
@@ -319,21 +318,24 @@ const PostDetailsAndCommentsPage = () => {
         {comments.length > 0 ? (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {comments.map(comment => (
-              <div key={comment.id}>
+              <div key={comment.review_id}>
                 <CommentItem
                   comment={comment}
                   platform={platform}
-                  onReplyClick={handleReplyClick}
+                  onReplyClick={()=>handleReplyClick}
                 />
-                {replyingToCommentId === comment.id && (
+                {replyingToCommentId === comment.review_id && (
+                  
                   <div className="p-4 ml-14 bg-gray-50 dark:bg-gray-700/30 rounded-b-md">
+                    <p>{comment.review_id}</p>
                     <textarea
                       value={currentReplyText}
                       onChange={(e) => setCurrentReplyText(e.target.value)}
                       placeholder={`Replying to ${comment?.reviewer_name}...`}
                       className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700 text-sm"
                       rows="2"
-                    />
+                    >
+                      </textarea>
                     <div className="mt-2 flex justify-end gap-2">
                       <button 
                         onClick={() => setReplyingToCommentId(null)}
@@ -343,10 +345,9 @@ const PostDetailsAndCommentsPage = () => {
                       </button>
                       <button 
                         onClick={() => handleSendReplyCmt(
-                                                      comment.id, 
                                                       comment.review_id, 
                                                       comment.product_data_source_id,
-                                                      comment.platformType
+                                                      platform
                                                     )}
                         className="px-3 py-1 text-xs bg-theme-primary hover:bg-opacity-90 text-white rounded-md flex items-center gap-1"
                       >

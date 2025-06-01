@@ -311,10 +311,9 @@ export const extCompanyEditedCreateddPost = (platformName, postId, payload) => {
 };
 
 export const replyComment = (cmtData) => {
-    return axios.post(`${cmtData.platform}/reply_cmt/${cmtData.commentId}`, {
+    return axios.post(`${cmtData.platform}/reply_cmt/${cmtData.reviewId}`, {
 
          "reply_text":cmtData.replyText,
-         "review_id":cmtData.reviewId,
          "ext_product_data_source_id":cmtData.extDSId
     });
     
