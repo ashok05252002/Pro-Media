@@ -342,7 +342,7 @@ const PostDetailsAndCommentsPage = () => {
                         Cancel
                       </button>
                       <button 
-                        onClick={() => handleSendReplCmt(
+                        onClick={() => handleSendReplyCmt(
                                                       comment.id, 
                                                       comment.review_id, 
                                                       comment.product_data_source_id,
