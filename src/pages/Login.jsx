@@ -82,7 +82,8 @@ const Login = () => {
           console.error("Login failed 2:", err.message);
           console.error("Login failed 3:", err.status);
           // setError("Invalid Username and Password");
-          setError(err.response.data.error)
+          // setError(err?.response?.data?.error)
+          setError((err?.response?.data?.error)?(err?.response?.data?.error):err.message)
           console.log("VerificationEmail :", formData.email)
           
         })
