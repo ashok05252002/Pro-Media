@@ -1,36 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { Building, PlusCircle, Link as LinkIcon, Facebook, Instagram, Twitter, Linkedin, Youtube, ChevronDown, CheckCircle, ExternalLink, ArrowRight } from 'lucide-react';
 import LinkPlatformModal from '../components/LinkPlatformModal';
+import { loginWithSocial } from '../services/SocialAuth';
+import { extCompanyProductData, extCompanyRegorAddPrdct } from '../API/api';
+
+import { toast } from 'react-toastify';
 
 const socialPlatforms = [
-  { id: 'facebook', name: 'Facebook', icon: <Facebook className="w-5 h-5 text-blue-600" /> },
-  { id: 'instagram', name: 'Instagram', icon: <Instagram className="w-5 h-5 text-pink-600" /> },
-  { id: 'twitter', name: 'Twitter', icon: <Twitter className="w-5 h-5 text-blue-400" /> },
-  { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin className="w-5 h-5 text-blue-700" /> },
-  { id: 'youtube', name: 'YouTube', icon: <Youtube className="w-5 h-5 text-red-600" /> },
+  { id: 'facebook', name: 'Facebook', icon: <Facebook className="w-5 h-5 text-blue-600" />, code: 7066 },
+  { id: 'instagram', name: 'Instagram', icon: <Instagram className="w-5 h-5 text-pink-600" />, code: 7378 },
+  { id: 'twitter', name: 'Twitter', icon: <Twitter className="w-5 h-5 text-blue-400" />, code: 8487 },
+  { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin className="w-5 h-5 text-blue-700" />, code: 7668 },
+  { id: 'youtube', name: 'YouTube', icon: <Youtube className="w-5 h-5 text-red-600" />, code: 8984 },
 ];
 
-const mockExistingBusinesses = [
-  { id: 'comp1', name: 'TechCorp Solutions', linkedPlatforms: {
-      facebook: { pageName: 'TechCorp Official', productPageUrl: 'https://facebook.com/TechCorpOfficial', displayLink: 'https://facebook.com/TechCorpOfficial' },
-      instagram: null,
-      twitter: { pageName: '@TechCorp', productPageUrl: 'https://twitter.com/TechCorp', displayLink: 'https://twitter.com/TechCorp' },
-      youtube: { pageName: 'TechCorp TV', productPageUrl: 'https://youtube.com/TechCorpTV', displayLink: 'https://youtube.com/TechCorpTV'}
-    } 
-  },
-  { id: 'comp2', name: 'Innovate Hub', linkedPlatforms: {
-      instagram: { pageName: 'InnovateHubIG', productPageUrl: 'https://instagram.com/InnovateHubIG', displayLink: 'https://instagram.com/InnovateHubIG' },
-    }
-  },
-  { id: 'comp3', name: 'GreenLeaf Organics', linkedPlatforms: {} },
-];
 
 const AddBusinessPage = () => {
   const [businessType, setBusinessType] = useState(null);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [newBusinessName, setNewBusinessName] = useState('');
   const [businessNameConfirmed, setBusinessNameConfirmed] = useState(false);
-  
+  const [productDetail, setProductDetail] = useState({})
+
   const initialPlatformState = socialPlatforms.reduce((acc, platform) => {
     acc[platform.id] = { pageName: '', productPageUrl: '', isLinked: false, displayLink: '' };
     return acc;
@@ -39,18 +30,37 @@ const AddBusinessPage = () => {
 
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [platformToLink, setPlatformToLink] = useState(null);
+  const [productList, setProductList] = useState([]);
+
+  const getProductList = async () => {
+    try {
+      const result = await extCompanyProductData();
+      console.log(result.data);
+      if (result.status == 200) {
+        setProductList(result.data ?? []);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  useEffect(() => {
+    console.log("getProductList api triggered");
+    getProductList();
+  }, []);
 
   useEffect(() => {
     if (businessType === 'existing' && selectedCompanyId) {
-      const company = mockExistingBusinesses.find(c => c.id === selectedCompanyId);
+      const company = productList.find(c => c?.id == selectedCompanyId);
+      console.log(company);
       if (company) {
         const newDetails = { ...initialPlatformState };
-        socialPlatforms.forEach(platform => {
-          const linkedInfo = company.linkedPlatforms[platform.id];
+        socialPlatforms.forEach(platform => { 
+          const linkedInfo = company.data_sources.find(soc => soc?.data_source_id == platform.code);
+          
           if (linkedInfo) {
             newDetails[platform.id] = {
-              pageName: linkedInfo.pageName || '',
-              productPageUrl: linkedInfo.productPageUrl || '',
+              pageName: linkedInfo.page_name || '',
+              productPageUrl: linkedInfo.product_url || '',
               isLinked: true,
               displayLink: linkedInfo.displayLink || linkedInfo.productPageUrl || (linkedInfo.pageName ? `https://${platform.name.toLowerCase()}.com/${linkedInfo.pageName}` : '')
             };
@@ -62,12 +72,13 @@ const AddBusinessPage = () => {
       }
     } else if (businessType === 'new') {
       setPlatformDetails(initialPlatformState);
-      setBusinessNameConfirmed(false); 
-    } else { 
+      setBusinessNameConfirmed(false);
+    } else {
       setBusinessNameConfirmed(false);
       setNewBusinessName('');
       setSelectedCompanyId('');
       setPlatformDetails(initialPlatformState);
+      setProductDetail({})
     }
   }, [selectedCompanyId, businessType]);
 
@@ -76,20 +87,38 @@ const AddBusinessPage = () => {
     setShowLinkModal(true);
   };
 
-  const handleSavePlatformLink = (platformId, data) => {
+  const handleSavePlatformLink = async (platformId, data) => {
     const platformName = socialPlatforms.find(p => p.id === platformId)?.name.toLowerCase() || platformId;
     const defaultDisplayLink = data.productPageUrl || (data.pageName ? `https://${platformName}.com/${data.pageName}` : '');
 
-    setPlatformDetails(prev => ({
-      ...prev,
-      [platformId]: { 
-        ...data, 
-        isLinked: true,
-        displayLink: data.productPageUrl || defaultDisplayLink
-      }
-    }));
-    setShowLinkModal(false);
-    setPlatformToLink(null);
+    console.log(data);
+    console.log(platformId);
+    console.log(platformName);
+    console.log(defaultDisplayLink);
+
+    const { code } = await loginWithSocial(platformName, {
+      pagename: data.pageName,
+      producturl: data.productPageUrl,
+      productid: selectedCompanyId
+
+    });
+    console.log(`loginresponse -->> ${code}`);
+    if (code != null) {
+      setPlatformDetails(prev => ({
+        ...prev,
+        [platformId]: {
+          ...data,
+          isLinked: true,
+          displayLink: data.productPageUrl || defaultDisplayLink
+        }
+      }));
+      setShowLinkModal(false);
+      setPlatformToLink(null);
+    }
+
+
+    // console.log(platformDetails);
+
   };
 
   const handleSubmitBusiness = () => {
@@ -105,15 +134,28 @@ const AddBusinessPage = () => {
     }
     console.log("Submitting Business Data:", submissionData);
     alert('Business details submitted! (Check console for data)');
-    setBusinessType(null); 
+    setBusinessType(null);
   };
 
-  const handleConfirmBusinessName = () => {
+  const handleConfirmBusinessName = async () => {
+    console.log("handleConfirmBusinessName");
     if (newBusinessName.trim() === '') {
       alert('Please enter a business name.');
       return;
     }
-    setBusinessNameConfirmed(true);
+
+    try {
+      const result = await extCompanyRegorAddPrdct(newBusinessName); // make sure 'params' is defined
+      console.log("Business added successfully", result);
+      if (result.status === 201) {
+        setProductDetail(result.data ?? {});
+        setSelectedCompanyId(result?.data?.product_id)
+        toast.success('Business added successfully!');
+        setBusinessNameConfirmed(true);
+      }
+    } catch (error) {
+      console.error("Add business error:", error);
+    }
   };
 
   const renderPlatformList = () => {
@@ -134,15 +176,15 @@ const AddBusinessPage = () => {
 
           if (isLinked) {
             return (
-              <div 
-                key={platform.id} 
+              <div
+                key={platform.id}
                 className="p-4 border border-green-500 dark:border-green-600 rounded-lg flex items-center justify-between bg-green-50 dark:bg-green-900/30 shadow-md"
               >
                 <div className="flex items-center gap-3 flex-grow min-w-0">
                   {platform.icon}
                   <div className="flex flex-col min-w-0">
-                    <span 
-                      className="font-semibold text-gray-800 dark:text-gray-100 truncate" 
+                    <span
+                      className="font-semibold text-gray-800 dark:text-gray-100 truncate"
                       title={details.pageName}
                     >
                       {details.pageName}
@@ -150,7 +192,7 @@ const AddBusinessPage = () => {
                     <span className="text-xs text-gray-500 dark:text-gray-400">{platform.name}</span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
                   {details.displayLink && (
@@ -175,8 +217,8 @@ const AddBusinessPage = () => {
             );
           } else {
             return (
-              <div 
-                key={platform.id} 
+              <div
+                key={platform.id}
                 className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -223,7 +265,7 @@ const AddBusinessPage = () => {
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-lg shadow-xl">
-          <button 
+          <button
             onClick={() => setBusinessType(null)}
             className="text-sm text-theme-primary hover:underline mb-6"
           >
@@ -241,12 +283,16 @@ const AddBusinessPage = () => {
                   <select
                     id="companySelect"
                     value={selectedCompanyId}
-                    onChange={(e) => setSelectedCompanyId(e.target.value)}
+                    onChange={(e) => {
+                      console.log(e.target.value);
+
+                      setSelectedCompanyId(e.target.value)
+                    }}
                     className="w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md dark:bg-gray-700"
                   >
-                    <option value="">-- Select a Company --</option>
-                    {mockExistingBusinesses.map(company => (
-                      <option key={company.id} value={company.id}>{company.name}</option>
+                    <option value="">-- Select a Company -- ${productList.length}</option>
+                    {productList.map(company => (
+                      <option key={company?.id} value={company?.id}>{company?.product_name}</option>
                     ))}
                   </select>
                   <ChevronDown className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
@@ -293,7 +339,7 @@ const AddBusinessPage = () => {
               )}
             </div>
           )}
-          
+
           {((businessType === 'new' && businessNameConfirmed) || (businessType === 'existing' && selectedCompanyId)) ? (
             <button
               onClick={handleSubmitBusiness}
