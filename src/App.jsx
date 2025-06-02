@@ -35,6 +35,7 @@ import Register from "./pages/RegisterPage.jsx";
 import PostDetailsAndCommentsPage from './pages/PostDetailsAndCommentsPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import CalendarViewPage from './pages/CalendarViewPage';
 
 import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import axios from 'axios';
@@ -95,51 +96,33 @@ function App() {
               element={!isAuthenticated ? <ResetPasswordPage /> : <Navigate to="/" />} // Simplified: ResetPasswordPage will handle logic if state is missing
             />
               {/* ✅ Wrap authenticated routes inside Layout */}
-              {/* {isAuthenticated && ( */}
-            {/* ✅ Wrap authenticated routes inside Layout */}
-            {/*  {isAuthenticated && ( 
-            //   <Route element={<Layout />}>
-            //     <Route path="/dashboard" element={<Dashboard />} />
-            //     <Route path="/regproduct" element={<RegProduct />} />
-            //     <Route path="/reg_prdt_success" element={
-            //                                               <PrivateRoute isAuthenticated={isAuthenticated}>
-            //                                               <RegProductSuccess />
-            //                                             </PrivateRoute>
-            //                                             } />
-            //     <Route path="/channels" element={<MyBusiness />} />
+              {isAuthenticated && (
+              <Route element={<Layout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/regproduct" element={<RegProduct />} />
+                <Route path="/reg_prdt_success" element={
+                                                          <PrivateRoute isAuthenticated={isAuthenticated}>
+                                                          <RegProductSuccess />
+                                                        </PrivateRoute>
+                                                        } />
+                <Route path="/channels" element={<MyBusiness />} />
                                                                           
-            //     <Route path="/platform/:name" element={<PlatformTable />} />                                                        
-            //       <PrivateRoute isAuthenticated={isAuthenticated}>
-            //         <RegProductSuccess />
-            //       </PrivateRoute>
-            //     } />*/}
-
-                 {isAuthenticated && (
-                  <Route element={<Layout />}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/regproduct" element={<RegProduct />} />
-                  <Route path="/reg_prdt_success" element={
-                                                            <PrivateRoute isAuthenticated={isAuthenticated}>
-                                                            <RegProductSuccess />
-                                                          </PrivateRoute>
-                                                          } />
-                  <Route path="/channels" element={<MyBusiness />} />
-
-                  <Route path="/platform/:name" element={<PlatformTable />} />
-                  <Route path="/ViewPost" element={<ViewPosts />} />
-                  <Route path="/ViewComments" element={<ViewComments />} />
-                  <Route path="/products" element={<MyProducts />} />
-                  <Route path="/post-creation" element={<PostCreation />} />
-                  <Route path="/scheduler" element={<ContentScheduler />} />
-                  <Route path="/analytics" element={<Analytics />} />
-                  <Route path="/users" element={<UserManagement />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/support" element={<Support />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/add-business" element={<AddBusinessPage />} />
-                  <Route path="post/:postId/:platform/details-and-comments" element={<PostDetailsAndCommentsPage />} />
-                </Route>
-               )}
+                <Route path="/platform/:name" element={<PlatformTable />} />                                                        
+                <Route path="/ViewPost" element={<ViewPosts />} />
+                <Route path="/ViewComments" element={<ViewComments />} />
+                <Route path="/products" element={<MyProducts />} />
+                <Route path="/calendar-view" element={<CalendarViewPage />} />
+                <Route path="/post-creation" element={<PostCreation />} />
+                <Route path="/scheduler" element={<ContentScheduler />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/users" element={<UserManagement />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/add-business" element={<AddBusinessPage />} />
+                <Route path="post/:postId/details-and-comments" element={<PostDetailsAndCommentsPage />} />
+              </Route>
+            )}
 
             {/* Redirect unknown routes */}
             {/* <Route path="*" element={<Navigate to="/" />} /> */}
