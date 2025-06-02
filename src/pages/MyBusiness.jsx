@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import ConnectChannelModal from '../components/ConnectChannelModal';
-import { Facebook, Twitter, Youtube as YoutubeIcon, Instagram as InstagramIcon, Linkedin, Package, Briefcase, ShoppingCart } from 'lucide-react'; // Added Briefcase
+import { Facebook, Twitter, Youtube as YoutubeIcon, Instagram as InstagramIcon, Linkedin, Package, Briefcase, ShoppingCart, LinkedinIcon } from 'lucide-react'; // Added Briefcase
+import { extCompanyProductData, extCompanyMstrDataSource, extCompanyProductDataSource } from '../API/api';
+import { Instagram } from '@mui/icons-material';
 
 // Mock data for businesses and their linked platforms (similar to AddBusinessPage)
 const mockExistingBusinesses = [
@@ -30,6 +32,42 @@ const mockExistingBusinesses = [
     linkedPlatforms: {} // No platforms linked for GreenLeaf Organics
   },
 ];
+
+const getPlatformIcon = (dataSourceId) => {
+  const platformIcons = {
+    7066: <Facebook />,
+    8487: <Twitter/>,
+    7378: <Instagram />,
+    7668: <LinkedinIcon/>,
+    8984: <Youtube/>,
+    // Add more mappings as needed
+  };
+  return platformIcons[dataSourceId] || 'default-icon';
+};
+
+const getPlatformColor = (dataSourceId) => {
+  const platformColors = {
+    7066: 'text-blue-600',
+    8487: 'text-black dark:text-white' ,
+    7378: 'text-pink-600',
+    7668: 'text-blue-700',
+    8984: 'text-red-600',
+    // Add more mappings as needed
+  };
+  return platformColors[dataSourceId] || '#cccccc';
+};
+
+const getPlatformType = (dataSourceId) => {
+  const platformTypes = {
+    7066: 'facebook',
+    8487: 'twitter',
+    7378: 'nstagram',
+    7668: 'linkedin',
+    8984: 'youtube',
+    // Add more mappings as needed
+  };
+  return platformTypes[dataSourceId] || 'Unknown';
+};
 
 // Base definitions for social platforms
 const baseSocialPlatforms = [
@@ -80,34 +118,151 @@ const SocialMediaCard = ({ platform, icon, connected, details, color, onLink }) 
 
 const MyBusiness = () => {
   const [showConnectModal, setShowConnectModal] = useState(false);
-  const [businesses] = useState(mockExistingBusinesses);
-  const [selectedBusinessId, setSelectedBusinessId] = useState(businesses.length > 0 ? businesses[0].id : '');
+  const [businesses, setBusinesses] = useState(mockExistingBusinesses);
+  const [business, setBusiness] =useState([])
+  const [socialMediaDatas, setSocialMediaDatas] = useState(null)
+  const [selectedBusinessId, setSelectedBusinessId] = useState('');
+  const [prdctDataSourcePlatform, setPrdctDatasourcePlatform] = useState(null);
   const [currentBusinessChannels, setCurrentBusinessChannels] = useState({});
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate(); // Initialize useNavigate
+  const [prdctDataSourceLen , setPrdctDataSourceLen] = useState(0)
+
+   const handleChange = (e) => {
+    const selectedId = e.target.value;
+    const selectedObj = business.find(option => option.id.toString() === selectedId);
+    setSelectedItem(selectedObj);
+    setSelectedBusinessId(e.target.value)
+    console.log("Selected ID:", selectedObj?.id);
+    console.log("Selected Name:", selectedObj?.product_name);
+    setLoading(true);
+    setError(null);
+
+    extCompanyProductDataSource(selectedId)
+      .then(response => {
+        console.log("debugging1", response);
+        
+        // Fixed status check (200 or 201)
+        if (response.status === 200 || response.status === 201) {
+          console.log("debugging2", response.data.length);
+          setPrdctDataSourceLen(response.data.length);
+          
+          if (response.data.length === 0) {
+            console.log("Please register your product in any media");
+            setPrdctDatasourcePlatform([]); // Clear previous data if empty
+          } else {
+            // Transform data by adding icon, color, and platformType fields
+            const transformedData = response.data.map(item => {
+              // Only add extra fields if data_source_id exists
+              if (item.data_source_id && selectedId === item.product_id) {
+                return {
+                  ...item,
+                  icon: getPlatformIcon(item.data_source_id), // Implement this function
+                  color: getPlatformColor(item.data_source_id), // Implement this function
+                  platformType: getPlatformType(item.data_source_id) // Implement this function
+                };
+              }
+              return item;
+            });
+            console.log(transformedData)
+            setPrdctDatasourcePlatform(transformedData);
+          }
+        } else {
+          const errorMsg = `Unexpected status code: ${response.status}`;
+          console.log(response);
+          setError(errorMsg);
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching data:", error);
+        setError(error.message || "Failed to fetch product data");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
+    
+  };
 
   useEffect(() => {
-    if (selectedBusinessId) {
-      const selectedBiz = businesses.find(biz => biz.id === selectedBusinessId);
-      if (selectedBiz) {
-        const channelsStatus = {};
-        baseSocialPlatforms.forEach(platform => {
-          const linkedInfo = selectedBiz.linkedPlatforms[platform.id];
-          channelsStatus[platform.id] = {
-            connected: !!linkedInfo,
-            details: linkedInfo || null
-          };
-        });
-        setCurrentBusinessChannels(channelsStatus);
-      }
-    } else {
-      // Reset if no business is selected
-      const initialStatus = {};
-      baseSocialPlatforms.forEach(platform => {
-          initialStatus[platform.id] = { connected: false, details: null };
-      });
-      setCurrentBusinessChannels(initialStatus);
-    }
-  }, [selectedBusinessId, businesses]);
+    const fetchProducts = async () => {
+          try {
+            const authTokens = localStorage.getItem("authToken")
+
+            extCompanyMstrDataSource()
+            .then(response => {
+              // Successful response (status 200 or 201)
+              if (response.status === 200 || response.status === 201) {
+                console.log("debugging Mstr_data_source", response);
+                setSocialMediaDatas(response.data);
+              } else {
+                // Handle other status codes
+                const errorMessage = `Unexpected status code: ${response.status}`;
+                console.log(response);
+                setError(errorMessage);
+                setSocialMediaDatas(null);
+              }
+            })
+            .catch(error => {
+              // Handle network errors or request failures
+              console.error("Error fetching data:", error.message);
+              setError(error.message || "Failed to fetch data");
+              setSocialMediaDatas(null);
+            })
+            .finally(() => {
+              // Set loading to false when the request is complete (success or failure)
+              setLoading(false);
+            });
+            
+            extCompanyProductData()  // testing must use user_id
+              .then(response => {
+                
+                if (response.status === ( 200 || 201))
+                { 
+                  setBusiness(response?.data);
+                  setLoading(false);
+                  console.log("debugging1",response)
+                }
+              }
+            )
+            .catch(err => {
+              console.log(err);
+              setBusiness([])
+              // setLoading(false);  
+            });
+            
+          } catch (err) {
+            setError(err.message);
+            setLoading(false);
+            setBusiness([])
+          }
+        };
+    
+        fetchProducts();
+    // if (selectedBusinessId) {
+    //   const selectedBiz = businesses.find(biz => biz.id === selectedBusinessId);
+    //   if (selectedBiz) {
+    //     const channelsStatus = {};
+    //     baseSocialPlatforms.forEach(platform => {
+    //       const linkedInfo = selectedBiz.linkedPlatforms[platform.id];
+    //       channelsStatus[platform.id] = {
+    //         connected: !!linkedInfo,
+    //         details: linkedInfo || null
+    //       };
+    //     });
+    //     setCurrentBusinessChannels(channelsStatus);
+    //   }
+    // } else {
+    //   // Reset if no business is selected
+    //   const initialStatus = {};
+    //   baseSocialPlatforms.forEach(platform => {
+    //       initialStatus[platform.id] = { connected: false, details: null };
+    //   });
+    //   setCurrentBusinessChannels(initialStatus);
+    // }
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -145,14 +300,20 @@ const MyBusiness = () => {
         <label htmlFor="businessSelect" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Viewing Channels For:
         </label>
+
+        {/* <select defaultValue="" onChange={handleChange}></select> */}
         <select
           id="businessSelect"
-          value={selectedBusinessId}
-          onChange={(e) => setSelectedBusinessId(e.target.value)}
+          // value={selectedBusinessId}
+          // onChange={(e) => setSelectedBusinessId(e.target.value)}
+          defaultValue=""
+          onChange={handleChange}
+          // onChange={(e)=>handleChange}
           className="w-full max-w-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700"
         >
-          {businesses.map(biz => (
-            <option key={biz.id} value={biz.id}>{biz.name}</option>
+          {business?.map(biz => (
+            
+            <option key={biz?.id} value={biz?.id}>{biz?.product_name}</option>
           ))}
         </select>
       </div>
@@ -160,13 +321,24 @@ const MyBusiness = () => {
       <div>
         <h2 className="text-xl font-medium mb-4">Social Media</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {baseSocialPlatforms.map((platform) => (
+          {/* {baseSocialPlatforms.map((platform) => (
             <SocialMediaCard 
               key={platform.id}
-              platform={platform.name}
+              platform={platform.type}
               icon={platform.icon}
               connected={currentBusinessChannels[platform.id]?.connected || false}
               details={currentBusinessChannels[platform.id]?.details}
+              color={platform.color}
+              onLink={() => setShowConnectModal(true)} // Opens generic modal
+            />
+          ))} */}
+          {prdctDataSourcePlatform?.map((platform) => (
+            <SocialMediaCard 
+              key={platform.data_source_id}
+              platform={platform.platformType}
+              icon={platform.icon}
+              connected={platform.data_source_id?.connected || false}
+              details={platform?.details}
               color={platform.color}
               onLink={() => setShowConnectModal(true)} // Opens generic modal
             />

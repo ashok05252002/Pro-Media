@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, ShieldCheck, RefreshCw, ArrowRight } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import {extCompanyUserForgetpwd, extCompanyUserRegResendOTP} from "../API/api";
 
 const InputField = ({ id, label, type, value, onChange, error, icon, placeholder, maxLength }) => (
   <div>
@@ -63,13 +64,32 @@ const ForgotPasswordPage = () => {
     setIsLoading(true);
     // Simulate sending OTP
     console.log(`Simulating sending OTP to ${email}`);
-    setTimeout(() => {
-      // No longer storing in localStorage
-      setCurrentStep(2);
-      setResendTimer(30);
-      setCanResendCode(false);
-      setIsLoading(false);
-    }, 1000);
+     try {
+          // const response = await axios.post("http://127.0.01:5000/company/forgetpasswrd", {
+          //   email: email,
+          // });
+          const response = extCompanyUserForgetpwd (email)
+          if (response) {
+            setTimeout(() => {
+              // No longer storing in localStorage
+              setCurrentStep(2);
+              setResendTimer(30);
+              setCanResendCode(false);
+              setIsLoading(false);
+            }, 1000);
+            setMessage("OTP sent to your mail");
+            return;
+           
+          } else {
+            setMessage(response.data.message || "Something went wrong.");
+          }
+        } catch (error) {
+          console.error(error);
+          setError("Failed to send OTP. Please try again.");
+        } finally {
+          setError(false);
+        }
+    
   };
 
   const handleOtpSubmit = (e) => {
@@ -84,7 +104,7 @@ const ForgotPasswordPage = () => {
     console.log(`Verifying OTP ${otp} for email ${email}`);
     setTimeout(() => {
       if (otp === '123456') { // Mock OTP
-        navigate('/reset-password', { state: { emailForReset: email } }); // Pass email via route state
+        navigate('/resetpwd', { state: { emailForReset: email } }); // Pass email via route state
       } else {
         setError('Invalid OTP. Please try again. (Hint: 123456)');
       }

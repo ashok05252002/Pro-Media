@@ -66,7 +66,8 @@ function App() {
             {/* <Route path="/register" element={<UserForm/>}/> */}
             <Route path="/register" element={<Register/>}/>
             <Route path="/VerifyEmailPage" element={<VerifyEmailPage/>}/>
-            <Route path="/forgotpwd" element = {<ForgotPwd/>} />
+            <Route path="/forgotpwd" element = {<ForgotPasswordPage/>} />
+             <Route path="/resetpwd" element = {<ResetPasswordPage/>} />
             <Route path="/auth/facebook/callback" element={<FacebookCallback />} />
             <Route path="/oauth2callback" element={<YoutubeCallback />} />
             <Route path="/auth/twitter/callback" element={<TWTCallbackWrapper/>} />

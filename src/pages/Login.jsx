@@ -177,7 +177,7 @@ const Login = () => {
               />
               <span className={`${isDarkMode ? 'text-gray-300' : 'text-gray-100'}`}>Remember me</span>
             </label>
-            <Link to="/forgot-password" className="text-orange-500 hover:underline">
+            <Link to="/forgotpwd" className="text-orange-500 hover:underline">
               Forgot password?
             </Link>
           </div>

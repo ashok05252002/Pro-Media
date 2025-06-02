@@ -293,7 +293,8 @@ const PostDetailsAndCommentsPage = () => {
             {platformIconMapPage[platform]}
             <span className="ml-2 font-medium text-gray-600 dark:text-gray-400">{platform}</span>
         </div>
-        <h1 className="text-2xl font-semibold mb-2">{post[0]?.video_title}</h1>
+       {platform==='youtube'?
+        (<h1 className="text-2xl font-semibold mb-2">{post[0]?.video_title}</h1>):""}
          <p className="text-2xl font mb-2">{post[0]?.video_url}</p>
         <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-4">
           <Calendar className="w-3 h-3 mr-1" />
@@ -306,7 +307,7 @@ const PostDetailsAndCommentsPage = () => {
             className="w-full max-h-80 object-contain rounded-md mb-4 bg-gray-100 dark:bg-gray-700"
           />
         )}
-        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{post[0]?.content}</p>
+        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{post[0]?.video_content}</p>
         <div className="mt-4 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400 border-t pt-3 border-gray-200 dark:border-gray-700">
             <div className="flex items-center"><ThumbsUp size={16} className="mr-1"/> {post[0]?.likes_count?.toLocaleString()} Likes</div>
             <div className="flex items-center"><MessageSquare size={16} className="mr-1"/> {comments.length} Comments</div>
