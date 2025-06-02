@@ -7,29 +7,13 @@ import { extCompanyProductData, extCompanyRegorAddPrdct } from '../API/api';
 import { toast } from 'react-toastify';
 
 const socialPlatforms = [
-  { id: 'facebook', name: 'Facebook', icon: <Facebook className="w-5 h-5 text-blue-600" /> },
-  { id: 'instagram', name: 'Instagram', icon: <Instagram className="w-5 h-5 text-pink-600" /> },
-  { id: 'twitter', name: 'Twitter', icon: <Twitter className="w-5 h-5 text-blue-400" /> },
-  { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin className="w-5 h-5 text-blue-700" /> },
-  { id: 'youtube', name: 'YouTube', icon: <Youtube className="w-5 h-5 text-red-600" /> },
+  { id: 'facebook', name: 'Facebook', icon: <Facebook className="w-5 h-5 text-blue-600" />, code: 7066 },
+  { id: 'instagram', name: 'Instagram', icon: <Instagram className="w-5 h-5 text-pink-600" />, code: 7378 },
+  { id: 'twitter', name: 'Twitter', icon: <Twitter className="w-5 h-5 text-blue-400" />, code: 8487 },
+  { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin className="w-5 h-5 text-blue-700" />, code: 7668 },
+  { id: 'youtube', name: 'YouTube', icon: <Youtube className="w-5 h-5 text-red-600" />, code: 8984 },
 ];
 
-const mockExistingBusinesses = [
-  {
-    id: 'comp1', name: 'TechCorp Solutions', linkedPlatforms: {
-      facebook: { pageName: 'TechCorp Official', productPageUrl: 'https://facebook.com/TechCorpOfficial', displayLink: 'https://facebook.com/TechCorpOfficial' },
-      instagram: null,
-      twitter: { pageName: '@TechCorp', productPageUrl: 'https://twitter.com/TechCorp', displayLink: 'https://twitter.com/TechCorp' },
-      youtube: { pageName: 'TechCorp TV', productPageUrl: 'https://youtube.com/TechCorpTV', displayLink: 'https://youtube.com/TechCorpTV' }
-    }
-  },
-  {
-    id: 'comp2', name: 'Innovate Hub', linkedPlatforms: {
-      instagram: { pageName: 'InnovateHubIG', productPageUrl: 'https://instagram.com/InnovateHubIG', displayLink: 'https://instagram.com/InnovateHubIG' },
-    }
-  },
-  { id: 'comp3', name: 'GreenLeaf Organics', linkedPlatforms: {} },
-];
 
 const AddBusinessPage = () => {
   const [businessType, setBusinessType] = useState(null);
@@ -46,35 +30,37 @@ const AddBusinessPage = () => {
 
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [platformToLink, setPlatformToLink] = useState(null);
-  const [productList, setProductList] = useState([]); 
+  const [productList, setProductList] = useState([]);
 
-  const getProductList = async()=>{
+  const getProductList = async () => {
     try {
-      const result  =await extCompanyProductData();
-       console.log(result.data);
-       if(result.status == 200){
+      const result = await extCompanyProductData();
+      console.log(result.data);
+      if (result.status == 200) {
         setProductList(result.data ?? []);
-       }
+      }
     } catch (error) {
-       console.log(error);
+      console.log(error);
     }
   }
-  useEffect(()=>{
+  useEffect(() => {
     console.log("getProductList api triggered");
     getProductList();
-  },[]);
+  }, []);
 
   useEffect(() => {
     if (businessType === 'existing' && selectedCompanyId) {
-      const company = mockExistingBusinesses.find(c => c.id === selectedCompanyId);
+      const company = productList.find(c => c?.id == selectedCompanyId);
+      console.log(company);
       if (company) {
         const newDetails = { ...initialPlatformState };
-        socialPlatforms.forEach(platform => {
-          const linkedInfo = company.linkedPlatforms[platform.id];
+        socialPlatforms.forEach(platform => { 
+          const linkedInfo = company.data_sources.find(soc => soc?.data_source_id == platform.code);
+          
           if (linkedInfo) {
             newDetails[platform.id] = {
-              pageName: linkedInfo.pageName || '',
-              productPageUrl: linkedInfo.productPageUrl || '',
+              pageName: linkedInfo.page_name || '',
+              productPageUrl: linkedInfo.product_url || '',
               isLinked: true,
               displayLink: linkedInfo.displayLink || linkedInfo.productPageUrl || (linkedInfo.pageName ? `https://${platform.name.toLowerCase()}.com/${linkedInfo.pageName}` : '')
             };
@@ -299,12 +285,12 @@ const AddBusinessPage = () => {
                     value={selectedCompanyId}
                     onChange={(e) => {
                       console.log(e.target.value);
-                      
+
                       setSelectedCompanyId(e.target.value)
                     }}
                     className="w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md dark:bg-gray-700"
                   >
-                    <option value="">-- Select a Company --</option>
+                    <option value="">-- Select a Company -- ${productList.length}</option>
                     {productList.map(company => (
                       <option key={company?.id} value={company?.id}>{company?.product_name}</option>
                     ))}
