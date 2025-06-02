@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { format, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, isToday as dateFnsIsToday, addDays, subDays } from 'date-fns';
@@ -9,6 +9,34 @@ import DayColumnWithTimes from '../components/calendar/DayColumnWithTimes';
 import PostPreviewModalCalendar from '../components/calendar/PostPreviewModalCalendar';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { useTheme } from '../contexts/ThemeContext';
+import { extCompanyProductData, 
+  extCompanyProductDataById,
+  extCompanyMstrDataSource, 
+  extCompanyPrdctFBlistVideos, 
+  extCompanyPrdctYTlistVideos, 
+
+  extCompanyPrdctIGlistVideos, 
+  extCompanyPrdctLIlistVideos, 
+  extCompanyPrdctTWTlistVideos, 
+  extCompanyPrdctFBListComments, 
+  extCompanyPrdctLIListComments, 
+  extCompanyPrdctTWTListComments,
+  extCompanyPrdctIGListComments, 
+  extCompanyPrdctYTListComments,
+  replyComment,
+} from '../API/api';
+
+
+// Updated Mock Data with replies
+const platformColors = {
+  facebook: 'bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/40 dark:to-indigo-800/40',
+  instagram: 'bg-gradient-to-br from-pink-100 to-pink-200 dark:from-pink-900/40 dark:to-pink-800/40',
+  twitter: 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40',
+  linkedin: 'bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900/40 dark:to-cyan-800/40',
+  youtube:'bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/40 dark:to-red-800/40',
+  // Add more platform types and colors as needed
+  default: '#cccccc' // For unknown platforms
+};
 
 const initialBusinesses = [
   { id: 'biz1', name: 'TechCorp Solutions' },
@@ -82,7 +110,17 @@ const CalendarViewPage = () => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [postToDeleteId, setPostToDeleteId] = useState(null);
 
+  const [socialMediaDatas, setSocialMediaDatas] = useState([]);
+  const [productDatas, setProductDatas] = useState([]);
+  const [productDataSources, setProductDataSources] = useState([])
+  const [productPosts, setProductPosts] = useState([]);
+  const [productComments, setProductComments] = useState([]);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const { themeColors, isDarkMode } = useTheme();
+
 
   const handlePrevWeek = () => setCurrentWeekStart(subWeeks(currentWeekStart, 1));
   const handleNextWeek = () => setCurrentWeekStart(addWeeks(currentWeekStart, 1));
@@ -139,6 +177,355 @@ const CalendarViewPage = () => {
       post.businessId === selectedBusinessId
     );
   }, [posts, activePlatformFilters, selectedBusinessId]);
+
+  const fetchMasterDataSource = async () => {
+    try {
+      const response = await extCompanyMstrDataSource();
+      setSocialMediaDatas(response.data);
+      return response.data;
+    } catch (err) {
+      console.error('Failed to fetch master data source:', err);
+      return [];
+    }
+  };
+
+  
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await extCompanyProductData(); // Your endpoint to get products
+      setProductDatas(response.data)
+      console.log("FetCHING PRODUCT DATAS",response.data)
+      return response.data;
+    } catch (err) {
+      setError(err.message);
+      setProductDatas([])
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchExternalData = async (productId) => {
+    try {
+      const response = await extCompanyProductDataById(productId)
+      return response.data;
+    } catch (err) {
+      console.error(`Failed to fetch external data for product ${productId}:`, err);
+      return null;
+    }
+  };
+
+
+    const fetchFacebookPosts = async (sourceId) => {
+      try {
+        const response = await extCompanyPrdctFBlistVideos(sourceId);
+        return response.data;
+      } catch (error) {
+        console.error('Facebook posts fetch error:', error);
+        return { error: 'Failed to load Facebook posts' };
+      }
+    };
+    const fetchFacebookComments = async (sourceId) => {
+      try {
+        const response = await extCompanyPrdctFBListComments(sourceId);
+        return response.data;
+      } catch (error) {
+        console.error('Facebook posts fetch error:', error);
+        return { error: 'Failed to load Facebook posts' };
+      }
+    };
+    const fetchTwitterComments = async (sourceId) => {
+      try {
+        const response = await extCompanyPrdctTWTListComments(sourceId);
+        return response.data;
+      } catch (error) {
+        console.error('Facebook posts fetch error:', error);
+        return { error: 'Failed to load Facebook posts' };
+      }
+    };
+    const fetchYouTubeComments = async (sourceId) => {
+      try {
+        const response = await extCompanyPrdctYTListComments(sourceId);
+        return response.data;
+      } catch (error) {
+        console.error('Facebook posts fetch error:', error);
+        return { error: 'Failed to load Facebook posts' };
+      }
+    };
+  
+    const fetchInstagramComments = async (sourceId) => {
+      try {
+        const response = await extCompanyPrdctIGListComments(sourceId);
+        return response.data;
+      } catch (error) {
+        console.error('Facebook posts fetch error:', error);
+        return { error: 'Failed to load Facebook posts' };
+      }
+    };
+  
+    const fetchYouTubePosts = async (sourceId) => {
+      try {
+        const response = await extCompanyPrdctYTlistVideos(sourceId);
+        return response.data;
+      } catch (error) {
+        console.error('YouTube posts fetch error:', error);
+        return { error: 'Failed to load YouTube posts' };
+      }
+    };
+  
+    const fetchInstagramPosts = async (sourceId) => {
+      try {
+        const response = await extCompanyPrdctIGlistVideos(sourceId)
+        return response.data;
+      } catch (error) {
+        console.error('Instagram posts fetch error:', error);
+        return { error: 'Failed to load Instagram posts' };
+      }
+    };
+  
+    const fetchLinkedinPosts = async (sourceId) => {
+      try {
+        const response = await extCompanyPrdctLIlistVideos(sourceId)
+        return response.data;
+      } catch (error) {
+        console.error('Instagram posts fetch error:', error);
+        return { error: 'Failed to load Instagram posts' };
+      }
+    };
+  
+  
+    const fetchTwitterPosts = async (sourceId) => {
+      try {
+        const response = await extCompanyPrdctTWTlistVideos(sourceId)
+        return response.data;
+      } catch (error) {
+        console.error('Instagram posts fetch error:', error);
+        return { error: 'Failed to load Instagram posts' };
+      }
+    };
+    
+    const fetchAllData = async () => {
+  try {
+    setLoading(true);
+    
+    // 1. Fetch all base data in parallel
+    const [localProductsResponse, masterDataResponse] = await Promise.all([
+      fetchProducts().catch(() => []),
+      fetchMasterDataSource().catch(() => [])
+    ]);
+
+    // 2. Validate and prepare data
+    const localProducts = Array.isArray(localProductsResponse) ? localProductsResponse : [];
+    const masterData = Array.isArray(masterDataResponse) ? masterDataResponse : [];
+
+    console.log("Initial products:", localProducts);
+    console.log("Master data:", masterData);
+
+    // 3. Process each product with its external data and posts
+    const productsWithAllData = await Promise.all(
+      localProducts.map(async (product) => {
+        try {
+          // Fetch external data (array of 5 rows per product)
+          const externalDataArray = await fetchExternalData(product.id).catch(() => []);
+          console.log(`External data for product ${product.id}:`, externalDataArray);
+
+          // Process each external data row
+          const enrichedExternalData = await Promise.all(
+            externalDataArray.map(async (externalData) => {
+              try {
+                // Find matching platform info
+                const platformInfo = masterData.find(
+                  item => item.id === externalData.data_source_id
+                );
+                console.log(`Platform info for data source ${externalData.data_source_id}:`, platformInfo);
+
+                // let posts = [];
+                // if (platformInfo?.type) {
+                //   const platform = platformInfo.type.toLowerCase();
+                //   const postFetcher = {
+                //     facebook: fetchFacebookPosts,
+                //     youtube: fetchYouTubePosts,
+                //     instagram: fetchInstagramPosts,
+                //     linkedin: fetchLinkedinPosts,
+                //     twitter: fetchTwitterPosts
+                //   }[platform];
+
+                //   if (postFetcher) {
+                //     // Fetch posts with platform context
+                //     posts = await postFetcher(externalData.id)
+                //       .then(fetchedPosts => 
+                //         fetchedPosts.map(post => ({
+                //           ...post,
+                //           data_source_id: externalData.data_source_id,
+                //           // platformName: platformInfo.name,
+                //           platformType: platformInfo.type,
+                //           platformId: platformInfo.id,
+                //           productId: product.id,
+                //           productName: product.product_name
+                //         }))
+                //       )
+                //       .catch(() => []);
+                //   }
+                // }
+
+                if (!platformInfo) {
+                  return {
+                    ...externalData,
+                    platformInfo: null,
+                    posts: [],
+                    comments: [],
+                    postsError: 'Platform not found',
+                    commentsError: 'Platform not found'
+                  };
+                }
+
+                const platform = platformInfo.type.toLowerCase();
+                
+                // Define all platform-specific fetchers
+                const fetchers = {
+                  posts: {
+                    facebook: fetchFacebookPosts,
+                    youtube: fetchYouTubePosts,
+                    instagram: fetchInstagramPosts,
+                    linkedin: fetchLinkedinPosts,
+                    twitter: fetchTwitterPosts
+                  },
+                  comments: {
+                    facebook: fetchFacebookComments,
+                    youtube: fetchYouTubeComments,
+                    instagram: fetchInstagramComments,
+                    twitter: fetchTwitterComments
+                  }
+                };
+
+                // Fetch both posts and comments in parallel
+                const [posts, comments] = await Promise.all([
+                  fetchers.posts[platform]?.(externalData.id)
+                    .then(items => items.map(item => ({
+                      ...item,
+                      type: 'post',
+                      platformName: platformInfo.name,
+                      platformType: platformInfo.type,
+                      productId: product.id,
+                      productName: product.product_name
+                    })))
+                    .catch(() => []),
+                  
+                  fetchers.comments[platform]?.(externalData.id)
+                    .then(items => items.map(item => ({
+                      ...item,
+                      type: 'comment',
+                      platformName: platformInfo.name,
+                      platformType: platformInfo.type,
+                      productId: product.id,
+                      productName: product.product_name
+                    })))
+                    .catch(() => [])
+                ]);
+
+              
+                return {
+                  ...externalData,
+                  platformInfo,
+                  posts,
+                  comments,
+                  postsError: posts?.error || null,
+                  commentsError: comments?.error || null
+                };
+              } catch (error) {
+                console.error(`Error processing external data ${externalData.id}:`, error);
+                return {
+                  ...externalData,
+                  posts: [],
+                  comments: [],
+                  postsError: 'Processing error',
+                  commentsError: 'Processing error'
+                };
+              }
+            })
+          );
+
+          return {
+            ...product,
+            externalData: enrichedExternalData,
+            platformName: enrichedExternalData[0]?.platformInfo?.type|| 'Unknown Platform'
+          };
+        } catch (error) {
+          console.error(`Error processing product ${product.id}:`, error);
+          return {
+            ...product,
+            externalData: [],
+            platformName: 'Unknown Platform'
+          };
+        }
+      })
+    );
+
+    // 4. Prepare final data structure
+    console.log("Final enriched products:", productsWithAllData);
+    
+    // Extract all posts with complete context
+    const allPosts = productsWithAllData.flatMap(product => 
+      product.externalData.flatMap(data => 
+        (data.posts || []).map(post => ({
+          ...post,
+          // Ensure all posts have required context
+          productId: product.id,
+          productName: product.product_name,
+          data_source_id: data.data_source_id,
+          // platformName: data.platformInfo?.name || 'Unknown Platform',
+          platformType: data.platformInfo?.type || 'unknown',
+          color: platformColors[data.platformInfo?.type?.toLowerCase()] || platformColors.default  
+
+        }))
+      )
+    );
+
+    const allComments = productsWithAllData.flatMap(product => 
+      product.externalData.flatMap(data => 
+        (data.comments || []).map(comment => ({
+          ...comment,
+           // Ensure all posts have required context
+          productId: product.id,
+          productName: product.product_name,
+          data_source_id: data.data_source_id,
+          // platformName: data.platformInfo?.name || 'Unknown Platform',
+          platformType: data.platformInfo?.type || 'unknown',
+          color: platformColors[data.platformInfo?.type?.toLowerCase()] || platformColors.default  
+        }))
+      )
+    );
+
+
+    console.log("ALL COMMEnTS: ", allComments)
+    // Combine both posts and comments if needed
+    const allContent = [...allPosts, ...allComments];
+
+    console.log("All posts with context:", allPosts);
+
+    // 5. Update state
+    // setProductDatas(localProducts);
+    // setSocialMediaDatas(masterData);
+    setProductPosts(allPosts);
+    setProductComments(allComments)
+
+
+  } catch (error) {
+    console.error('Error in fetchAllData:', error);
+    setError('Failed to load product data');
+    setProductDatas([]);
+    setSocialMediaDatas([]);
+    setProductPosts([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+    fetchAllData();
+  }, []);
+
 
   return (
     <DndProvider backend={HTML5Backend}>
