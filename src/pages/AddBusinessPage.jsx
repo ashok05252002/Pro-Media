@@ -93,7 +93,7 @@ const AddBusinessPage = () => {
     console.log(platformName);
     console.log(defaultDisplayLink);
 
-    const { code } = await loginWithSocial('linkedin', {
+    const { code } = await loginWithSocial(platformName, {
       pagename: data.pageName,
       producturl: data.productPageUrl,
       productid: productDetail.product_id

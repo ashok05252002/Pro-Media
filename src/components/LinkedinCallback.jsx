@@ -57,10 +57,7 @@ const LinkedInCallback = () => {
       })
       .catch((err) => {
         console.error("❌ LinkedIn Auth Error:", err);
-        setMessage("Authentication failed.");
-        if (window.opener) {
-          window.opener.postMessage({ type: 'linkedin_auth', code: code }, window.location.origin);
-        }
+        setMessage("Authentication failed."); 
         // navigate("/reg_prdt_success");
       });
   }, [searchParams, navigate]);
