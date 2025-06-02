@@ -5,7 +5,7 @@ import CommentItem from '../components/CommentItem';
 import {extCompanyPrdctlistVideosByPlatform,
   extCompanyPrdctListCommentsByPlatform,
   replyComment,
-} from "../API/api"  ;
+} from "../API/api";
 
 // Updated Mock Data with replies
 const mockPostsData = [ 

@@ -20,6 +20,15 @@ import { extCompanyProductData,
 } from '../API/api';
 
 // Updated Mock Data with replies
+const platformColors = {
+  facebook: 'bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/40 dark:to-indigo-800/40',
+  instagram: 'bg-gradient-to-br from-pink-100 to-pink-200 dark:from-pink-900/40 dark:to-pink-800/40',
+  twitter: 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40',
+  linkedin: 'bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900/40 dark:to-cyan-800/40',
+  youtube:'bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/40 dark:to-red-800/40',
+  // Add more platform types and colors as needed
+  default: '#cccccc' // For unknown platforms
+};
 const mockPostsData = [ 
     { 
       id: 'post1', 
@@ -488,7 +497,9 @@ const fetchAllData = async () => {
           productName: product.product_name,
           data_source_id: data.data_source_id,
           // platformName: data.platformInfo?.name || 'Unknown Platform',
-          platformType: data.platformInfo?.type || 'unknown'
+          platformType: data.platformInfo?.type || 'unknown',
+          color: platformColors[data.platformInfo?.type?.toLowerCase()] || platformColors.default  
+
         }))
       )
     );
@@ -502,7 +513,8 @@ const fetchAllData = async () => {
           productName: product.product_name,
           data_source_id: data.data_source_id,
           // platformName: data.platformInfo?.name || 'Unknown Platform',
-          platformType: data.platformInfo?.type || 'unknown'
+          platformType: data.platformInfo?.type || 'unknown',
+          color: platformColors[data.platformInfo?.type?.toLowerCase()] || platformColors.default  
         }))
       )
     );
@@ -914,7 +926,7 @@ const fetchAllData = async () => {
                   const post = productPosts.find(p => p.id === comment.product_data_source_video_id);
                   
                   return (
-                    <div key={comment.review_id}>
+                    <div key={comment.review_id} className={`rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-[1.02] ${comment?.color}`}>
                       <CommentItem comment={comment} postTitle={selectedPostFilterComments === 'all' ? post?.video_title : undefined} platform={comment.platformType || 'Unknown'} onReplyClick={handleReplyClickComments}/>
 
                       {replyingToCommentId === comment.review_id && (
