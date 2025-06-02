@@ -236,6 +236,10 @@ export const extCompanyPrdctIGlistVideos = (extPrdctDSId) => {
     return axios.get(`/instagram/listposts/${extPrdctDSId}`)  
     // return axios.get(`/ext-product/list`)   
 };
+export const extCompanyPrdctlistVideosByPlatform = (postId, platform) => {
+    return axios.get(`/${platform}/post/${postId}`)  
+    // return axios.get(`/ext-product/list`)   
+};
 export const extCompanyPrdctFBListComments = (extProductId) => {
     return axios.get(`/facebook/productfblistcomments/${extProductId}`)  
     // return axios.get(`/ext-product/list`)   
@@ -262,6 +266,24 @@ export const extCompanyPrdctLIListComments = (extProductId) => {
     // return axios.get(`/ext-product/list`)   
 };
 
+export const extCompanyPrdctListCommentsByPlatform = (postId,platform) => {
+   switch (platform.toLowerCase()) {
+    case 'facebook':
+      {
+        return axios.get(`/facebook/listcomments/${postId}`);
+      }
+    case 'twitter':
+      return axios.post(`/twitter/listcomments/${postId}`);
+    case 'youtube':
+      return axios.post(`/youtube/listcomments/get-reviews/${postId}`);
+    case 'instagram':
+      return axios.get(`/instagram/listComments/${postId}`);
+    default:
+      return Promise.reject(new Error(`Unsupported platform: ${selectedPlatform}`));
+  }
+}; 
+    // return axios.get(`/ext-product/list`)   
+
 export const extCompanyPrdctCreatePost = (selectedPlatform, payload) => {
     return axios.post(`/${selectedPlatform}_post/addposts`, payload);
     // return axios.get(`/ext-product/list`)   
@@ -282,3 +304,11 @@ export const extCompanyEditedCreateddPost = (platformName, postId, payload) => {
     // return axios.get(`/ext-product/list`)   
 };
 
+export const replyComment = (cmtData) => {
+    return axios.post(`${cmtData.platform}/reply_cmt/${cmtData.reviewId}`, {
+
+         "reply_text":cmtData.replyText,
+         "ext_product_data_source_id":cmtData.extDSId
+    });
+    
+};
