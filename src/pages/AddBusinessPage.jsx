@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { Building, PlusCircle, Link as LinkIcon, Facebook, Instagram, Twitter, Linkedin, Youtube, ChevronDown, CheckCircle, ExternalLink, ArrowRight } from 'lucide-react';
 import LinkPlatformModal from '../components/LinkPlatformModal';
 import { loginWithSocial } from '../services/SocialAuth';
-import { extCompanyRegorAddPrdct } from '../API/api';
+import { extCompanyProductData, extCompanyRegorAddPrdct } from '../API/api';
 
 import { toast } from 'react-toastify';
 
@@ -46,6 +46,23 @@ const AddBusinessPage = () => {
 
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [platformToLink, setPlatformToLink] = useState(null);
+  const [productList, setProductList] = useState([]); 
+
+  const getProductList = async()=>{
+    try {
+      const result  =await extCompanyProductData();
+       console.log(result.data);
+       if(result.status == 200){
+        setProductList(result.data ?? []);
+       }
+    } catch (error) {
+       console.log(error);
+    }
+  }
+  useEffect(()=>{
+    console.log("getProductList api triggered");
+    getProductList();
+  },[]);
 
   useEffect(() => {
     if (businessType === 'existing' && selectedCompanyId) {
@@ -96,7 +113,7 @@ const AddBusinessPage = () => {
     const { code } = await loginWithSocial(platformName, {
       pagename: data.pageName,
       producturl: data.productPageUrl,
-      productid: productDetail.product_id
+      productid: selectedCompanyId
 
     });
     console.log(`loginresponse -->> ${code}`);
@@ -146,6 +163,7 @@ const AddBusinessPage = () => {
       console.log("Business added successfully", result);
       if (result.status === 201) {
         setProductDetail(result.data ?? {});
+        setSelectedCompanyId(result?.data?.product_id)
         toast.success('Business added successfully!');
         setBusinessNameConfirmed(true);
       }
@@ -279,12 +297,16 @@ const AddBusinessPage = () => {
                   <select
                     id="companySelect"
                     value={selectedCompanyId}
-                    onChange={(e) => setSelectedCompanyId(e.target.value)}
+                    onChange={(e) => {
+                      console.log(e.target.value);
+                      
+                      setSelectedCompanyId(e.target.value)
+                    }}
                     className="w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md dark:bg-gray-700"
                   >
                     <option value="">-- Select a Company --</option>
-                    {mockExistingBusinesses.map(company => (
-                      <option key={company.id} value={company.id}>{company.name}</option>
+                    {productList.map(company => (
+                      <option key={company?.id} value={company?.id}>{company?.product_name}</option>
                     ))}
                   </select>
                   <ChevronDown className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />

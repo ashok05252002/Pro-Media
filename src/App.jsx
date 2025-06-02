@@ -69,7 +69,7 @@ function App() {
         }}>
           <Routes>
             <Route path="/" element={<Login />} />
-            {/* <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} /> */}
+            <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
             {/* <Route path="/register" element={!isAuthenticated ? <UserForm /> : <Navigate to="/dashboard" />} /> */}
             {/* <Route path="/register" element={<UserForm/>}/> */}
             <Route path="/register" element={<Register />} />
