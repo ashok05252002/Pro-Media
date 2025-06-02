@@ -5,7 +5,7 @@ import { SidebarProvider } from './contexts/SidebarContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
-import MyChannels from './pages/MyChannels';
+import MyBusiness from './pages/MyBusiness';
 import MyProducts from './pages/MyProducts';
 import PostCreation from './pages/PostCreation';
 import ContentScheduler from './pages/ContentScheduler';
@@ -33,6 +33,8 @@ import ServerErrorPage from './pages/ServerErrorPage';
 import AddBusinessPage from './pages/AddBusinessPage';
 import Register from "./pages/RegisterPage.jsx";
 import PostDetailsAndCommentsPage from './pages/PostDetailsAndCommentsPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 import axios from 'axios';
 import "./styles.css";
@@ -67,6 +69,14 @@ function App() {
             <Route path="/oauth2callback" element={<YoutubeCallback />} />
             <Route path="/auth/twitter/callback" element={<TWTCallbackWrapper/>} />
             <Route path="/auth/linkedin/callback" element={<LinkedinCallback />} />
+            <Route 
+              path="/forgot-password" 
+              element={!isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />} 
+            />
+            <Route 
+              path="/reset-password" 
+              element={!isAuthenticated ? <ResetPasswordPage /> : <Navigate to="/" />} // Simplified: ResetPasswordPage will handle logic if state is missing
+            />
               {/* ✅ Wrap authenticated routes inside Layout */}
               {isAuthenticated && (
               <Route element={<Layout />}>
@@ -77,7 +87,7 @@ function App() {
                                                           <RegProductSuccess />
                                                         </PrivateRoute>
                                                         } />
-                <Route path="/channels" element={<MyChannels />} />
+                <Route path="/channels" element={<MyBusiness />} />
                                                                           
                 <Route path="/platform/:name" element={<PlatformTable />} />                                                        
                 <Route path="/ViewPost" element={<ViewPosts />} />
@@ -115,7 +125,7 @@ export default App;
 
 {/* <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}> */}
               {/* <Route exact path = "/dashboard" element={<Dashboard />} />
-              <Route exact path="/channels" element={<MyChannels />} />
+              <Route exact path="/channels" element={<MyBusiness />} />
               <Route exact path="/products" element={<MyProducts />} />
               <Route exact path="/post-creation" element={<PostCreation />} />
               <Route exact path="/scheduler" element={<ContentScheduler />} />

@@ -28,7 +28,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { path: '/dashboard', name: 'Dashboard', icon: <LayoutGrid className="w-5 h-5" /> },
-    { path: '/channels', name: 'My Channels', icon: <Globe className="w-5 h-5" /> },
+    { path: '/channels', name: 'My Business', icon: <Globe className="w-5 h-5" /> },
     { path: '/products', name: 'My Products', icon: <ShoppingBag className="w-5 h-5" /> },
     { path: '/ViewComments', name: 'View comments', icon: <MessageSquare className="w-5 h-5" /> },
     { path: '/ViewPost', name: 'View Post', icon: <FileText className="w-5 h-5" /> },

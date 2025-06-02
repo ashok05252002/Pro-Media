@@ -62,7 +62,7 @@ const Support = () => {
                 How do I connect my social media accounts?
               </h3>
               <p className="text-gray-600 dark:text-gray-400 ml-7">
-                Go to "My Channels" page and click on the "Connect" button. You'll be guided through the authentication process for each platform.
+                Go to "My Business" page and click on the "Connect" button. You'll be guided through the authentication process for each platform.
               </p>
             </div>
             
