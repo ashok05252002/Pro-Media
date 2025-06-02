@@ -30,6 +30,7 @@ const Sidebar = () => {
     { path: '/dashboard', name: 'Dashboard', icon: <LayoutGrid className="w-5 h-5" /> },
     { path: '/channels', name: 'My Business', icon: <Globe className="w-5 h-5" /> },
     { path: '/products', name: 'My Products', icon: <ShoppingBag className="w-5 h-5" /> },
+    { path: '/calendar-view', name: 'Calendar View', icon: <FileEdit className="w-5 h-5" /> },
     { path: '/ViewComments', name: 'View comments', icon: <MessageSquare className="w-5 h-5" /> },
     { path: '/ViewPost', name: 'View Post', icon: <FileText className="w-5 h-5" /> },
     { path: '/post-creation', name: 'Post Creation', icon: <FileEdit className="w-5 h-5" /> },

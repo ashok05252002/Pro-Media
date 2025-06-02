@@ -35,6 +35,7 @@ import Register from "./pages/RegisterPage.jsx";
 import PostDetailsAndCommentsPage from './pages/PostDetailsAndCommentsPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import CalendarViewPage from './pages/CalendarViewPage';
 
 import axios from 'axios';
 import "./styles.css";
@@ -93,6 +94,7 @@ function App() {
                 <Route path="/ViewPost" element={<ViewPosts />} />
                 <Route path="/ViewComments" element={<ViewComments />} />
                 <Route path="/products" element={<MyProducts />} />
+                <Route path="/calendar-view" element={<CalendarViewPage />} />
                 <Route path="/post-creation" element={<PostCreation />} />
                 <Route path="/scheduler" element={<ContentScheduler />} />
                 <Route path="/analytics" element={<Analytics />} />
