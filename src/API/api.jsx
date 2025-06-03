@@ -318,7 +318,8 @@ export const replyComment = (cmtData) => {
 
 };
 
-export const extCompanyGetPostCreationByBusiness = (platformType, businessId) => {
-    return axios.post(`${platformType}_post/datasource/posts/${businessId}`);
+export const extCompanyGetPostCreationByBusiness = (platformType, extDsId) => {
+    console.log("inside api call")
+    return axios.get(`${platformType}_post/datasource/posts/${extDsId}`);
 
 };
