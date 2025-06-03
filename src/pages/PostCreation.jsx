@@ -5,7 +5,7 @@ import VideoUploadModal from '../components/VideoUploadModal';
 import MediaUploadModal from '../components/MediaUploadModal';
 import axios from 'axios';
 
-const BASE_URL = "http://127.0.0.1:5000";
+const BASE_URL = import.meta.env.VITE_BASE_API_URL;
 
 // mapping data source platform id to platform name
   const DATA_SOURCE_PLATFORM_MAP = {
