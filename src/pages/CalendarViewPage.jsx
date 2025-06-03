@@ -261,7 +261,7 @@ const CalendarViewPage = () => {
       // 3. Update all states
       setPlatfrmsDtls(platformsObject);
       setSocialMediaDatas(enhancedData);
-     
+      setActivePlatformFilters(Object.keys(platformsObject));
       
       return enhancedData;
     } catch (err) {
@@ -331,42 +331,42 @@ const CalendarViewPage = () => {
                       item => item.id === externalData.data_source_id
                     );
                     console.log("PLATFORM INFO:", platformInfo);
-                    const enhancedData = platformInfo?.data?.map(item => {
-                    const platformConfig = platformConfigs[item?.type] || {};
-                    const icon = platformConfig.icon 
-                      ? React.cloneElement(platformConfig.icon, { 
-                          className: platformConfig.className 
-                        })
-                      : <div className={platformConfig.className}>?</div>; // Fallback icon
+                  //   const enhancedData = platformInfo?.data?.map(item => {
+                  //   const platformConfig = platformConfigs[item?.type] || {};
+                  //   const icon = platformConfig.icon 
+                  //     ? React.cloneElement(platformConfig.icon, { 
+                  //         className: platformConfig.className 
+                  //       })
+                  //     : <div className={platformConfig.className}>?</div>; // Fallback icon
                     
-                    return {
-                      ...item,
-                      icon:icon, 
-                      code:item.code,
-                      className: platformConfig.className,
-                      colorValue: platformConfig.colorValue,
-                      tagColor: platformConfig.tagColor
-                    };
-                    });
+                  //   return {
+                  //     ...item,
+                  //     icon:icon, 
+                  //     code:item.code,
+                  //     className: platformConfig.className,
+                  //     colorValue: platformConfig.colorValue,
+                  //     tagColor: platformConfig.tagColor
+                  //   };
+                  //   });
 
-                  console.log("ENHANCEDMSTRDATA", enhancedData);
+                  // console.log("ENHANCEDMSTRDATA", enhancedData);
 
-                    // 2. Safe transformation to object format
-                    const platformsObject = enhancedData.reduce((acc, platform) => {
-                      acc[platform.id] = {
-                        name: platform.name,
-                        type:platform.type,
-                        code:platform.code,
-                        icon: platform.icon, // Use the already-cloned icon
-                        colorValue: platform.colorValue,
-                        tagColor: platform.tagColor
-                      };
-                      return acc;
-                      }, {});
+                  //   // 2. Safe transformation to object format
+                  //   const platformsObject = enhancedData.reduce((acc, platform) => {
+                  //     acc[platform.id] = {
+                  //       name: platform.name,
+                  //       type:platform.type,
+                  //       code:platform.code,
+                  //       icon: platform.icon, // Use the already-cloned icon
+                  //       colorValue: platform.colorValue,
+                  //       tagColor: platform.tagColor
+                  //     };
+                  //     return acc;
+                  //     }, {});
 
-                  console.log("Platforms Details:", platformsObject);
-                  setPlatfrmsDtls(platformsObject)
-                  setActivePlatformFilters(Object.keys(platformsObject));
+                  // console.log("Platforms Details:", platformsObject);
+                  // setPlatfrmsDtls(platformsObject)
+                  // setActivePlatformFilters(Object.keys(platformsObject));
                   console.log("PLATFORM INFO:", platformInfo);
                   // const platformType = platformInfo?.type?.toLowerCase();
                   // const platformCode = platformInfo?.code?.toLowerCase();
@@ -378,10 +378,7 @@ const CalendarViewPage = () => {
 
                   // Fetch posts for this platform
                   const postsResponse = await extCompanyGetPostCreationByBusiness(platformInfo?.type, externalData?.id)
-                    .catch(error => {
-                      console.error(`Posts fetch failed for ${platformType}/${platformCode}:`, error);
-                      return { error: error.message };
-                    });
+                    
                   console.log("POSTS",postsResponse)  
                   // Add platformName to each post
                   const posts = postsResponse?.data 
