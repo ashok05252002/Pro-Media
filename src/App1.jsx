@@ -16,43 +16,172 @@ import Support from './pages/Support';
 import Profile from './pages/Profile';
 
 function App() {
-  // For demo purposes, start as logged in
+  const isAuthenticated = localStorage.getItem('authToken') !== null;
 
-  const location = useLocation();
-  const isAuthenticated = true;
-
-  const shouldShowSidebar = () => {
-    const { pathname } = location;
-    return !['/login', '/signup', '/'].includes(pathname);
-  };
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Login />
+    },
+    {
+      path: "/login",
+      element: !isAuthenticated ? <Login /> : <Navigate to="/dashboard" />
+    },
+    {
+      path: "/register",
+      element: <Register />
+    },
+    {
+      path: "/VerifyEmailPage",
+      element: <VerifyEmailPage />
+    },
+    {
+      path: "/forgotpwd",
+      element: <ForgotPasswordPage />
+    },
+    {
+      path: "/resetpwd",
+      element: <ResetPasswordPage />
+    },
+    {
+      path: "/auth/facebook/callback",
+      element: <FacebookCallback />
+    },
+    {
+      path: "/oauth2callback",
+      element: <YoutubeCallback />
+    },
+    {
+      path: "/auth/twitter/callback",
+      element: <TWTCallbackWrapper />
+    },
+    {
+      path: "/auth/linkedin/callback",
+      element: <LinkedinCallback />
+    },
+    {
+      path: "/forgot-password",
+      element: !isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />
+    },
+    {
+      path: "/reset-password",
+      element: !isAuthenticated ? <ResetPasswordPage /> : <Navigate to="/" />
+    },
+     {
+      path: "/",
+      element: <Layout />,
+      children: [
+        {
+          path: "/dashboard",
+          element: <Dashboard />
+        },
+        {
+          path: "/regproduct",
+          element: <RegProduct />
+        },
+        {
+          path: "/reg_prdt_success",
+          element: (
+            <PrivateRoute isAuthenticated={isAuthenticated}>
+              <RegProductSuccess />
+            </PrivateRoute>
+          )
+        },
+        {
+          path: "/channels",
+          element: <MyBusiness />
+        },
+        {
+          path: "/platform/:name",
+          element: <PlatformTable />
+        },
+        {
+          path: "/ViewPost",
+          element: <ViewPosts />
+        },
+        {
+          path: "/ViewComments",
+          element: <ViewComments />
+        },
+        {
+          path: "/products",
+          element: <MyProducts />
+        },
+        {
+          path: "/calendar-view",
+          element: <CalendarViewPage />
+        },
+        {
+          path: "/post-creation",
+          element: <PostCreation />
+        },
+        {
+          path: "/scheduler",
+          element: <ContentScheduler />
+        },
+        {
+          path: "/analytics",
+          element: <Analytics />
+        },
+        {
+          path: "/users",
+          element: <UserManagement />
+        },
+        {
+          path: "/settings",
+          element: <Settings />
+        },
+        {
+          path: "/support",
+          element: <Support />
+        },
+        {
+          path: "/profile",
+          element: <Profile />
+        },
+        {
+          path: "/add-business",
+          element: <AddBusinessPage />
+        },
+        {
+          path: "post/:postId/details-and-comments",
+          element: <PostDetailsAndCommentsPage />
+        }
+      ]
+    },
+    // Error pages
+    {
+      path: "/500",
+      element: <ServerErrorPage />
+    },
+    {
+      path: "*",
+      element: <NotFoundPage />
+    }
+  ], {
+    future: {
+      v7_relativeSplatPath: true,
+      v7_startTransition: true
+    }
+  });
 
   return (
     <ThemeProvider>
-     
-        <Router>
-        {shouldShowSidebar() && <SidebarProvider />}
-          <Routes>
-              <Route path="/" element={<Login />}/>  
-
-              {/* <Route index path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} /> */}
-              
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/channels" element={<MyChannels />} />
-                <Route path="/products" element={<MyProducts />} />
-                <Route path="/post-creation" element={<PostCreation />} />
-                <Route path="/scheduler" element={<ContentScheduler />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/users" element={<UserManagement />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/support" element={<Support />} />
-                <Route path="/profile" element={<Profile />} />
-              
-            {/* <Route path="*" element={<Navigate to="/" />} /> */}
-          </Routes>
-        </Router>
-        
+      <SidebarProvider>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="colored"
+        />
+        <RouterProvider router={router} />
+      </SidebarProvider>
     </ThemeProvider>
   );
 }
+
 
 export default App;

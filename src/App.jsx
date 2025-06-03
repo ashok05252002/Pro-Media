@@ -76,10 +76,10 @@ function App() {
             <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
             {/* <Route path="/register" element={!isAuthenticated ? <UserForm /> : <Navigate to="/dashboard" />} /> */}
             {/* <Route path="/register" element={<UserForm/>}/> */}
-            <Route path="/register" element={<Register />} />
-            <Route path="/VerifyEmailPage" element={<VerifyEmailPage />} />
-            <Route path="/forgotpwd" element={<ForgotPasswordPage />} />
-            <Route path="/resetpwd" element={<ResetPasswordPage />} />
+            <Route path="/register" element={<Register/>}/>
+            <Route path="/VerifyEmailPage" element={<VerifyEmailPage/>}/>
+            <Route path="/forgotpwd" element = {<ForgotPasswordPage/>} />
+             <Route path="/resetpwd" element = {<ResetPasswordPage/>} />
             <Route path="/register" element={<Register />} />
             <Route path="/VerifyEmailPage" element={<VerifyEmailPage />} />
             <Route path="/forgotpwd" element={<ForgotPwd />} />
@@ -87,27 +87,27 @@ function App() {
             <Route path="/oauth2callback" element={<YoutubeCallback />} />
             <Route path="/auth/twitter/callback" element={<TWTCallbackWrapper />} />
             <Route path="/auth/linkedin/callback" element={<LinkedinCallback />} />
-            <Route
-              path="/forgot-password"
-              element={!isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />}
+            <Route 
+              path="/forgot-password" 
+              element={!isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />} 
             />
-            <Route
-              path="/reset-password"
+            <Route 
+              path="/reset-password" 
               element={!isAuthenticated ? <ResetPasswordPage /> : <Navigate to="/" />} // Simplified: ResetPasswordPage will handle logic if state is missing
             />
-            {/* ✅ Wrap authenticated routes inside Layout */}
-            {isAuthenticated && (
+              {/* ✅ Wrap authenticated routes inside Layout */}
+              {isAuthenticated && (
               <Route element={<Layout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/regproduct" element={<RegProduct />} />
                 <Route path="/reg_prdt_success" element={
-                  <PrivateRoute isAuthenticated={isAuthenticated}>
-                    <RegProductSuccess />
-                  </PrivateRoute>
-                } />
+                                                          <PrivateRoute isAuthenticated={isAuthenticated}>
+                                                          <RegProductSuccess />
+                                                        </PrivateRoute>
+                                                        } />
                 <Route path="/channels" element={<MyBusiness />} />
-
-                <Route path="/platform/:name" element={<PlatformTable />} />
+                                                                          
+                <Route path="/platform/:name" element={<PlatformTable />} />                                                        
                 <Route path="/ViewPost" element={<ViewPosts />} />
                 <Route path="/ViewComments" element={<ViewComments />} />
                 <Route path="/products" element={<MyProducts />} />
@@ -128,9 +128,9 @@ function App() {
             {/* <Route path="*" element={<Navigate to="/" />} /> */}
 
             {/* error pages  */}
-            <Route path="/500" element={<ServerErrorPage />} />
+             <Route path="/500" element={<ServerErrorPage />} />
             <Route path="*" element={<NotFoundPage />} />
-
+            
           </Routes>
         </Router>
       </SidebarProvider>
@@ -142,8 +142,8 @@ export default App;
 
 
 
-{/* <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}> */ }
-{/* <Route exact path = "/dashboard" element={<Dashboard />} />
+{/* <Route path="/" element={isAuthenticated ? <Layout /> : <Navigate to="/login" />}> */}
+              {/* <Route exact path = "/dashboard" element={<Dashboard />} />
               <Route exact path="/channels" element={<MyBusiness />} />
               <Route exact path="/products" element={<MyProducts />} />
               <Route exact path="/post-creation" element={<PostCreation />} />
