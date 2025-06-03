@@ -17,147 +17,148 @@ import Profile from './pages/Profile';
 
 function App() {
   const isAuthenticated = localStorage.getItem('authToken') !== null;
+  console.log(isAuthenticated);
 
   const router = createBrowserRouter([
     {
-      path: "/",
-      element: <Login />
-    },
-    {
-      path: "/login",
-      element: !isAuthenticated ? <Login /> : <Navigate to="/dashboard" />
-    },
-    {
-      path: "/register",
-      element: <Register />
-    },
-    {
-      path: "/VerifyEmailPage",
-      element: <VerifyEmailPage />
-    },
-    {
-      path: "/forgotpwd",
-      element: <ForgotPasswordPage />
-    },
-    {
-      path: "/resetpwd",
-      element: <ResetPasswordPage />
-    },
-    {
-      path: "/auth/facebook/callback",
-      element: <FacebookCallback />
-    },
-    {
-      path: "/oauth2callback",
-      element: <YoutubeCallback />
-    },
-    {
-      path: "/auth/twitter/callback",
-      element: <TWTCallbackWrapper />
-    },
-    {
-      path: "/auth/linkedin/callback",
-      element: <LinkedinCallback />
-    },
-    {
-      path: "/forgot-password",
-      element: !isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />
-    },
-    {
-      path: "/reset-password",
-      element: !isAuthenticated ? <ResetPasswordPage /> : <Navigate to="/" />
-    },
-     {
-      path: "/",
-      element: <Layout />,
-      children: [
-        {
-          path: "/dashboard",
-          element: <Dashboard />
-        },
-        {
-          path: "/regproduct",
-          element: <RegProduct />
-        },
-        {
-          path: "/reg_prdt_success",
-          element: (
-            <PrivateRoute isAuthenticated={isAuthenticated}>
-              <RegProductSuccess />
-            </PrivateRoute>
-          )
-        },
-        {
-          path: "/channels",
-          element: <MyBusiness />
-        },
-        {
-          path: "/platform/:name",
-          element: <PlatformTable />
-        },
-        {
-          path: "/ViewPost",
-          element: <ViewPosts />
-        },
-        {
-          path: "/ViewComments",
-          element: <ViewComments />
-        },
-        {
-          path: "/products",
-          element: <MyProducts />
-        },
-        {
-          path: "/calendar-view",
-          element: <CalendarViewPage />
-        },
-        {
-          path: "/post-creation",
-          element: <PostCreation />
-        },
-        {
-          path: "/scheduler",
-          element: <ContentScheduler />
-        },
-        {
-          path: "/analytics",
-          element: <Analytics />
-        },
-        {
-          path: "/users",
-          element: <UserManagement />
-        },
-        {
-          path: "/settings",
-          element: <Settings />
-        },
-        {
-          path: "/support",
-          element: <Support />
-        },
-        {
-          path: "/profile",
-          element: <Profile />
-        },
-        {
-          path: "/add-business",
-          element: <AddBusinessPage />
-        },
-        {
-          path: "post/:postId/details-and-comments",
-          element: <PostDetailsAndCommentsPage />
-        }
-      ]
-    },
-    // Error pages
-    {
-      path: "/500",
-      element: <ServerErrorPage />
-    },
-    {
-      path: "*",
-      element: <NotFoundPage />
-    }
+    path: "/",
+    element: !isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />,
+  },
+  {
+    path: "/login",
+    element: !isAuthenticated ? <Login /> : <Navigate to="/dashboard" />
+  },
+  {
+    path: "/register",
+    element: <Register />
+  },
+  {
+    path: "/VerifyEmailPage",
+    element: <VerifyEmailPage />
+  },
+  {
+    path: "/forgotpwd",
+    element: <ForgotPasswordPage />
+  },
+  {
+    path: "/resetpwd",
+    element: <ResetPasswordPage />
+  },
+  {
+    path: "/auth/facebook/callback",
+    element: <FacebookCallback />
+  },
+  {
+    path: "/oauth2callback",
+    element: <YoutubeCallback />
+  },
+  {
+    path: "/auth/twitter/callback",
+    element: <TWTCallbackWrapper />
+  },
+  {
+    path: "/auth/linkedin/callback",
+    element: <LinkedinCallback />
+  },
+  {
+    path: "/forgot-password",
+    element: !isAuthenticated ? <ForgotPasswordPage /> : <Navigate to="/" />
+  },
+  {
+    path: "/reset-password",
+    element: !isAuthenticated ? <ResetPasswordPage /> : <Navigate to="/" />
+  },
+  {
+    path: "/",
+    element: <PrivateRoute> <Layout /> </PrivateRoute>,
+    children: [
+      {
+        path: "/dashboard",
+        element: <Dashboard  />
+      },
+      {
+        path: "/regproduct",
+        element: <RegProduct />
+      },
+      {
+        path: "/reg_prdt_success",
+        element: (
+          <PrivateRoute isAuthenticated={isAuthenticated}>
+            <RegProductSuccess />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: "/channels",
+        element: <MyBusiness />
+      },
+      {
+        path: "/platform/:name",
+        element: <PlatformTable />
+      },
+      {
+        path: "/ViewPost",
+        element: <ViewPosts />
+      },
+      {
+        path: "/ViewComments",
+        element: <ViewComments />
+      },
+      {
+        path: "/products",
+        element: <MyProducts />
+      },
+      {
+        path: "/calendar-view",
+        element: <CalendarViewPage />
+      },
+      {
+        path: "/post-creation",
+        element: <PostCreation />
+      },
+      {
+        path: "/scheduler",
+        element: <ContentScheduler />
+      },
+      {
+        path: "/analytics",
+        element: <Analytics />
+      },
+      {
+        path: "/users",
+        element: <UserManagement />
+      },
+      {
+        path: "/settings",
+        element: <Settings />
+      },
+      {
+        path: "/support",
+        element: <Support />
+      },
+      {
+        path: "/profile",
+        element: <Profile />
+      },
+      {
+        path: "/add-business",
+        element: <AddBusinessPage />
+      },
+      {
+        path: "post/:postId/details-and-comments",
+        element: <PostDetailsAndCommentsPage />
+      }
+    ]
+  },
+  // Error pages
+  {
+    path: "/500",
+    element: <ServerErrorPage />
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />
+  }
   ], {
     future: {
       v7_relativeSplatPath: true,
@@ -182,6 +183,10 @@ function App() {
     </ThemeProvider>
   );
 }
-
-
 export default App;
+
+
+function PrivateRoute({ children }) {
+  const isAuthenticated = localStorage.getItem('authToken') !== null;
+  return isAuthenticated ? children : <Navigate to="/login" />;
+}

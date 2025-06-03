@@ -305,7 +305,7 @@ export const extCompanyDeleteCreatedPost = (platformName, postId) => {
 };
 
 export const extCompanyEditedCreateddPost = (platformName, postId, payload) => {
-    return axios.patch(`0/${platformName}_post/updateposts/${postId}`, payload);
+    return axios.patch(`/${platformName}_post/updateposts/${postId}`, payload);
     // return axios.get(`/ext-product/list`)   
 };
 

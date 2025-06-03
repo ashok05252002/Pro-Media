@@ -9,10 +9,10 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { extCompanyPrdctCreatePost, extCompanyDeleteCreatedPost, extCompanyGetAllCreatePosts } from "../API/api";
-
-import ScheduledPostList from "./post/PostCard"
+import { useNavigate } from "react-router-dom"; 
+import { extCompanyEditedCreateddPost } from "../../API/api";
+import { toast } from "react-toastify";
+ 
 
 const EditPostModal = ({ post, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -86,25 +86,20 @@ const EditPostModal = ({ post, onClose, onSave }) => {
       console.log("platform name:", platform.name);
       console.log("post id:", typeof post.id);
       const token = localStorage.getItem("authToken")
-      const response = await fetch(
-        `${import.meta.env.VITE_BASE_API_URL} /${platform.name}_post/updateposts/${post.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify(payload),
+
+
+        const response = await extCompanyEditedCreateddPost(platform.name, post.id, payload);
+        console.log(response);
+       
+        if(response){
+            toast.success(response.message ?? '');
+            onSave(response);
+            onClose();
         }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
-      }
-
-      const updatedPost = await response.json();
-      onSave(updatedPost);
-      onClose();
+        else if(!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+ 
     } catch (error) {
       console.error("Error updating post:", error);
       alert("Failed to update post. Please try again.");

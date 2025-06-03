@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { extCompanyPrdctCreatePost, extCompanyDeleteCreatedPost, extCompanyGetAllCreatePosts } from "../API/api";
-import PostCardItem from "./post/PostCard";
+import PostCardItem from "./post/PostCard"; 
+import EditPostModal from "./post/EditPost";
 
 // import ScheduledPostList from "./post/PostCard"
 
@@ -57,14 +58,15 @@ const ContentScheduler = () => {
 
   const handleSaveEditedPost = (updatedPost) => {
     // Update post in the allPosts state
-    setAllPosts((prev) =>
-      prev.map((post) =>
-        post.id === updatedPost.id ? { ...post, ...updatedPost } : post
-      )
-    );
+    // setAllPosts((prev) =>
+    //   prev.map((post) =>
+    //     post.id === updatedPost.id ? { ...post, ...updatedPost } : post
+    //   )
+    // );
 
     // Update counts if status changed
     fetchPostCounts();
+    fetchAllPosts();
   };
 
   const handleDeletePost = (post) => {
@@ -88,6 +90,7 @@ const ContentScheduler = () => {
             setAllPosts((prev) => prev.filter((p) => p.id !== post.id));
             // Update counts
             fetchPostCounts();
+            fetchAllPosts();
           })
           .catch((error) => {
             console.error(`Error deleting post:`, error);
@@ -111,7 +114,10 @@ const ContentScheduler = () => {
     setCounts(newCounts);
   };
 
-  useEffect(() => {
+  useEffect(() => { 
+    fetchAllPosts();
+  }, []);
+
     const fetchAllPosts = async () => {
       setLoading(true);
       try {
@@ -156,10 +162,6 @@ const ContentScheduler = () => {
       }
     };
 
-    fetchAllPosts();
-  }, []);
-
-
 
   const getFilteredAndSortedPosts = () => {
     console.log("getFilteredAndSortedPosts");
@@ -189,53 +191,6 @@ const ContentScheduler = () => {
 
   const [filteredPosts, setFilteredPosts] = useState([]);
 
-
-  const getPlatformInfo = (dataSourceId) => {
-    const platformMap = {
-      6577: { icon: "AZ", color: "bg-yellow-600" },
-      8984: { icon: "YT", color: "bg-red-600" },
-      8487: { icon: "TW", color: "bg-blue-400" },
-      7066: { icon: "FB", color: "bg-blue-600" },
-      7378: { icon: "IG", color: "bg-pink-600" },
-      7668: { icon: "LI", color: "bg-blue-700" },
-    };
-    return platformMap[dataSourceId] || { icon: "??", color: "bg-gray-500" };
-  };
-
-  const getStatusColor = (status) => {
-    const statusMap = {
-      scheduled: "bg-yellow-100 text-yellow-800",
-      draft: "bg-gray-100 text-gray-800",
-      published: "bg-green-100 text-green-800",
-    };
-    return statusMap[status?.toLowerCase()] || "bg-gray-100 text-gray-800";
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "Not scheduled";
-    const date = new Date(dateString);
-    const today = new Date();
-    if (date.toDateString() === today.toDateString()) return "Today";
-    if (
-      date.toDateString() ===
-      new Date(today.setDate(today.getDate() + 1)).toDateString()
-    )
-      return "Tomorrow";
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  const formatTime = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-  };
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -315,12 +270,12 @@ const ContentScheduler = () => {
             ))}
           </nav>
         </div>
-        <div className="p-6"> 
+        <div className="p-6">
           {loading ? (
             <div className="text-center py-10">Loading posts...</div>
           ) : filteredPosts.length > 0 ?
             filteredPosts.map((post, idx) => (
-              <PostCardItem post={post} />
+              <PostCardItem key={post.id || idx} post={post} onEdit={handleEditPost} onDelete={handleDeletePost} />
             )) : (
               <div className="text-center py-10">No {activeTab} posts found.</div>
             )}
