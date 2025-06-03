@@ -226,48 +226,7 @@ const ViewPosts = () => {
     }
   };
 
-  // Combine both data sources
-  // Combine all data sources
-  //   const fetchAllData = async () => {
-  //   try {
-  //     setLoading(true);
-
-  //     // Fetch all required data in parallel
-  //     const [localProductsResponse, masterDataResponse] = await Promise.all([
-  //       fetchProducts().catch(() => []),
-  //       fetchMasterDataSource().catch(() => [])
-  //     ]);
-
-  //     // Ensure we have arrays to work with
-  //     const localProducts = Array.isArray(localProductsResponse) ? localProductsResponse : [];
-  //     const masterData = Array.isArray(masterDataResponse) ? masterDataResponse : [];
-  //     console.log("LOCAL PRODUCTS",localProducts)
-  //     console.log("masterData",masterData)
-  //     // Process each product with its external data
-  //     const productsWithAllData = await Promise.all(
-  //       localProducts.map(async (product) => {
-  //         try {
-
-  //           // Fetch external data (returns array of 5 rows)
-  //           const externalDataArray = await fetchExternalData(product.id).catch(() => []);
-  //           console.log("EXTERNAL DATA ARRAY",externalDataArray)
-  //           // Process each external data row
-  //           const enrichedExternalData = await Promise.all(
-  //             externalDataArray.map(async (externalData) => {
-  //               const platformInfo = masterData.find(
-  //                 item => item.id === externalData?.data_source_id
-  //               );
-  //               console.log("PLATFORMINFO",platformInfo)
-  //               let posts = [];
-  //               if (platformInfo?.type) {
-  //                 const platform = platformInfo.type.toLowerCase();
-  //                 const postFetchers = {
-  //                   facebook: fetchFacebookPosts,
-  //                   youtube: fetchYouTubePosts,
-  //                   instagram: fetchInstagramPosts,
-  //                   linkedin: fetchLinkedinPosts,
-  //                   twitter: fetchTwitterPosts
-  //                 };
+ 
 
   //                 if (postFetchers[platform]) {
   //                   posts = await postFetchers[platform](externalData.data_source_id)
