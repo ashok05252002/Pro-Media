@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+// import { format } from 'date-fns';
 import { format, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, isToday as dateFnsIsToday, addDays, subDays } from 'date-fns';
 import { ChevronLeft, ChevronRight, Facebook, Instagram, Twitter, Linkedin, Youtube, Briefcase } from 'lucide-react';
 import AddPostModalCalendar from '../components/calendar/AddPostModalCalendar';
@@ -26,7 +27,6 @@ import { extCompanyProductData,
   replyComment,
   extCompanyGetAllCreatePosts,
 } from '../API/api';
-
 
 // Updated Mock Data with replies
 const platformColors = {
@@ -384,6 +384,8 @@ const CalendarViewPage = () => {
                   const posts = postsResponse?.data 
                     ? postsResponse.data.map(post => ({
                         ...post,
+                        post_s_date: format(new Date(post?.scheduled_time),'yyyy-MM-dd'),
+                        post_s_time: format(new Date(post?.scheduled_time),'HH:mm'),
                         product_id:product.id,
                         extDsId:externalData.id,
                         platformName: platformInfo.type, // Add platform name here

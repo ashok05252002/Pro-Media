@@ -49,7 +49,7 @@ const DayColumnWithTimes = ({
           const postsInSlot = postsForDay.filter(post => 
             // new Date(post.scheduled_time).toISOString().substring(11, 16) === time)
             // post.time === time);
-           post?.time === time);
+           post?.post_s_time === time);
           return (
             <TimeSlotCell
               key={`${dayKey}-${time}`}

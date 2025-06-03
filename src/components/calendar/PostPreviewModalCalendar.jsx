@@ -30,7 +30,7 @@ const PostPreviewModalCalendar = ({ isOpen, onClose, post, platformDetails, stat
             <Calendar className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
             Scheduled for: <strong className="ml-1 text-gray-700 dark:text-gray-300">{format(parse(post.scheduled_time, 'yyyy-MM-dd', new Date()), 'MMMM d, yyyy')}</strong>
             <Clock className="w-4 h-4 ml-3 mr-1 text-gray-500 dark:text-gray-400" />
-            at <strong className="ml-1 text-gray-700 dark:text-gray-300">{post.scheduled_time}</strong>
+            at <strong className="ml-1 text-gray-700 dark:text-gray-300">{post.post_s_time}</strong>
           </div>
           
           <div className="flex items-center">

@@ -5,7 +5,7 @@ import { ItemTypes } from '../../constants/ItemTypes';
 const PostCardCalendar = ({ post, platformDetails, statusColors, onPreviewClick }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ItemTypes.POST_CARD,
-    item: { id: post.id, originalDate: post.scheduled_time, originalTime: post.scheduled_time },
+    item: { id: post.id, originalDate: post.post_s_date, originalTime: post.post_s_time },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -41,7 +41,7 @@ const PostCardCalendar = ({ post, platformDetails, statusColors, onPreviewClick 
         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${statusColorClass} backdrop-blur-sm`}>
           {post.status}
         </span>
-        <span className="text-xs opacity-90">{post.scheduled_time}</span>
+        <span className="text-xs opacity-90">{post.post_s_time}</span>
       </div>
     </div>
   );
