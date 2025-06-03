@@ -134,7 +134,8 @@ const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2,
 
 const CalendarViewPage = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 0 }));
-  const [posts, setPosts] = useState(initialPosts);
+  // const [posts, setPosts] = useState(initialPosts);
+  const [posts, setPosts] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [modalDateTime, setModalDateTime] = useState({ date: null, time: null });
   // const [activePlatformFilters, setActivePlatformFilters] = useState(Object.keys(platformDetails));
@@ -146,7 +147,6 @@ const CalendarViewPage = () => {
   
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [postToDeleteId, setPostToDeleteId] = useState(null);
-
   const [socialMediaDatas, setSocialMediaDatas] = useState([]);
   const [productDatas, setProductDatas] = useState([]);
   // Initialize as empty object in state
@@ -213,8 +213,8 @@ const CalendarViewPage = () => {
 
   const filteredPosts = useMemo(() => {
     return posts.filter(post => 
-      (activePlatformFilters.length === 0 || activePlatformFilters.length === Object.keys(platfrmsDtls).length || activePlatformFilters.includes(post.platform)) &&
-      post.businessId === selectedBusinessId
+      (activePlatformFilters.length === 0 || activePlatformFilters.length === Object.keys(platfrmsDtls).length || activePlatformFilters.includes(post.platformName)) &&
+      post.product_id === selectedBusinessId
     );
   }, [posts, activePlatformFilters, selectedBusinessId]);
 
@@ -384,6 +384,7 @@ const CalendarViewPage = () => {
                   const posts = postsResponse?.data 
                     ? postsResponse.data.map(post => ({
                         ...post,
+                        product_id:product.id,
                         extDsId:externalData.id,
                         platformName: platformInfo.type, // Add platform name here
                         platformId:platformInfo.id
@@ -426,7 +427,8 @@ const CalendarViewPage = () => {
         );
         console.log("ALL POSTS", allPosts)
         
-        setProductCreationPosts(allPosts); // Set the posts state
+        // setProductCreationPosts(allPosts); // Set the posts state
+        setPosts(allPosts)
         setProductDatas(localProducts); // Set products data if needed
         return productsWithAllData;
 
@@ -508,7 +510,7 @@ useEffect(() => {
           <div className="flex flex-row flex-grow">
             {weekDays.map((day, index) => {
               const dayKey = format(day, 'yyyy-MM-dd');
-              const postsForDay = filteredPosts.filter(post => post.date === dayKey);
+              const postsForDay = filteredPosts.filter(post =>format(post.scheduled_time, 'yyyy-MM-dd') === dayKey);
               const isCurrentDay = dateFnsIsToday(day);
 
               return (
@@ -521,7 +523,7 @@ useEffect(() => {
                   onDropPost={movePost}
                   onAddPostClick={handleAddPostClick}
                   onPostCardClick={handlePostCardClick}
-                  platformDetails={platformDetails}
+                  platformDetails={platfrmsDtls}
                   statusColors={statusColors}
                   themeColors={themeColors}
                   isFirstColumn={index === 0}
@@ -538,7 +540,7 @@ useEffect(() => {
           onSave={handleSavePost}
           selectedDate={modalDateTime.date}
           selectedTime={modalDateTime.time}
-          platforms={platformDetails}
+          platforms={platfrmsDtls}
           timeSlots={TIME_SLOTS}
         />
       )}
@@ -547,10 +549,10 @@ useEffect(() => {
           isOpen={isPreviewModalOpen}
           onClose={() => setIsPreviewModalOpen(false)}
           post={postForPreview}
-          platformDetails={platformDetails}
+          platformDetails={platfrmsDtls}
           statusColors={statusColors}
           onDeleteClick={() => openDeleteConfirmModal(postForPreview.id)}
-          initialBusinesses={initialBusinesses}
+          initialBusinesses={productDatas}
         />
       )}
       <ConfirmationModal
