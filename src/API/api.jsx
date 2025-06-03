@@ -290,7 +290,12 @@ export const extCompanyPrdctCreatePost = (selectedPlatform, payload) => {
 };
 
 export const extCompanyGetAllCreatePosts = (platform) => {
-    return axios.get(`/${platform.name}_post/${platform.postCode}posts`);
+    if (platform.name==="instagram"){
+         return axios.get(`/${platform.name}_post/instaposts`);
+    }else if (platform.name==="linkedin"){
+        return axios.get(`/${platform.name}_post/${platform.postCode}posts`);
+    }else
+        return axios.get(`/${platform.name}_post/${platform.postCode}posts`);
     // return axios.get(`/ext-product/list`)   
 };
 
@@ -310,5 +315,10 @@ export const replyComment = (cmtData) => {
         "reply_text": cmtData.replyText,
         "ext_product_data_source_id": cmtData.extDSId
     });
+
+};
+
+export const extCompanyGetPostCreationByBusiness = (platformType, businessId) => {
+    return axios.post(`${platformType}_post/datasource/posts/${businessId}`);
 
 };
