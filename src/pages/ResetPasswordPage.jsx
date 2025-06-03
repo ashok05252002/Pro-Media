@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom'; // Added useLocation
 import { Lock, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { extCompanyUserResetpwd } from '../API/api';
 
 const InputField = ({ id, label, type, value, onChange, error, icon, placeholder, toggleVisibility, showPassword }) => (
   <div>
@@ -9,7 +10,7 @@ const InputField = ({ id, label, type, value, onChange, error, icon, placeholder
       {label} <span className="text-red-500">*</span>
     </label>
     <div className="relative">
-      {icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">{React.cloneElement(icon, { className: "w-5 h-5 text-gray-400"})}</div>}
+      {icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">{React.cloneElement(icon, { className: "w-5 h-5 text-gray-400" })}</div>}
       <input
         type={type}
         id={id}
@@ -17,22 +18,21 @@ const InputField = ({ id, label, type, value, onChange, error, icon, placeholder
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`w-full ${icon ? 'pl-10' : 'px-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${
-          error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
-        }`}
+        className={`w-full ${icon ? 'pl-10' : 'px-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
+          }`}
       />
       {toggleVisibility && (
-         <button
-            type="button"
-            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-            onClick={toggleVisibility}
-          >
-            {showPassword ? (
-              <EyeOff className="h-5 w-5 text-gray-400" />
-            ) : (
-              <Eye className="h-5 w-5 text-gray-400" />
-            )}
-          </button>
+        <button
+          type="button"
+          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+          onClick={toggleVisibility}
+        >
+          {showPassword ? (
+            <EyeOff className="h-5 w-5 text-gray-400" />
+          ) : (
+            <Eye className="h-5 w-5 text-gray-400" />
+          )}
+        </button>
       )}
     </div>
     {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
@@ -47,15 +47,15 @@ const ResetPasswordPage = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  
+
   const navigate = useNavigate();
   const location = useLocation(); // Use location to get state
   const { isDarkMode } = useTheme();
-  
+
   const emailForReset = location.state?.emailForReset; // Get email from route state
 
   useEffect(() => {
-    if (!emailForReset && !successMessage) { 
+    if (!emailForReset && !successMessage) {
       console.warn("No email found for password reset (from route state). Redirecting to login.");
       navigate('/login');
     }
@@ -66,13 +66,13 @@ const ResetPasswordPage = () => {
     if (successMessage) {
       timer = setTimeout(() => {
         navigate('/login');
-      }, 4000); 
+      }, 4000);
     }
     return () => clearTimeout(timer);
   }, [successMessage, navigate]);
 
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
@@ -89,18 +89,28 @@ const ResetPasswordPage = () => {
       setError('Passwords do not match.');
       return;
     }
-
     setIsLoading(true);
-    console.log(`Simulating password reset for ${emailForReset} with new password: ${newPassword}`);
-    setTimeout(() => {
-      setSuccessMessage('Your password has been reset successfully! Redirecting to login...');
-      // No longer removing from localStorage as it's not set there
+
+    try {
+      const result = await extCompanyUserResetpwd({
+        'email': emailForReset,
+        'new_password': newPassword
+      });
+      console.log(`Simulating password reset for ${emailForReset} with new password: ${newPassword}`);
+      if (result.status == 200) {
+        setSuccessMessage('Your password has been reset successfully! Redirecting to login...');
+      } else {
+        console.log(result);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   if (!emailForReset && !successMessage) {
-    return null; 
+    return null;
   }
 
   return (
@@ -135,26 +145,26 @@ const ResetPasswordPage = () => {
                   <span className="block sm:inline">{error}</span>
                 </div>
               )}
-              
+
               <form className="space-y-6" onSubmit={handleSubmit}>
-                <InputField 
-                  id="newPassword" 
-                  label="New Password" 
+                <InputField
+                  id="newPassword"
+                  label="New Password"
                   type={showNewPassword ? "text" : "password"}
-                  value={newPassword} 
-                  onChange={(e) => setNewPassword(e.target.value)} 
-                  icon={<Lock />} 
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  icon={<Lock />}
                   placeholder="Enter new password (min. 8 chars)"
                   toggleVisibility={() => setShowNewPassword(!showNewPassword)}
                   showPassword={showNewPassword}
                 />
-                <InputField 
-                  id="confirmPassword" 
-                  label="Confirm New Password" 
+                <InputField
+                  id="confirmPassword"
+                  label="Confirm New Password"
                   type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword} 
-                  onChange={(e) => setConfirmPassword(e.target.value)} 
-                  icon={<Lock />} 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  icon={<Lock />}
                   placeholder="Re-enter new password"
                   toggleVisibility={() => setShowConfirmPassword(!showConfirmPassword)}
                   showPassword={showConfirmPassword}

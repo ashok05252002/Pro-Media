@@ -88,26 +88,26 @@ export const extCompanyUserRegVerifyOTP = (userInput) => {
     })
 };
 
-export const extCompanyUserRegResendOTP = (userInput) => {
-    console.log("userInput", userInput)
+export const extCompanyUserRegResendOTP = (email) => { 
     return axios.post(`/company/resent-otp`, {},
         {
             headers: {
-                "email": userInput.userEmail,
-
+                "email": email,
             },
 
         })
 }
 
 export const extCompanyUserForgetpwd = (email) => {
-    return axios.post(`/company/forgetpasswrd`, { email })
-};
-
+    return axios.post(`/company/forgetpasswrd`, {}, {
+        headers : {
+            email
+        }
+    })
+}; 
 export const extCompanyUserResetpwd = (userData) => {
     return axios.post(`/company/reset-password`, {
-        "email": userData.email,
-        "otp": userData.otp,
+        "email": userData.email, 
         "new_password": userData.new_password,
     })
 };
