@@ -1,275 +1,332 @@
-import React, { useState } from 'react';
-import { Calendar, ChevronDown, Download, ArrowUp, ArrowDown, TrendingUp, Users, Eye, MessageSquare, Share2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Download, ArrowUp, ArrowDown, TrendingUp, Users, Eye, MessageSquare, Share2, ThumbsUp, Activity, BarChart2, Facebook, Instagram, Twitter, Linkedin, Youtube as YoutubeIcon } from 'lucide-react'; // Added platform icons
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell, Sector } from 'recharts';
+import { faker } from '@faker-js/faker';
+import DateRangePicker from '../components/DateRangePicker';
+import PlatformFilter from '../components/PlatformFilter';
+import { useTheme } from '../contexts/ThemeContext';
 
-const BarChart = ({ data }) => {
-  const maxValue = Math.max(...data.map(item => Math.max(item.facebook, item.instagram, item.twitter, item.linkedin)));
-  
-  return (
-    <div className="h-64 mt-4">
-      <div className="flex h-full">
-        {data.map((item, index) => (
-          <div key={index} className="flex-1 flex flex-col justify-end items-center">
-            <div className="w-full flex justify-center space-x-1">
-              <div 
-                className="w-3 bg-blue-600 rounded-t-lg"
-                style={{ height: `${(item.facebook / maxValue) * 100}%` }}
-              ></div>
-              <div 
-                className="w-3 bg-pink-600 rounded-t-lg"
-                style={{ height: `${(item.instagram / maxValue) * 100}%` }}
-              ></div>
-              <div 
-                className="w-3 bg-blue-400 rounded-t-lg"
-                style={{ height: `${(item.twitter / maxValue) * 100}%` }}
-              ></div>
-              <div 
-                className="w-3 bg-blue-700 rounded-t-lg"
-                style={{ height: `${(item.linkedin / maxValue) * 100}%` }}
-              ></div>
-            </div>
-            <div className="text-xs mt-2">{item.name}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+const platformDetails = {
+  facebook: { name: 'Facebook', color: '#4267B2', icon: <Facebook size={16} /> },
+  instagram: { name: 'Instagram', color: '#E1306C', icon: <Instagram size={16} /> },
+  twitter: { name: 'Twitter', color: '#1DA1F2', icon: <Twitter size={16} /> },
+  linkedin: { name: 'LinkedIn', color: '#0077B5', icon: <Linkedin size={16} /> },
+  youtube: { name: 'YouTube', color: '#FF0000', icon: <YoutubeIcon size={16} /> },
+};
+const platforms = Object.keys(platformDetails);
+
+const generateMockData = (startDate, endDate) => {
+  const data = [];
+  let currentDate = new Date(startDate);
+  const finalEndDate = new Date(endDate);
+
+  while (currentDate <= finalEndDate) {
+    platforms.forEach(platform => {
+      data.push({
+        date: currentDate.toISOString().split('T')[0],
+        platform: platform,
+        followers: faker.number.int({ min: 500, max: 50000 }),
+        newFollowers: faker.number.int({ min: -50, max: 200 }),
+        engagementRate: parseFloat(faker.number.float({ min: 0.5, max: 10 }).toFixed(1)),
+        posts: faker.number.int({ min: 0, max: 5 }),
+        reach: faker.number.int({ min: 100, max: 100000 }),
+        impressions: faker.number.int({ min: 200, max: 200000 }),
+        likes: faker.number.int({ min: 10, max: 5000 }),
+        comments: faker.number.int({ min: 1, max: 1000 }),
+        shares: faker.number.int({ min: 0, max: 500 }),
+        views: platform === 'youtube' ? faker.number.int({min: 100, max: 50000}) : faker.number.int({min: 50, max: 10000}),
+      });
+    });
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  return data;
 };
 
-const LineChart = ({ data }) => {
-  const maxValue = Math.max(...data.map(item => item.followers));
-  const points = data.map((item, index) => {
-    const x = (index / (data.length - 1)) * 100;
-    const y = 100 - (item.followers / maxValue) * 100;
-    return `${x},${y}`;
-  }).join(' ');
-  
-  return (
-    <div className="h-64 mt-4 relative">
-      <svg className="w-full h-full">
-        <defs>
-          <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#8884d8" stopOpacity="0.8"/>
-            <stop offset="100%" stopColor="#8884d8" stopOpacity="0.1"/>
-          </linearGradient>
-        </defs>
-        
-        {/* Area under the line */}
-        <path
-          d={`M0,100 L${points} L100,100 Z`}
-          fill="url(#gradient)"
-        />
-        
-        {/* Line */}
-        <polyline
-          points={points}
-          fill="none"
-          stroke="#8884d8"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        
-        {/* Dots */}
-        {data.map((item, index) => {
-          const x = (index / (data.length - 1)) * 100 + '%';
-          const y = 100 - (item.followers / maxValue) * 100 + '%';
-          return (
-            <circle
-              key={index}
-              cx={x}
-              cy={y}
-              r="4"
-              fill="#8884d8"
-              stroke="#fff"
-              strokeWidth="2"
-            />
-          );
-        })}
-      </svg>
-      <div className="absolute bottom-0 left-0 right-0 flex justify-between">
-        {data.map((item, index) => (
-          <div key={index} className="text-xs">{item.name}</div>
-        ))}
-      </div>
-    </div>
-  );
-};
+const initialEndDate = new Date();
+const initialStartDate = new Date();
+initialStartDate.setDate(initialEndDate.getDate() - 29); // Default to last 30 days
 
-const PieChart = ({ data }) => {
-  const total = data.reduce((sum, item) => sum + item.value, 0);
-  let currentAngle = 0;
-  
-  return (
-    <div className="h-64 flex justify-center items-center mt-4">
-      <div className="relative w-40 h-40">
-        <svg viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="45" fill="#f3f4f6" />
-          {data.map((item, index) => {
-            const startAngle = currentAngle;
-            const angle = (item.value / total) * 360;
-            currentAngle += angle;
-            
-            const x1 = 50 + 45 * Math.cos((startAngle * Math.PI) / 180);
-            const y1 = 50 + 45 * Math.sin((startAngle * Math.PI) / 180);
-            const x2 = 50 + 45 * Math.cos(((startAngle + angle) * Math.PI) / 180);
-            const y2 = 50 + 45 * Math.sin(((startAngle + angle) * Math.PI) / 180);
-            
-            const largeArcFlag = angle > 180 ? 1 : 0;
-            
-            const colors = ['#0088FE', '#E91E63', '#00C49F', '#FFBB28'];
-            
-            return (
-              <path
-                key={index}
-                d={`M 50 50 L ${x1} ${y1} A 45 45 0 ${largeArcFlag} 1 ${x2} ${y2} Z`}
-                fill={colors[index % colors.length]}
-              />
-            );
-          })}
-          <circle cx="50" cy="50" r="25" fill="white" />
-        </svg>
-      </div>
-    </div>
-  );
-};
+const ALL_MOCK_DATA = generateMockData(
+  new Date(initialEndDate.getFullYear() -1, initialEndDate.getMonth(), initialEndDate.getDate()), // Generate data for past year
+  initialEndDate
+);
 
-const StatCard = ({ title, value, change, icon, color, bgColor }) => {
-  const isPositive = !change.includes('-');
-  
+
+const StatCard = ({ title, value, change, icon, color, bgColor, changeColor }) => {
+  const isPositive = change && !change.startsWith('-');
   return (
-    <div className={`${bgColor} p-6 rounded-lg shadow-lg relative overflow-hidden`}>
-      <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/10 -mt-10 -mr-10"></div>
-      <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full bg-white/10 -mb-8 -ml-8"></div>
-      
+    <div className={`${bgColor} p-6 rounded-xl shadow-lg relative overflow-hidden`}>
+      <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-white/10 -mt-10 -mr-10 opacity-50"></div>
       <div className="flex justify-between items-start relative z-10">
         <div>
           <p className="text-sm font-medium text-white/80 mb-1">{title}</p>
           <h3 className="text-3xl font-bold text-white">{value}</h3>
-          <p className={`text-sm mt-2 flex items-center ${isPositive ? 'text-green-200' : 'text-red-200'}`}>
-            {isPositive ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
-            {change}
-          </p>
+          {change && (
+            <p className={`text-sm mt-2 flex items-center ${isPositive ? (changeColor ? changeColor.positive : 'text-green-200') : (changeColor ? changeColor.negative : 'text-red-200')}`}>
+              {isPositive ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
+              {change}
+            </p>
+          )}
         </div>
         <div className={`p-3 rounded-full bg-white/20`}>
-          {icon}
+          {React.cloneElement(icon, { className: `w-6 h-6 ${color}`})}
         </div>
       </div>
     </div>
   );
 };
 
-const Analytics = () => {
-  const [dateRange, setDateRange] = useState('Last 30 days');
-  
-  const engagementData = [
-    { name: 'Jan', facebook: 4000, instagram: 2400, twitter: 1800, linkedin: 1200 },
-    { name: 'Feb', facebook: 3000, instagram: 2210, twitter: 2000, linkedin: 1300 },
-    { name: 'Mar', facebook: 2000, instagram: 2290, twitter: 2200, linkedin: 1400 },
-    { name: 'Apr', facebook: 2780, instagram: 3490, twitter: 2500, linkedin: 1500 },
-    { name: 'May', facebook: 1890, instagram: 4490, twitter: 2800, linkedin: 1700 },
-    { name: 'Jun', facebook: 2390, instagram: 3800, twitter: 2900, linkedin: 1800 },
-    { name: 'Jul', facebook: 3490, instagram: 4300, twitter: 3100, linkedin: 2000 },
-  ];
-  
-  const followerGrowthData = [
-    { name: 'Jan', followers: 10000 },
-    { name: 'Feb', followers: 12000 },
-    { name: 'Mar', followers: 15000 },
-    { name: 'Apr', followers: 18000 },
-    { name: 'May', followers: 22000 },
-    { name: 'Jun', followers: 28000 },
-    { name: 'Jul', followers: 35000 },
-  ];
-  
-  const platformDistributionData = [
-    { name: 'Facebook', value: 40 },
-    { name: 'Instagram', value: 30 },
-    { name: 'Twitter', value: 20 },
-    { name: 'LinkedIn', value: 10 },
-  ];
-  
-  const topPerformingPosts = [
-    {
-      id: 1,
-      title: 'Summer Collection Launch',
-      platform: 'Instagram',
-      engagement: '12.5K',
-      reach: '45.2K',
-      date: 'Jul 10, 2023',
-    },
-    {
-      id: 2,
-      title: 'Customer Testimonial Video',
-      platform: 'Facebook',
-      engagement: '8.7K',
-      reach: '32.1K',
-      date: 'Jul 5, 2023',
-    },
-    {
-      id: 3,
-      title: 'Industry News Update',
-      platform: 'LinkedIn',
-      engagement: '5.2K',
-      reach: '18.9K',
-      date: 'Jun 28, 2023',
-    },
-  ];
+const ActiveShapePieChart = (props) => {
+  const RADIAN = Math.PI / 180;
+  const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  const sin = Math.sin(-RADIAN * midAngle);
+  const cos = Math.cos(-RADIAN * midAngle);
+  const sx = cx + (outerRadius + 10) * cos;
+  const sy = cy + (outerRadius + 10) * sin;
+  const mx = cx + (outerRadius + 30) * cos;
+  const my = cy + (outerRadius + 30) * sin;
+  const ex = mx + (cos >= 0 ? 1 : -1) * 22;
+  const ey = my;
+  const textAnchor = cos >= 0 ? 'start' : 'end';
 
-  const stats = [
-    { 
-      title: "Total Followers", 
-      value: "35.2K", 
-      change: "+12% from last month", 
-      icon: <Users className="w-6 h-6 text-white" />,
-      color: "text-white",
-      bgColor: "bg-gradient-to-br from-[#4E7FFF] to-[#7BA2FF]"
-    },
-    { 
-      title: "Engagement Rate", 
-      value: "5.7%", 
-      change: "+0.8% from last month", 
-      icon: <TrendingUp className="w-6 h-6 text-white" />,
-      color: "text-white",
-      bgColor: "bg-gradient-to-br from-[#FF6B6B] to-[#FF8E8E]"
-    },
-    { 
-      title: "Total Posts", 
-      value: "248", 
-      change: "+18 new posts", 
-      icon: <MessageSquare className="w-6 h-6 text-white" />,
-      color: "text-white",
-      bgColor: "bg-gradient-to-br from-[#FFB31F] to-[#FFCB66]"
-    },
-    { 
-      title: "Avg. Reach", 
-      value: "28.4K", 
-      change: "-3% from last month", 
-      icon: <Eye className="w-6 h-6 text-white" />,
-      color: "text-white",
-      bgColor: "bg-gradient-to-br from-[#36D399] to-[#6AE6B5]"
+  return (
+    <g>
+      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill} className="font-semibold text-lg">
+        {payload.name}
+      </text>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        innerRadius={outerRadius + 6}
+        outerRadius={outerRadius + 10}
+        fill={fill}
+      />
+      <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
+      <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
+      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="#333"  className="dark:fill-gray-300 text-xs">{`${value.toLocaleString()}`}</text>
+      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="#999" className="text-xs">
+        {`(Rate ${(percent * 100).toFixed(2)}%)`}
+      </text>
+    </g>
+  );
+};
+
+
+const Analytics = () => {
+  const { isDarkMode, themeColors } = useTheme();
+  const [dateRange, setDateRange] = useState({
+    startDate: initialStartDate.toISOString().split('T')[0],
+    endDate: initialEndDate.toISOString().split('T')[0],
+    label: 'Last 30 Days'
+  });
+  const [activePlatforms, setActivePlatforms] = useState(platforms); // Initially all platforms
+  const [filteredData, setFilteredData] = useState([]);
+  const [activePieIndex, setActivePieIndex] = useState(0);
+
+  useEffect(() => {
+    const start = new Date(dateRange.startDate);
+    const end = new Date(dateRange.endDate);
+    end.setHours(23,59,59,999); // Ensure end date includes the whole day
+
+    const currentFilteredData = ALL_MOCK_DATA.filter(item => {
+      const itemDate = new Date(item.date);
+      const platformMatch = activePlatforms.length === 0 || activePlatforms.includes(item.platform); // If no platforms selected, show all
+      return itemDate >= start && itemDate <= end && platformMatch;
+    });
+    setFilteredData(currentFilteredData);
+  }, [dateRange, activePlatforms]);
+  
+  const aggregateMetrics = useMemo(() => {
+    if (!filteredData.length) return {
+      totalFollowers: 0, followersChange: '0%', engagementRate: '0%', engagementChange:'0%', totalPosts: 0, postsChange:'0 new posts', avgReach: '0', reachChange:'0%',
+      totalLikes: 0, totalComments: 0, totalShares: 0, totalViews: 0
+    };
+
+    let totalFollowers = 0;
+    const latestFollowersByPlatform = {};
+    
+    filteredData.forEach(item => {
+        if (!latestFollowersByPlatform[item.platform] || new Date(item.date) > new Date(latestFollowersByPlatform[item.platform].date)) {
+            latestFollowersByPlatform[item.platform] = { followers: item.followers, date: item.date };
+        }
+    });
+    totalFollowers = Object.values(latestFollowersByPlatform).reduce((sum, pf) => sum + pf.followers, 0);
+
+    const followersChange = faker.number.int({ min: -5, max: 15 }); 
+    const engagementRate = parseFloat(filteredData.reduce((sum, item) => sum + item.engagementRate, 0) / filteredData.length || 0).toFixed(1);
+    const engagementChange = parseFloat(faker.number.float({ min: -1, max: 1 })).toFixed(1); 
+    const totalPosts = filteredData.reduce((sum, item) => sum + item.posts, 0);
+    const postsChange = faker.number.int({ min: -10, max: 20 }); 
+    const avgReach = parseFloat(filteredData.reduce((sum, item) => sum + item.reach, 0) / filteredData.length || 0).toFixed(0);
+    const reachChange = faker.number.int({ min: -10, max: 10 }); 
+
+    return {
+      totalFollowers,
+      followersChange: `${followersChange > 0 ? '+' : ''}${followersChange}%`,
+      engagementRate: `${engagementRate}%`,
+      engagementChange: `${engagementChange > 0 ? '+' : ''}${engagementChange}%`,
+      totalPosts,
+      postsChange: `${postsChange > 0 ? '+' : ''}${postsChange} new posts`,
+      avgReach: parseInt(avgReach).toLocaleString(),
+      reachChange: `${reachChange > 0 ? '+' : ''}${reachChange}%`,
+      totalLikes: filteredData.reduce((sum, item) => sum + item.likes, 0),
+      totalComments: filteredData.reduce((sum, item) => sum + item.comments, 0),
+      totalShares: filteredData.reduce((sum, item) => sum + item.shares, 0),
+      totalViews: filteredData.reduce((sum, item) => sum + item.views, 0),
+    };
+  }, [filteredData]);
+
+  const engagementByPlatformChartData = useMemo(() => {
+    const result = {};
+    filteredData.forEach(item => {
+      if (!result[item.platform]) {
+        result[item.platform] = { name: platformDetails[item.platform].name, likes: 0, comments: 0, shares: 0 };
+      }
+      result[item.platform].likes += item.likes;
+      result[item.platform].comments += item.comments;
+      result[item.platform].shares += item.shares;
+    });
+    return Object.values(result);
+  }, [filteredData]);
+
+  const followerGrowthChartData = useMemo(() => {
+    const dailyData = {};
+    
+    // Initialize dailyData with all dates in the range for all active platforms
+    let currentDate = new Date(dateRange.startDate);
+    const endDate = new Date(dateRange.endDate);
+    while(currentDate <= endDate) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        dailyData[dateStr] = { date: dateStr, followers: 0 };
+        activePlatforms.forEach(platform => {
+            dailyData[dateStr][platform] = 0; // Initialize follower count for each platform
+        });
+        currentDate.setDate(currentDate.getDate() + 1);
     }
+
+    // Populate with actual follower data (latest for each day for each platform)
+    const latestPlatformFollowersPerDay = {};
+    filteredData.forEach(item => {
+        const dateKey = `${item.date}-${item.platform}`;
+        if (!latestPlatformFollowersPerDay[dateKey] || new Date(item.date) >= new Date(latestPlatformFollowersPerDay[dateKey].dateRecord)) {
+             latestPlatformFollowersPerDay[dateKey] = { followers: item.followers, dateRecord: item.date };
+        }
+    });
+    
+    // Aggregate total followers per day
+    Object.keys(dailyData).forEach(dateStr => {
+        let dailyTotal = 0;
+        activePlatforms.forEach(platform => {
+            // Find the latest record for this platform up to dateStr
+            let latestFollowersForPlatformOnDate = 0;
+            let recordDate = new Date(dateRange.startDate);
+            recordDate.setDate(recordDate.getDate() -1); // Start before range
+
+            filteredData.filter(d => d.platform === platform && new Date(d.date) <= new Date(dateStr))
+                        .forEach(d => {
+                            if(new Date(d.date) > recordDate) {
+                                latestFollowersForPlatformOnDate = d.followers;
+                                recordDate = new Date(d.date);
+                            }
+                        });
+            dailyTotal += latestFollowersForPlatformOnDate;
+        });
+        dailyData[dateStr].followers = dailyTotal;
+    });
+    
+    const series = Object.values(dailyData).sort((a,b) => new Date(a.date) - new Date(b.date));
+    
+    if(series.length === 1) { // Handle single data point for line chart
+        return [series[0], {...series[0], date: new Date(new Date(series[0].date).getTime() + 86400000).toISOString().split('T')[0] }];
+    }
+
+    return series.length > 0 ? series : [{date: dateRange.startDate, followers: 0}, {date: dateRange.endDate, followers: 0}];
+
+  }, [filteredData, activePlatforms, dateRange.startDate, dateRange.endDate]);
+
+
+  const audienceDistributionChartData = useMemo(() => {
+    const latestFollowersByPlatformForDist = {}; // Correctly initialize here
+
+    filteredData.forEach(item => {
+        if (!latestFollowersByPlatformForDist[item.platform] || new Date(item.date) > new Date(latestFollowersByPlatformForDist[item.platform].date)) {
+            latestFollowersByPlatformForDist[item.platform] = { followers: item.followers, date: item.date };
+        }
+    });
+
+    return activePlatforms.map(platform => ({
+      name: platformDetails[platform].name,
+      value: latestFollowersByPlatformForDist[platform]?.followers || 0,
+      color: platformDetails[platform].color,
+    })).filter(p => p.value > 0);
+  }, [filteredData, activePlatforms]);
+
+  const topPerformingPosts = useMemo(() => {
+    // Create a map to store the latest version of each post based on its title and platform (as a pseudo-ID)
+    const latestPostsMap = new Map();
+    filteredData.forEach(item => {
+      const postTitle = item.title || faker.lorem.sentence(5).slice(0,-1); // Use existing title or generate one
+      const postId = `${postTitle}-${item.platform}`; // Create a unique ID based on title and platform
+      
+      if (!latestPostsMap.has(postId) || new Date(item.date) > new Date(latestPostsMap.get(postId).date)) {
+        latestPostsMap.set(postId, {
+          ...item,
+          id: postId, // Use the generated ID
+          title: postTitle,
+          engagementScore: item.likes + item.comments * 2 + item.shares * 3,
+        });
+      }
+    });
+  
+    return Array.from(latestPostsMap.values())
+      .sort((a, b) => b.engagementScore - a.engagementScore)
+      .slice(0, 5);
+  }, [filteredData]);
+
+
+  const onPieEnter = (_, index) => setActivePieIndex(index);
+
+  const statCards = [
+    { title: "Total Followers", value: aggregateMetrics.totalFollowers.toLocaleString(), change: aggregateMetrics.followersChange, icon: <Users />, color: "text-white", bgColor: "bg-gradient-to-br from-blue-500 to-blue-700 dark:from-blue-600 dark:to-blue-800" },
+    { title: "Engagement Rate", value: aggregateMetrics.engagementRate, change: aggregateMetrics.engagementChange, icon: <TrendingUp />, color: "text-white", bgColor: "bg-gradient-to-br from-pink-500 to-pink-700 dark:from-pink-600 dark:to-pink-800" },
+    { title: "Total Posts", value: aggregateMetrics.totalPosts.toLocaleString(), change: aggregateMetrics.postsChange, icon: <BarChart2 />, color: "text-white", bgColor: "bg-gradient-to-br from-yellow-500 to-yellow-700 dark:from-yellow-600 dark:to-yellow-800" },
+    { title: "Avg. Reach", value: aggregateMetrics.avgReach, change: aggregateMetrics.reachChange, icon: <Eye />, color: "text-white", bgColor: "bg-gradient-to-br from-green-500 to-green-700 dark:from-green-600 dark:to-green-800" }
+  ];
+  
+  const engagementOverviewCards = [
+     { title: "Total Likes", value: aggregateMetrics.totalLikes.toLocaleString(), icon: <ThumbsUp size={24}/>, color: themeColors.primary },
+     { title: "Total Comments", value: aggregateMetrics.totalComments.toLocaleString(), icon: <MessageSquare size={24}/>, color: themeColors.accent },
+     { title: "Total Shares", value: aggregateMetrics.totalShares.toLocaleString(), icon: <Share2 size={24}/>, color: themeColors.info },
+     { title: "Total Views", value: aggregateMetrics.totalViews.toLocaleString(), icon: <Activity size={24}/>, color: themeColors.success },
   ];
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <h1 className="text-2xl font-semibold">Analytics & Insights</h1>
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
-            <Calendar className="w-4 h-4" />
-            <span>{dateRange}</span>
-            <ChevronDown className="w-4 h-4" />
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <PlatformFilter selectedPlatforms={activePlatforms} onChange={setActivePlatforms} />
+          <DateRangePicker onRangeChange={setDateRange} />
+          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">
             <Download className="w-4 h-4" />
             <span>Export</span>
           </button>
         </div>
       </div>
       
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        {stats.map((stat, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {statCards.map((stat, index) => (
           <StatCard 
             key={index}
             title={stat.title}
@@ -281,116 +338,152 @@ const Analytics = () => {
           />
         ))}
       </div>
-      
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h3 className="text-lg font-medium mb-4">Engagement by Platform</h3>
-          <div className="flex justify-center mb-2">
-            <div className="flex items-center mr-4">
-              <div className="w-3 h-3 bg-blue-600 rounded-full mr-1"></div>
-              <span className="text-xs">Facebook</span>
-            </div>
-            <div className="flex items-center mr-4">
-              <div className="w-3 h-3 bg-pink-600 rounded-full mr-1"></div>
-              <span className="text-xs">Instagram</span>
-            </div>
-            <div className="flex items-center mr-4">
-              <div className="w-3 h-3 bg-blue-400 rounded-full mr-1"></div>
-              <span className="text-xs">Twitter</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-3 h-3 bg-blue-700 rounded-full mr-1"></div>
-              <span className="text-xs">LinkedIn</span>
-            </div>
-          </div>
-          <BarChart data={engagementData} />
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h3 className="text-lg font-medium mb-4">Follower Growth</h3>
-          <LineChart data={followerGrowthData} />
+
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+        <h3 className="text-xl font-semibold mb-1">Engagement Overview</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Summary of key engagement metrics for the selected period and platforms.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {engagementOverviewCards.map(card => (
+                 <div key={card.title} className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 flex items-center">
+                    <div className="p-3 rounded-full mr-4" style={{backgroundColor: `${card.color}20`}}>
+                        {React.cloneElement(card.icon, {style: {color: card.color}})}
+                    </div>
+                    <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{card.title}</p>
+                        <p className="text-2xl font-bold">{card.value}</p>
+                    </div>
+                 </div>
+            ))}
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h3 className="text-lg font-medium mb-4">Audience Distribution</h3>
-          <PieChart data={platformDistributionData} />
-          <div className="flex flex-wrap justify-center mt-4">
-            {platformDistributionData.map((item, index) => {
-              const colors = ['#0088FE', '#E91E63', '#00C49F', '#FFBB28'];
-              return (
-                <div key={index} className="flex items-center mr-4 mb-2">
-                  <div 
-                    className="w-3 h-3 rounded-full mr-1"
-                    style={{ backgroundColor: colors[index % colors.length] }}
-                  ></div>
-                  <span className="text-xs">{item.name} ({item.value}%)</span>
-                </div>
-              );
-            })}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-semibold mb-4">Engagement by Platform</h3>
+           <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={engagementByPlatformChartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#374151" : "#e5e7eb"} />
+                <XAxis dataKey="name" tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} />
+                <YAxis tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} />
+                <Tooltip 
+                    contentStyle={{ backgroundColor: isDarkMode ? '#1f2937' : '#fff', border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`}} 
+                    labelStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
+                    itemStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
+                />
+                <Legend wrapperStyle={{fontSize: "12px"}}/>
+                <Bar dataKey="likes" name="Likes" fill={themeColors.primary} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="comments" name="Comments" fill={themeColors.accent} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="shares" name="Shares" fill={themeColors.info} radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
         
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-2">
-          <h3 className="text-lg font-medium mb-4">Top Performing Posts</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-semibold mb-4">Follower Growth</h3>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={followerGrowthChartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#374151" : "#e5e7eb"} />
+                <XAxis dataKey="date" tickFormatter={(tick) => new Date(tick).toLocaleDateString('en-US', {month:'short', day:'numeric'})} tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} />
+                <YAxis tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} tickFormatter={(value) => value.toLocaleString()} />
+                <Tooltip 
+                    contentStyle={{ backgroundColor: isDarkMode ? '#1f2937' : '#fff', border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`}}
+                    labelStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
+                    itemStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
+                    formatter={(value) => value.toLocaleString()}
+                />
+                <Legend wrapperStyle={{fontSize: "12px"}}/>
+                <Line type="monotone" dataKey="followers" name="Total Followers" stroke={themeColors.primary} strokeWidth={2} dot={{ r: 4, fill: themeColors.primary }} activeDot={{ r: 6 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-semibold mb-4">Audience Distribution by Platform</h3>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  activeIndex={activePieIndex}
+                  activeShape={ActiveShapePieChart}
+                  data={audienceDistributionChartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  dataKey="value"
+                  onMouseEnter={(_, index) => setActivePieIndex(index)}
+                >
+                  {audienceDistributionChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Legend 
+                  layout="vertical" 
+                  align="right" 
+                  verticalAlign="middle" 
+                  iconSize={10}
+                  wrapperStyle={{fontSize: "12px", lineHeight: "20px"}}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg lg:col-span-2">
+          <h3 className="text-xl font-semibold mb-4">Top Performing Posts</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead>
+              <thead className="bg-gray-50 dark:bg-gray-700/50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Post</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Platform</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Engagement</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Reach</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Post</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Platform</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Engagement Score</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {topPerformingPosts.map((post) => (
-                  <tr key={post.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{post.title}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        post.platform === 'Instagram' ? 'bg-pink-100 text-pink-800' :
-                        post.platform === 'Facebook' ? 'bg-blue-100 text-blue-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
-                        {post.platform}
+                  <tr key={post.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium max-w-xs truncate" title={post.title}>{post.title}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm">
+                      <span 
+                        className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-max"
+                        style={{ backgroundColor: `${platformDetails[post.platform].color}20`, color: platformDetails[post.platform].color}}
+                      >
+                        {React.cloneElement(platformDetails[post.platform].icon, {size: 12})}
+                        {platformDetails[post.platform].name}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{post.engagement}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{post.reach}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{post.date}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{post.engagementScore.toLocaleString()}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(post.date).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {topPerformingPosts.length === 0 && <p className="text-center py-4 text-gray-500 dark:text-gray-400">No posts match current filters.</p>}
           </div>
         </div>
       </div>
       
-      <div className="bg-gradient-to-r from-[#4E7FFF]/10 to-[#7BA2FF]/10 p-6 rounded-lg shadow-lg">
+      <div className="bg-gradient-to-r from-theme-primary/10 to-theme-accent/10 dark:from-theme-primary/20 dark:to-theme-accent/20 p-8 rounded-xl shadow-lg">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0 md:mr-6">
-            <h3 className="text-xl font-semibold mb-2">Want deeper insights?</h3>
-            <p className="text-gray-700 dark:text-gray-300">
-              Upgrade to our Pro plan to unlock advanced analytics, competitor benchmarking, and AI-powered recommendations.
+            <h3 className="text-2xl font-semibold mb-2">Want Deeper Insights?</h3>
+            <p className="text-gray-700 dark:text-gray-300 max-w-2xl">
+              Upgrade to our Pro plan to unlock advanced analytics, competitor benchmarking, AI-powered recommendations, and custom report generation.
             </p>
-            <button className="mt-4 bg-[#4E7FFF] hover:bg-[#3A6BEB] text-white font-medium py-2 px-6 rounded-md transition-colors">
+            <button className="mt-6 bg-theme-primary hover:bg-opacity-90 text-white font-medium py-3 px-6 rounded-lg shadow-md transition-colors">
               Upgrade to Pro
             </button>
           </div>
-          <div className="w-full md:w-1/3 flex justify-center">
-            <div className="relative">
-              <div className="w-32 h-32 bg-[#4E7FFF]/20 rounded-full flex items-center justify-center">
-                <div className="w-24 h-24 bg-[#4E7FFF]/30 rounded-full flex items-center justify-center">
-                  <div className="w-16 h-16 bg-[#4E7FFF] rounded-full flex items-center justify-center">
-                    <TrendingUp className="w-8 h-8 text-white" />
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="w-full md:w-1/3 flex justify-center items-center">
+             <TrendingUp className="w-24 h-24 text-theme-primary opacity-70" />
           </div>
         </div>
       </div>

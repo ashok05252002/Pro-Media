@@ -34,14 +34,14 @@ const PostCardCalendar = ({ post, platformDetails, statusColors, onPreviewClick 
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-1.5 min-w-0">
           {React.cloneElement(platformInfo.icon, { className: "w-4 h-4 flex-shrink-0" })}
-          <span className="font-semibold text-xs truncate" title={post.title}>{post.title}</span>
+          <span className="font-semibold text-xs text-white truncate" title={post.title}>{post.title}</span>
         </div>
       </div>
       <div className="flex items-center justify-between">
         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${statusColorClass} backdrop-blur-sm`}>
           {post.status}
         </span>
-        <span className="text-xs opacity-90">{post.time}</span>
+        <span className="text-xs text-white opacity-90">{post.time}</span>
       </div>
     </div>
   );

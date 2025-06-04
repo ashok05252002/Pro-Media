@@ -10,7 +10,6 @@ import MyProducts from './pages/MyProducts';
 import PostCreation from './pages/PostCreation';
 import ContentScheduler from './pages/ContentScheduler';
 import Analytics from './pages/Analytics';
-import UserManagement from './pages/UserManagement';
 import Settings from './pages/Settings';
 import Support from './pages/Support';
 import Profile from './pages/Profile';
@@ -98,7 +97,6 @@ function App() {
                 <Route path="/post-creation" element={<PostCreation />} />
                 <Route path="/scheduler" element={<ContentScheduler />} />
                 <Route path="/analytics" element={<Analytics />} />
-                <Route path="/users" element={<UserManagement />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="/profile" element={<Profile />} />

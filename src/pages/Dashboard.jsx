@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import { Plus, BarChart2, TrendingUp, Users, Calendar, ArrowUp, ArrowDown, Briefcase } from 'lucide-react';
+import { Globe } from 'lucide-react';
+import { Plus, BarChart2, TrendingUp, Users, Calendar, ArrowUp, ArrowDown, Briefcase, FileEdit, Calendar as CalendarIconLucide,  BarChart3 as AnalyticsIcon } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { extCompanyProductData } from '../API/api';
@@ -65,6 +66,33 @@ const PerformanceCard = ({ title, channels }) => {
               <div className="text-sm text-green-500">{channel.growth}</div>
             </div>
           </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+const QuickActionsCard = () => {
+  const navigate = useNavigate();
+  const actions = [
+    { name: 'Create Post', icon: <FileEdit size={20}/>,  path: '/post-creation', color: 'hover:bg-blue-500 dark:hover:bg-blue-600' },
+    { name: 'View Calendar', icon: <CalendarIconLucide size={20}/>, path: '/calendar-view', color: 'hover:bg-green-500 dark:hover:bg-green-600' },
+    { name: 'Manage Business', icon: <Globe size={20}/>, path: '/channels', color: 'hover:bg-purple-500 dark:hover:bg-purple-600' },
+    { name: 'View Analytics', icon: <AnalyticsIcon size={20}/>, path: '/analytics', color: 'hover:bg-yellow-500 dark:hover:bg-yellow-600' },
+  ];
+
+  return (
+    <div className="bg-white dark:bg-gray-800 p-6 w-1/3 rounded-lg shadow-lg">
+      <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-100">Quick Actions</h3>
+      <div className="grid grid-cols-2 gap-3 hover:text-white">
+        {actions.map(action => (
+          <button 
+            key={action.name}
+            onClick={() => navigate(action.path)}
+            className={`flex flex-col items-center justify-center p-4 rounded-lg bg-gray-100 dark:bg-gray-700 ${action.color} text-gray-700 dark:text-gray-200 hover:text-white transition-all duration-200 group`}
+          >
+            {React.cloneElement(action.icon, { className: "mb-1.5 text-theme-primary group-hover:text-white transition-colors"})}
+            <span className="text-xs hover:text-white font-medium text-center">{action.name}</span>
+          </button>
         ))}
       </div>
     </div>
@@ -180,12 +208,7 @@ const Dashboard = () => {
         {/* <button onClick={handleRegNewProduct}>
             Register New Product
         </button> */}
-        <button className="ml-auto flex gap-2 px-4 py-2 bg-theme-primary hover:bg-opacity-90 text-white rounded-md" onClick={handleRegNewProduct}>
-          <Plus className="w-4 h-4" />
-          <span className= "text-white"> 
-            {registerPrdct?"Register My Business":"Add My Business"}
-          </span>
-        </button>
+        
         <button 
           onClick={() => navigate('/add-business')}
           className="flex items-center gap-2 px-4 py-2 bg-theme-primary hover:bg-opacity-90 text-white rounded-md shadow-sm transition-colors"
@@ -195,7 +218,9 @@ const Dashboard = () => {
         </button>
       </div>
 
-
+ <div className="space-y-6">
+          <QuickActionsCard />
+        </div>
       {/* After use */}
       {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
@@ -253,5 +278,6 @@ const Dashboard = () => {
     </div>
   );
 };
+
 
 export default Dashboard;

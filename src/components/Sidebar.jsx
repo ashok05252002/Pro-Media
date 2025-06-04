@@ -36,7 +36,6 @@ const Sidebar = () => {
     { path: '/post-creation', name: 'Post Creation', icon: <FileEdit className="w-5 h-5" /> },
     { path: '/scheduler', name: 'Content Scheduler', icon: <Calendar className="w-5 h-5" /> },
     { path: '/analytics', name: 'Analytics & Insights', icon: <BarChart3 className="w-5 h-5" /> },
-    { path: '/users', name: 'User Management', icon: <Users className="w-5 h-5" /> },
   ];
 
   const bottomMenuItems = [
