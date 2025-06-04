@@ -267,7 +267,8 @@ export const extCompanyPrdctLIListComments = (extProductId) => {
 };
 
 export const extCompanyPrdctListCommentsByPlatform = (postId, platform) => {
-    switch (platform.toLowerCase()) {
+    console.log(postId, platform)
+    switch (platform?.toLowerCase()) {
         case 'facebook':
             {
                 return axios.get(`/facebook/listcomments/${postId}`);
@@ -279,7 +280,7 @@ export const extCompanyPrdctListCommentsByPlatform = (postId, platform) => {
         case 'instagram':
             return axios.get(`/instagram/listComments/${postId}`);
         default:
-            return Promise.reject(new Error(`Unsupported platform: ${selectedPlatform}`));
+            return Promise.reject(new Error(`Unsupported platform: ${postId}`));
     }
 };
 // return axios.get(`/ext-product/list`)   

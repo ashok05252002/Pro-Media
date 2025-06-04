@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, MessageSquare, Send, Calendar, ThumbsUp, Facebook, Instagram, Twitter, Linkedin, Youtube as YoutubeIcon } from 'lucide-react';
 import CommentItem from '../components/CommentItem';
 import {extCompanyPrdctlistVideosByPlatform,
@@ -117,6 +117,12 @@ const platformIconMapPage = {
 };
 
 const PostDetailsAndCommentsPage = () => {
+  const params = useParams();
+  console.log("PARAMS", params)  
+
+  // const [searchParams] = useSearchParams();
+  // const postId = searchParams.get("postId");  
+  // const platform = searchParams.get("platform");  
   const { postId, platform } = useParams();
   const [post, setPost] = useState('');
   const [comments, setComments] = useState([]);
@@ -128,7 +134,8 @@ const PostDetailsAndCommentsPage = () => {
   const [commentsError, setCommentsError] = useState(null);
   const [replyingToCommentId, setReplyingToCommentId] = useState(null);
   const [currentReplyText, setCurrentReplyText] = useState('');
-
+  console.log("Platform: ", platform, postId)
+  // const [platform, setPlatform] = useState(platformName)
   useEffect(() => {
     console.log("Post state updated:", post[0]?.video_title);
   }, [post]);
@@ -200,7 +207,7 @@ const PostDetailsAndCommentsPage = () => {
   };
 
   const handleSendReplyCmt = (reviewId, extDSId, platformType) => {
-      console.log("HANDLESENDREPLy Comments:", currentReplyText, commentId, reviewId, extDSId, platformType)
+      console.log("HANDLESENDREPLy Comments:", currentReplyText,  reviewId, extDSId, platformType)
       if (!currentReplyText.trim()) return;
       const cmtData= {
           "reviewId":reviewId,
