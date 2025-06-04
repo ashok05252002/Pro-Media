@@ -1,6 +1,7 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+// import { format } from 'date-fns';
 import { format, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, isToday as dateFnsIsToday, addDays, subDays } from 'date-fns';
 import { ChevronLeft, ChevronRight, Facebook, Instagram, Twitter, Linkedin, Youtube, Briefcase } from 'lucide-react';
 import AddPostModalCalendar from '../components/calendar/AddPostModalCalendar';
@@ -9,6 +10,34 @@ import DayColumnWithTimes from '../components/calendar/DayColumnWithTimes';
 import PostPreviewModalCalendar from '../components/calendar/PostPreviewModalCalendar';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { useTheme } from '../contexts/ThemeContext';
+import { extCompanyProductData, 
+  extCompanyProductDataById,
+  extCompanyMstrDataSource, 
+  extCompanyPrdctFBlistVideos, 
+  extCompanyPrdctYTlistVideos, 
+  extCompanyGetPostCreationByBusiness,
+  extCompanyPrdctIGlistVideos, 
+  extCompanyPrdctLIlistVideos, 
+  extCompanyPrdctTWTlistVideos, 
+  extCompanyPrdctFBListComments, 
+  extCompanyPrdctLIListComments, 
+  extCompanyPrdctTWTListComments,
+  extCompanyPrdctIGListComments, 
+  extCompanyPrdctYTListComments,
+  replyComment,
+  extCompanyGetAllCreatePosts,
+} from '../API/api';
+
+// Updated Mock Data with replies
+const platformColors = {
+  facebook: 'bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-900/40 dark:to-indigo-800/40',
+  instagram: 'bg-gradient-to-br from-pink-100 to-pink-200 dark:from-pink-900/40 dark:to-pink-800/40',
+  twitter: 'bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/40 dark:to-blue-800/40',
+  linkedin: 'bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-cyan-900/40 dark:to-cyan-800/40',
+  youtube:'bg-gradient-to-br from-red-100 to-red-200 dark:from-red-900/40 dark:to-red-800/40',
+  // Add more platform types and colors as needed
+  default: '#cccccc' // For unknown platforms
+};
 
 const initialBusinesses = [
   { id: 'biz1', name: 'TechCorp Solutions' },
@@ -60,6 +89,41 @@ const platformDetails = {
 };
 
 
+
+const platformConfigs = {
+  facebook: {
+    icon: <Facebook className="w-4 h-4 text-white" />,
+    className: "w-4 h-4 text-white",
+    colorValue: '#3b82f6',
+    tagColor: 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-200'
+  },
+  instagram: {
+    icon: <Instagram className="w-4 h-4 text-white" />,
+    className: "w-4 h-4 text-white",
+    colorValue: '#ec4899',
+    tagColor: 'bg-pink-100 text-pink-700 dark:bg-pink-700 dark:text-pink-200'
+  },
+  twitter: {
+    icon: <Twitter className="w-4 h-4 text-white" />,
+    className: "w-4 h-4 text-white",
+    colorValue: '#0ea5e9',
+    tagColor: 'bg-sky-100 text-sky-700 dark:bg-sky-700 dark:text-sky-200'
+  },
+  linkedin: {
+    icon: <Linkedin className="w-4 h-4 text-white" />,
+    className: "w-4 h-4 text-white",
+    colorValue: '#0e76a8',
+    tagColor: 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100'
+  },
+  youtube: {
+    icon: <Youtube className="w-4 h-4 text-white" />,
+    className: "w-4 h-4 text-white",
+    colorValue: '#ff0000',
+    tagColor: 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-200'
+  }
+};
+
+
 const statusColors = {
   Draft: 'bg-white/20 text-white',
   Scheduled: 'bg-white/20 text-white',
@@ -70,19 +134,33 @@ const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2,
 
 const CalendarViewPage = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 0 }));
-  const [posts, setPosts] = useState(initialPosts);
+  // const [posts, setPosts] = useState(initialPosts);
+  const [posts, setPosts] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [modalDateTime, setModalDateTime] = useState({ date: null, time: null });
-  const [activePlatformFilters, setActivePlatformFilters] = useState(Object.keys(platformDetails));
-  const [selectedBusinessId, setSelectedBusinessId] = useState(initialBusinesses[0].id);
+  // const [activePlatformFilters, setActivePlatformFilters] = useState(Object.keys(platformDetails));
+  const [activePlatformFilters, setActivePlatformFilters] = useState([]);
+  const [selectedBusinessId, setSelectedBusinessId] = useState('');
   
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [postForPreview, setPostForPreview] = useState(null);
   
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [postToDeleteId, setPostToDeleteId] = useState(null);
+  const [socialMediaDatas, setSocialMediaDatas] = useState([]);
+  const [productDatas, setProductDatas] = useState([]);
+  // Initialize as empty object in state
+  const [platfrmsDtls, setPlatfrmsDtls] = useState({});
+  const [productCreationPosts, setProductCreationPosts] = useState([]);
+  const [productDataSources, setProductDataSources] = useState([])
+  const [productPosts, setProductPosts] = useState([]);
+  const [productComments, setProductComments] = useState([]);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const { themeColors, isDarkMode } = useTheme();
+  
 
   const handlePrevWeek = () => setCurrentWeekStart(subWeeks(currentWeekStart, 1));
   const handleNextWeek = () => setCurrentWeekStart(addWeeks(currentWeekStart, 1));
@@ -135,10 +213,242 @@ const CalendarViewPage = () => {
 
   const filteredPosts = useMemo(() => {
     return posts.filter(post => 
-      (activePlatformFilters.length === 0 || activePlatformFilters.length === Object.keys(platformDetails).length || activePlatformFilters.includes(post.platform)) &&
-      post.businessId === selectedBusinessId
+      (activePlatformFilters.length === 0 || activePlatformFilters.length === Object.keys(platfrmsDtls).length || activePlatformFilters.includes(post.platformName)) &&
+      post.product_id === selectedBusinessId
     );
   }, [posts, activePlatformFilters, selectedBusinessId]);
+
+  const fetchMasterDataSource = async () => {
+    try {
+      const response = await extCompanyMstrDataSource();
+      
+      // 1. First enhancement - ensure we always have a valid icon
+      const enhancedData = response?.data?.map(item => {
+        const platformConfig = platformConfigs[item.type] || {};
+        const icon = platformConfig.icon 
+          ? React.cloneElement(platformConfig.icon, { 
+              className: platformConfig.className 
+            })
+          : <div className={platformConfig.className}>?</div>; // Fallback icon
+        
+        return {
+          ...item,
+          icon:icon, 
+          code:item.code,
+          className: platformConfig.className,
+          colorValue: platformConfig.colorValue,
+          tagColor: platformConfig.tagColor
+        };
+      });
+
+      console.log("ENHANCEDMSTRDATA", enhancedData);
+
+      // 2. Safe transformation to object format
+      const platformsObject = enhancedData.reduce((acc, platform) => {
+        acc[platform.id] = {
+          name: platform.name,
+          type:platform.type,
+          code:platform.code,
+          icon: platform.icon, // Use the already-cloned icon
+          colorValue: platform.colorValue,
+          tagColor: platform.tagColor
+        };
+        return acc;
+      }, {});
+
+      console.log("Platforms Details:", platformsObject);
+      
+      // 3. Update all states
+      setPlatfrmsDtls(platformsObject);
+      setSocialMediaDatas(enhancedData);
+      setActivePlatformFilters(Object.keys(platformsObject));
+      
+      return enhancedData;
+    } catch (err) {
+      console.error('Failed to fetch master data source:', err);
+      return [];
+    }
+  };
+
+  
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await extCompanyProductData(); // Your endpoint to get products
+      setProductDatas(response.data)
+      if (response?.data?.length > 0) {
+        setSelectedBusinessId(response?.data[0]?.id)
+      }
+      console.log("FetCHING PRODUCT DATAS",response.data)
+      return response.data;
+    } catch (err) {
+      setError(err.message);
+      setProductDatas([])
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchExternalData = async (productId) => {
+    try {
+      const response = await extCompanyProductDataById(productId)
+      return response.data;
+    } catch (err) {
+      console.error(`Failed to fetch external data for product ${productId}:`, err);
+      return null;
+    }
+  };
+
+
+ 
+
+    const fetchAllData = async () => {
+      try {
+        setLoading(true);
+        
+        console.log("SELECTBUSINESSID: ",selectedBusinessId)
+        // 1. Fetch all base data in parallel
+        const [localProductsResponse, masterDataResponse] = await Promise.all([
+          fetchProducts().catch(() => []),
+          fetchMasterDataSource().catch(() => [])
+        ]);
+
+        // 2. Validate and prepare data
+        const localProducts = Array.isArray(localProductsResponse) ? localProductsResponse : [];
+        const masterData = Array.isArray(masterDataResponse) ? masterDataResponse : [];
+
+        // 3. Process each product with its external data and posts
+        const productsWithAllData = await Promise.all(
+          localProducts.map(async (product) => {
+            try {
+              const externalDataArray = await fetchExternalData(product?.id).catch(() => []);
+              
+              const enrichedExternalData = await Promise.all(
+                externalDataArray?.map(async (externalData) => {
+                  try {
+                    const platformInfo = masterData.find(
+                      item => item.id === externalData.data_source_id
+                    );
+                    console.log("PLATFORM INFO:", platformInfo);
+                  //   const enhancedData = platformInfo?.data?.map(item => {
+                  //   const platformConfig = platformConfigs[item?.type] || {};
+                  //   const icon = platformConfig.icon 
+                  //     ? React.cloneElement(platformConfig.icon, { 
+                  //         className: platformConfig.className 
+                  //       })
+                  //     : <div className={platformConfig.className}>?</div>; // Fallback icon
+                    
+                  //   return {
+                  //     ...item,
+                  //     icon:icon, 
+                  //     code:item.code,
+                  //     className: platformConfig.className,
+                  //     colorValue: platformConfig.colorValue,
+                  //     tagColor: platformConfig.tagColor
+                  //   };
+                  //   });
+
+                  // console.log("ENHANCEDMSTRDATA", enhancedData);
+
+                  //   // 2. Safe transformation to object format
+                  //   const platformsObject = enhancedData.reduce((acc, platform) => {
+                  //     acc[platform.id] = {
+                  //       name: platform.name,
+                  //       type:platform.type,
+                  //       code:platform.code,
+                  //       icon: platform.icon, // Use the already-cloned icon
+                  //       colorValue: platform.colorValue,
+                  //       tagColor: platform.tagColor
+                  //     };
+                  //     return acc;
+                  //     }, {});
+
+                  // console.log("Platforms Details:", platformsObject);
+                  // setPlatfrmsDtls(platformsObject)
+                  // setActivePlatformFilters(Object.keys(platformsObject));
+                  console.log("PLATFORM INFO:", platformInfo);
+                  // const platformType = platformInfo?.type?.toLowerCase();
+                  // const platformCode = platformInfo?.code?.toLowerCase();
+                  // const platform= {
+                  //   "name":platformInfo?.type.toLowerCase(),
+                  //   "postCode":platformInfo.name.toLowerCase()
+                  // }
+                  // console.log("PLATFORM INFO: ", platformInfo?.type, platformInfo?.code)
+
+                  // Fetch posts for this platform
+                  const postsResponse = await extCompanyGetPostCreationByBusiness(platformInfo?.type, externalData?.id)
+                    
+                  console.log("POSTS",postsResponse)  
+                  // Add platformName to each post
+                  const posts = postsResponse?.data 
+                    ? postsResponse.data.map(post => ({
+                        ...post,
+                        post_s_date: format(new Date(post?.scheduled_time),'yyyy-MM-dd'),
+                        post_s_time: format(new Date(post?.scheduled_time),'HH:mm'),
+                        product_id:product.id,
+                        extDsId:externalData.id,
+                        platformName: platformInfo.type, // Add platform name here
+                        platformId:platformInfo.id
+                      }))
+                    : [];
+
+                  return {
+                    ...externalData,
+                    platformInfo,
+                    posts,
+                    postsError: postsResponse.error || null
+                  };
+                  } catch (error) {
+                    return {
+                      ...externalData,
+                      posts: [],
+                      postsError: error.message
+                    };
+                  }
+                })
+              );
+
+              return {
+                ...product,
+                externalData: enrichedExternalData
+              };
+            } catch (error) {
+              return {
+                ...product,
+                externalData: [],
+                error: error.message
+              };
+            }
+          })
+        );
+
+        // 4. Extract all posts and set state
+        const allPosts = productsWithAllData.flatMap(product => 
+          product.externalData.flatMap(data => data.posts)
+        );
+        console.log("ALL POSTS", allPosts)
+        
+        // setProductCreationPosts(allPosts); // Set the posts state
+        setPosts(allPosts)
+        setProductDatas(localProducts); // Set products data if needed
+        return productsWithAllData;
+
+      } catch (error) {
+        console.error('Error in fetchAllData:', error);
+        setError('Failed to load product data');
+        setProductCreationPosts([]); // Reset posts on error
+        return [];
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+
+useEffect(() => {
+    fetchAllData();
+  }, [selectedBusinessId]);
+
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -161,18 +471,23 @@ const CalendarViewPage = () => {
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="relative">
               <select
+                // defaultValue={productDatas}
                 value={selectedBusinessId}
                 onChange={(e) => setSelectedBusinessId(e.target.value)}
                 className="appearance-none pl-3 pr-8 py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700 shadow-sm"
               >
-                {initialBusinesses.map(biz => (
+                {/* {initialBusinesses.map(biz => (
                   <option key={biz.id} value={biz.id}>{biz.name}</option>
+                ))} */}
+
+                 {productDatas?.map(biz => (
+                  <option key={biz.id} value={biz.id}>{biz.product_name}</option>
                 ))}
               </select>
               <Briefcase className="w-3 h-3 sm:w-4 sm:h-4 absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
             <PlatformFilterCalendar 
-              platforms={platformDetails} 
+              platforms={platfrmsDtls} 
               activeFilters={activePlatformFilters} 
               setActiveFilters={setActivePlatformFilters} 
             />
@@ -197,7 +512,7 @@ const CalendarViewPage = () => {
           <div className="flex flex-row flex-grow">
             {weekDays.map((day, index) => {
               const dayKey = format(day, 'yyyy-MM-dd');
-              const postsForDay = filteredPosts.filter(post => post.date === dayKey);
+              const postsForDay = filteredPosts.filter(post =>format(post.scheduled_time, 'yyyy-MM-dd') === dayKey);
               const isCurrentDay = dateFnsIsToday(day);
 
               return (
@@ -210,7 +525,7 @@ const CalendarViewPage = () => {
                   onDropPost={movePost}
                   onAddPostClick={handleAddPostClick}
                   onPostCardClick={handlePostCardClick}
-                  platformDetails={platformDetails}
+                  platformDetails={platfrmsDtls}
                   statusColors={statusColors}
                   themeColors={themeColors}
                   isFirstColumn={index === 0}
@@ -227,7 +542,7 @@ const CalendarViewPage = () => {
           onSave={handleSavePost}
           selectedDate={modalDateTime.date}
           selectedTime={modalDateTime.time}
-          platforms={platformDetails}
+          platforms={platfrmsDtls}
           timeSlots={TIME_SLOTS}
         />
       )}
@@ -236,10 +551,10 @@ const CalendarViewPage = () => {
           isOpen={isPreviewModalOpen}
           onClose={() => setIsPreviewModalOpen(false)}
           post={postForPreview}
-          platformDetails={platformDetails}
+          platformDetails={platfrmsDtls}
           statusColors={statusColors}
           onDeleteClick={() => openDeleteConfirmModal(postForPreview.id)}
-          initialBusinesses={initialBusinesses}
+          initialBusinesses={productDatas}
         />
       )}
       <ConfirmationModal

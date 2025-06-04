@@ -1,110 +1,54 @@
 // src/Callback.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { extCompanyAuthFacebook } from "../API/api";
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { STATE_VERIFIER_STORE } from "../utils/constant";
+import { useNavigate } from 'react-router-dom';
 
+const FacebookCallback = () => {
+  const [message, setMessage] = useState("Authenticating...");
+  const [once, setOnce] = useState(false);
+  const navigate = useNavigate();
 
-class FacebookCallback extends React.Component {
-  
-  constructor(props) {
-    super(props);
-    this.state = {
-      message: "Authenticating...",
-      once:false,
-    };
-  }
-
-  componentDidMount()
-  {
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    console.log("debugging", urlParams)
-    console.log(urlParams.getAll);
     const code = urlParams.get("code");
-    // const state = urlParams.get("state");
-    console.log("code", code)
-    const product_url = localStorage.getItem("product_url")
-    const product_id = localStorage.getItem("product_id")
-    //localStorage.getItem("product_id")
-    const page_name = localStorage.getItem("page_name")
-    
-    // if(!state)
-    // {
-    //   console.log("state variable missing")
-    //   this.setState({ message: "state variable missing" });
-    // } 
 
-    // // const code_verifier = STATE_VERIFIER_STORE[state]
-    // const code_verifier = sessionStorage.getItem(`twitter_verifier_${state}`);
+    const product_url = localStorage.getItem("product_url");
+    const product_id = localStorage.getItem("product_id");
+    const page_name = localStorage.getItem("page_name");
 
-    // const code_verifier = sessionStorage.getItem("tw_code_verifier");
-    const tw_state = sessionStorage.getItem("tw_state");
-    console.log("debugging1");
-
-    
-    if (!page_name)
-      {
-          console.log("There is no page name")
-
-          
-      }
-    if(!product_url)
-      {
-          console.log("there is no product url")
-          
-      }
-      // if(data_source_id){
-      //   console.log("There is no data source name")
-      //   navigate('/dashboard');
-      // }  
-
+    if (!page_name) console.warn("Missing page name");
+    if (!product_url) console.warn("Missing product URL");
 
     const inputData = {
-        "code": code,
-        "data_source_id":8487,
-        "product_id": product_id,
-        "product_url":product_url,
-        "page_name":page_name,
+      code,
+      data_source_id: 8487,
+      product_id,
+      product_url,
+      page_name,
+    };
 
-      }
-    console.log("inputData", inputData)
+    console.log("inputData", inputData);
 
-    if (code) {
-
-      // if (!this._requestSent) {
-      //   this._requestSent = true;
-        if(!(this.state.once)){
-            extCompanyAuthFacebook(inputData)
-            .then((res) => {
-                console.log("Access Token:", res.data.access_token);
-                this.setState({ message: "Authentication successful!", once:true });
-                this.props.navigate("/reg_prdt_success")
-            // Optionally store the token in localStorage
-            })
-            .catch((err) => {
-            console.error(err);
-            this.setState({ message: "error",});
-            // this.props.navigate("/regproduct")
-            });
-        }
-      // }
-      // else{
-      //   console.log("API call Already sent  ")
-        
-
-      // }
-    } else {
-      this.setState({ message: "No code in URL." });
+    if (code && !once) {
+      setOnce(true);
+      extCompanyAuthFacebook(inputData)
+        .then((res) => {
+          console.log("Access Token:", res.data.access_token);
+          setMessage("Authentication successful!");
+          if (window.opener) {
+            window.opener.postMessage({ type: 'facebook_auth', code: code }, window.location.origin);
+          }
+        })
+        .catch((err) => {
+          console.error("Authentication failed", err);
+          setMessage("Error during authentication.");
+        });
+    } else if (!code) {
+      setMessage("No code in URL.");
     }
-  }
+  }, [once, navigate]);
 
-  render() {
-    return <p>{this.state.message}</p>;
-  }
-}
+  return <p>{message}</p>;
+};
 
-export default function FaceBookCallbackWrapper(props) {
-  const navigate = useNavigate();
-  return <FacebookCallback {...props} navigate={navigate} />;
-}
-
+export default FacebookCallback;

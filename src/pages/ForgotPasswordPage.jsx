@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, ShieldCheck, RefreshCw, ArrowRight } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { extCompanyUserForgetpwd, extCompanyUserRegResendOTP, extCompanyUserRegVerifyOTP } from "../API/api";
 
 const InputField = ({ id, label, type, value, onChange, error, icon, placeholder, maxLength }) => (
   <div>
@@ -9,7 +10,7 @@ const InputField = ({ id, label, type, value, onChange, error, icon, placeholder
       {label} {type !== 'checkbox' && <span className="text-red-500">*</span>}
     </label>
     <div className="relative">
-      {icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">{React.cloneElement(icon, { className: "w-5 h-5 text-gray-400"})}</div>}
+      {icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">{React.cloneElement(icon, { className: "w-5 h-5 text-gray-400" })}</div>}
       <input
         type={type}
         id={id}
@@ -18,9 +19,8 @@ const InputField = ({ id, label, type, value, onChange, error, icon, placeholder
         onChange={onChange}
         placeholder={placeholder}
         maxLength={maxLength}
-        className={`w-full ${icon ? 'pl-10' : 'px-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${
-          error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
-        }`}
+        className={`w-full ${icon ? 'pl-10' : 'px-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
+          }`}
       />
     </div>
     {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
@@ -33,10 +33,11 @@ const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
   const [canResendCode, setCanResendCode] = useState(false);
-  
+
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
 
@@ -53,7 +54,7 @@ const ForgotPasswordPage = () => {
     return () => clearInterval(timerId);
   }, [currentStep, canResendCode, resendTimer]);
 
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
     setError('');
     if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
@@ -63,16 +64,37 @@ const ForgotPasswordPage = () => {
     setIsLoading(true);
     // Simulate sending OTP
     console.log(`Simulating sending OTP to ${email}`);
-    setTimeout(() => {
-      // No longer storing in localStorage
-      setCurrentStep(2);
-      setResendTimer(30);
-      setCanResendCode(false);
-      setIsLoading(false);
-    }, 1000);
+    try {
+      // const response = await axios.post("http://127.0.01:5000/company/forgetpasswrd", {
+      //   email: email,
+      // });
+      const response = await extCompanyUserForgetpwd(email)
+      console.log(response);
+
+      if (response.status == 200) {
+        setTimeout(() => {
+          // No longer storing in localStorage
+          setCurrentStep(2);
+          setResendTimer(30);
+          setCanResendCode(false);
+          setIsLoading(false);
+        }, 1000);
+        setMessage("OTP sent to your mail");
+        return;
+
+      } else {
+        setMessage(response.data.message || "Something went wrong.");
+      }
+    } catch (error) {
+      console.error(error);
+      setError("Failed to send OTP. Please try again.");
+    } finally {
+      setError(false);
+    }
+
   };
 
-  const handleOtpSubmit = (e) => {
+  const handleOtpSubmit = async (e) => {
     e.preventDefault();
     setError('');
     if (!otp.trim() || !/^\d{6}$/.test(otp)) {
@@ -80,26 +102,44 @@ const ForgotPasswordPage = () => {
       return;
     }
     setIsLoading(true);
-    // Simulate OTP verification
     console.log(`Verifying OTP ${otp} for email ${email}`);
-    setTimeout(() => {
-      if (otp === '123456') { // Mock OTP
-        navigate('/reset-password', { state: { emailForReset: email } }); // Pass email via route state
+    const userInput = {
+      "email": email,
+      "otp": otp
+    }
+    try {
+      const result = await extCompanyUserRegVerifyOTP(userInput);
+      console.log(result);
+      if (result.status == 200) {
+        navigate('/resetpwd', { state: { emailForReset: email } });
       } else {
         setError('Invalid OTP. Please try again. (Hint: 123456)');
       }
       setIsLoading(false);
-    }, 1000);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     if (!canResendCode) return;
     console.log(`Simulating resending OTP to ${email}`);
-    alert(`A new OTP has been sent to ${email}. (Check console)`);
-    setResendTimer(30);
-    setCanResendCode(false);
-    setOtp('');
-    setError('');
+    try {
+      const result = await extCompanyUserRegResendOTP(email); 
+      if (result.status == 200) { 
+        alert(`A new OTP has been sent to ${email}. (Check console)`);
+        setResendTimer(30);
+        setCanResendCode(false);
+        setIsLoading(false);
+        setOtp('');
+        setError('');
+      } else {
+        // setError('Invalid OTP. Please try again. (Hint: 123456)');
+      }
+    } catch (error) {
+      console.log(error);
+      console.log(`error while resending OTP to ${email}`);
+    }
   };
 
   return (
@@ -109,7 +149,7 @@ const ForgotPasswordPage = () => {
           <Mail className="mx-auto h-12 w-12 text-theme-primary" />
           <h2 className="mt-6 text-3xl font-bold">Forgot Your Password?</h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            {currentStep === 1 
+            {currentStep === 1
               ? "Enter your registered email address to receive a verification code."
               : `A 6-digit code was sent to ${email || 'your email'}. Enter it below.`}
           </p>
@@ -121,16 +161,16 @@ const ForgotPasswordPage = () => {
               <span className="block sm:inline">{error}</span>
             </div>
           )}
-          
+
           {currentStep === 1 && (
             <form className="space-y-6" onSubmit={handleEmailSubmit}>
-              <InputField 
-                id="email" 
-                label="Registered Email Address" 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                icon={<Mail />} 
+              <InputField
+                id="email"
+                label="Registered Email Address"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                icon={<Mail />}
                 placeholder="you@example.com"
               />
               <div>
@@ -148,13 +188,13 @@ const ForgotPasswordPage = () => {
 
           {currentStep === 2 && (
             <form className="space-y-6" onSubmit={handleOtpSubmit}>
-              <InputField 
-                id="otp" 
-                label="Verification Code (OTP)" 
-                type="text" 
-                value={otp} 
-                onChange={(e) => setOtp(e.target.value)} 
-                icon={<ShieldCheck />} 
+              <InputField
+                id="otp"
+                label="Verification Code (OTP)"
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                icon={<ShieldCheck />}
                 placeholder="Enter 6-digit OTP"
                 maxLength={6}
               />

@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
-import { extCompanyLogin } from '../API/api';
+import { extCompanyLogin, extCompanyUserRegResendOTP } from '../API/api';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -38,16 +38,54 @@ const Login = () => {
       extCompanyLogin(formData)
         .then((response) => {
           const { user, token } = response.data;
+          if (response.status === (200 || 201)){
+            localStorage.setItem("username", user.fullName);
+            localStorage.setItem("authToken", token);
 
-          localStorage.setItem("username", user.username);
-          localStorage.setItem("authToken", token);
+            console.log("Login successful");
+            navigate("/dashboard");
+          }
+          
+          else if (response.status === 203)
+          {
+            localStorage.setItem("emailForVerification", formData.email);
+            const userData = {
+                            userEmail: formData.email,
+            
+            
+                          };
+                extCompanyUserRegResendOTP(userData)
+                      .then((response) => {
+                        console.log("OTP Resend Verified", response);
+                        if (response.status === (200 || 201)){
+                          // navigate("/")
+                          
+                          // setError('');
+                          console.log("ResendCode:", response)
+                          navigate("/VerifyEmailPage",  { replace: true });
+                         
+                        }else 
+                        {
+                          
+                          console.log("ResendCode:", response)
+                            
+                        }
+                        
+                      }).catch(error => {
+                              console.error("Error registering verification Code:", error);
+                      });
 
-          console.log("Login successful");
-          navigate("/dashboard");
+          }
         })
         .catch((err) => {
-          console.error("Login failed:", err);
-          setError("Invalid email or password");
+          console.error("Login failed 1:", err);
+          console.error("Login failed 2:", err.message);
+          console.error("Login failed 3:", err.status);
+          // setError("Invalid Username and Password");
+          // setError(err?.response?.data?.error)
+          setError((err?.response?.data?.error)?(err?.response?.data?.error):err.message)
+          console.log("VerificationEmail :", formData.email)
+          
         })
         .finally(() => {
           setIsLoading(false);
@@ -139,7 +177,7 @@ const Login = () => {
               />
               <span className={`${isDarkMode ? 'text-gray-300' : 'text-gray-100'}`}>Remember me</span>
             </label>
-            <Link to="/forgot-password" className="text-orange-500 hover:underline">
+            <Link to="/forgotpwd" className="text-orange-500 hover:underline">
               Forgot password?
             </Link>
           </div>

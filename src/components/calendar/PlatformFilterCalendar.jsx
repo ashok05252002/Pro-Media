@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Filter, Check } from 'lucide-react'; // Filter is correctly imported
+import { Facebook, Instagram, Twitter, Linkedin, Youtube } from 'lucide-react';
 
 const platformOptions = [
   { id: 'all', name: 'All Platforms', icon: <Filter size={16} /> }, // Using Filter here for the 'All' option
@@ -13,13 +14,25 @@ const platformOptions = [
 const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  console.log("Platforms1: ", platforms)
+  console.log("Platforms2: ", activeFilters)
+  console.log("platforms3:", setActiveFilters)
+//   const platforms = socialMediaDatas.reduce((acc, platform) => {
+//   acc[platform.id] = {
+//     name: platform.name,
+//     icon: React.cloneElement(platform.icon, { className: "w-4 h-4 text-white" }),
+//     colorValue: platform.colorValue,
+//     tagColor: platform.tagColor
+//   };
+//   return acc;
+// }, {});
 
   // Dynamically create options based on the passed 'platforms' prop
   const dynamicPlatformOptions = [
-    { id: 'all', name: 'All Platforms', icon: <Filter size={16} /> },
-    ...Object.entries(platforms).map(([id, { name, icon }]) => ({
+    { id: 'all', type: 'All Platforms', icon: <Filter size={16} /> },
+    ...Object.entries(platforms)?.map(([id, { type, icon }]) => ({
       id,
-      name,
+      type,
       icon: React.cloneElement(icon, { size: 16 }) // Ensure icon size is consistent
     }))
   ];
@@ -59,7 +72,8 @@ const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) 
       return 'All Platforms';
     }
     if (activeFilters.length === 1) {
-      return platforms[activeFilters[0]]?.name || 'Select Platforms';
+      // return platforms[activeFilters[0]]?.type || 'Select Platforms';
+      return (activeFilters[0]?.type) ? (activeFilters[0]?.type)?.toUpperCase() + str.slice(1) :  'Select Platforms';
     }
     return `${activeFilters.length} Platforms Selected`;
   };
@@ -84,7 +98,7 @@ const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) 
               >
                 <span className="flex items-center gap-2">
                   {dynamicPlatformOptions.find(p => p.id === 'all').icon}
-                  {dynamicPlatformOptions.find(p => p.id === 'all').name}
+                  {dynamicPlatformOptions.find(p => p.id === 'all').type}
                 </span>
                 {(activeFilters.length === Object.keys(platforms).length) && (
                   <Check size={16} className="text-theme-primary" />
@@ -92,7 +106,7 @@ const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) 
               </button>
             </li>
             <hr className="my-1 border-gray-200 dark:border-gray-700" />
-            {dynamicPlatformOptions.filter(p => p.id !== 'all').map(({ id, name, icon }) => (
+            {dynamicPlatformOptions.filter(p => p.id !== 'all').map(({ id, type, icon }) => (
               <li key={id}>
                 <button
                   onClick={() => handleTogglePlatform(id)}
@@ -100,7 +114,7 @@ const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) 
                 >
                   <span className="flex items-center gap-2">
                     {icon}
-                    {name}
+                   {type}
                   </span>
                   {activeFilters.includes(id) && (
                     <Check size={16} className="text-theme-primary" />
@@ -118,7 +132,7 @@ const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) 
 // Need to import platform icons if they are not passed via props and are used directly here.
 // For this fix, assuming `platforms` prop provides all necessary details including icons.
 // If `platformOptions` constant was intended for internal use, ensure icons are imported:
-import { Facebook, Instagram, Twitter, Linkedin, Youtube } from 'lucide-react';
+
 
 
 export default PlatformFilterCalendar;
