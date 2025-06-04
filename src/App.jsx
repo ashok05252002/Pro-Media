@@ -35,7 +35,7 @@ import PostDetailsAndCommentsPage from './pages/PostDetailsAndCommentsPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import CalendarViewPage from './pages/CalendarViewPage';
-
+import ComingSoonCard from './components/ComingSoonCard';
 import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import axios from 'axios';
 import "./styles.css";
@@ -113,7 +113,7 @@ function App() {
                 <Route path="/calendar-view" element={<CalendarViewPage />} />
                 <Route path="/post-creation" element={<PostCreation />} />
                 <Route path="/scheduler" element={<ContentScheduler />} />
-                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/analytics" element={<ComingSoonCard />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/support" element={<Support />} />
                 <Route path="/profile" element={<Profile />} />
