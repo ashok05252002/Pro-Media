@@ -458,14 +458,14 @@ const getDataSourceInfoByPlatform = (platformId) => {
                 className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-theme-secondary hover:bg-opacity-90 text-white rounded-md"
             >
                 <Calendar className="w-4 h-4" />
-                <span>Schedule</span>
+                <span className='text-white'>Schedule</span>
             </button>
             <button 
                 onClick={() => setShowPostPreviewModal(true)} 
-                className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-theme-primary hover:bg-opacity-90 text-white rounded-md"
+                className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-theme-primary  hover:bg-opacity-90 text-white rounded-md"
             >
                 <Send className="w-4 h-4" />
-                  <span>Post Now</span>
+                  <span className='text-white'>Post Now</span>
             </button>
         </div>
       </div>

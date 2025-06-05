@@ -211,7 +211,7 @@ const ContentScheduler = () => {
             onClick={handleCreatePost}
           >
             <Plus className="w-4 h-4" />
-            <span>Create Post</span>
+            <span className='text-white'>Create Post</span>
           </button>
         </div>
       </div>
