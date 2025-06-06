@@ -431,7 +431,7 @@ const getDataSourceInfoByPlatform = (platformId) => {
                 {option.product_name}
                 </option>
           ))} */}
-          {options.map((option) => (
+          {options != null && options?.map((option) => (
             <option key={option.id} value={option.id}>
               {option.product_name}
             </option>

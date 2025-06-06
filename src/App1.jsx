@@ -1,19 +1,39 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { SidebarProvider } from './contexts/SidebarContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
-import MyChannels from './pages/MyChannels';
+import Login from './pages/Login'; 
 import MyProducts from './pages/MyProducts';
 import PostCreation from './pages/PostCreation';
 import ContentScheduler from './pages/ContentScheduler';
-import Analytics from './pages/Analytics';
-import UserManagement from './pages/UserManagement';
-import Settings from './pages/Settings';
+import Analytics from './pages/Analytics'; 
 import Support from './pages/Support';
 import Profile from './pages/Profile';
+import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import CalendarViewPage from './pages/CalendarViewPage';
+import ComingSoonCard from './components/ComingSoonCard';
+import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
+import FacebookCallback from './components/FacebookCallback';
+import YoutubeCallback from './components/YoutubeCallback';
+import TWTCallbackWrapper from './components/TWTCallback.jsx';
+import LinkedinCallback from './components/LinkedinCallback.jsx';
+import Settings from './pages/Settings'; 
+import ForgotPwd from "./pages/ForgotPwd.jsx";
+import RegProduct from "./components/RegProduct.jsx";
+import RegProductSuccess from "./components/RegProductSuccess.jsx"; 
+import MyBusiness from './pages/MyBusiness';
+import PlatformTable from "./pages/PlatformTable.jsx";
+import ViewPosts from './pages/ViewPosts.jsx';
+import ViewComments from './pages/ViewComments.jsx';
+import AddBusinessPage from './pages/AddBusinessPage';
+import PostDetailsAndCommentsPage from './pages/PostDetailsAndCommentsPage';
+import ServerErrorPage from './pages/ServerErrorPage';
+import NotFoundPage from './pages/NotFoundPage';
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   const isAuthenticated = localStorage.getItem('authToken') !== null;
@@ -30,7 +50,7 @@ function App() {
   },
   {
     path: "/register",
-    element: <Register />
+    element: <RegisterPage />
   },
   {
     path: "/VerifyEmailPage",
@@ -123,11 +143,7 @@ function App() {
       {
         path: "/analytics",
         element: <Analytics />
-      },
-      {
-        path: "/users",
-        element: <UserManagement />
-      },
+      }, 
       {
         path: "/settings",
         element: <Settings />
