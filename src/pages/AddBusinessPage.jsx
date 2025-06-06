@@ -20,6 +20,7 @@ const AddBusinessPage = () => {
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [newBusinessName, setNewBusinessName] = useState('');
   const [businessNameConfirmed, setBusinessNameConfirmed] = useState(false);
+  const [cbLoader, setCbLoader] = useState(false);
   const [productDetail, setProductDetail] = useState({})
 
   const initialPlatformState = socialPlatforms.reduce((acc, platform) => {
@@ -54,9 +55,9 @@ const AddBusinessPage = () => {
       console.log(company);
       if (company) {
         const newDetails = { ...initialPlatformState };
-        socialPlatforms.forEach(platform => { 
+        socialPlatforms.forEach(platform => {
           const linkedInfo = company.data_sources.find(soc => soc?.data_source_id == platform.code);
-          
+
           if (linkedInfo) {
             newDetails[platform.id] = {
               pageName: linkedInfo.page_name || '',
@@ -72,9 +73,10 @@ const AddBusinessPage = () => {
       }
     } else if (businessType === 'new') {
       setPlatformDetails(initialPlatformState);
-      setBusinessNameConfirmed(false);
+      console.log(`22---->>>${ businessNameConfirmed}`);
     } else {
       setBusinessNameConfirmed(false);
+      console.log(`333---->>>${ businessNameConfirmed}`);
       setNewBusinessName('');
       setSelectedCompanyId('');
       setPlatformDetails(initialPlatformState);
@@ -139,22 +141,28 @@ const AddBusinessPage = () => {
 
   const handleConfirmBusinessName = async () => {
     console.log("handleConfirmBusinessName");
+    if(cbLoader) return;
     if (newBusinessName.trim() === '') {
       alert('Please enter a business name.');
       return;
     }
 
     try {
+      setCbLoader(true);
       const result = await extCompanyRegorAddPrdct(newBusinessName); // make sure 'params' is defined
       console.log("Business added successfully", result);
       if (result.status === 201) {
         setProductDetail(result.data ?? {});
+        
         setSelectedCompanyId(result?.data?.product_id)
         toast.success('Business added successfully!');
         setBusinessNameConfirmed(true);
       }
     } catch (error) {
       console.error("Add business error:", error);
+    } finally {
+      console.log(`11---->>>${ businessNameConfirmed}`);
+      setCbLoader(false);
     }
   };
 
@@ -304,8 +312,8 @@ const AddBusinessPage = () => {
 
           {businessType === 'new' && (
             <div>
-              <h2 className="text-2xl font-semibold mb-4">Add New Business</h2>
-              {!businessNameConfirmed ? (
+              <h2 className="text-2xl font-semibold mb-4">Add New Business{businessNameConfirmed }</h2>
+              {businessNameConfirmed == false ? (
                 <>
                   <div className="mb-6">
                     <label htmlFor="newBusinessName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -324,11 +332,16 @@ const AddBusinessPage = () => {
                     onClick={handleConfirmBusinessName}
                     disabled={!newBusinessName.trim()}
                     className="w-full py-2.5 px-4 bg-theme-secondary hover:bg-opacity-90 text-white font-semibold rounded-lg shadow-md transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    Confirm Name & Proceed <ArrowRight className="w-4 h-4" />
+                  > 
+                    {cbLoader ? (
+                      <div className="button_loader36"></div>
+                    ) : (
+                      <> Confirm Name & Proceed <ArrowRight className="w-4 h-4" /> </>
+                    )}
                   </button>
                 </>
-              ) : (
+              ) :
+               (
                 <>
                   <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                     <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Business Name:</p>
