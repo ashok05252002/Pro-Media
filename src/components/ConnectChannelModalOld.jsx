@@ -41,7 +41,7 @@ const ConnectChannelModal = ({ onClose }) => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Select Platform
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3"> {/* Adjusted grid for more platforms */}
+            <div className="grid grid-cols-2 gap-3">
               {platforms.map((platform) => (
                 <button
                   key={platform.id}

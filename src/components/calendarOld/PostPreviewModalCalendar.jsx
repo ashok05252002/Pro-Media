@@ -5,20 +5,20 @@ import { format, parse } from 'date-fns';
 const PostPreviewModalCalendar = ({ isOpen, onClose, post, platformDetails, statusColors, onDeleteClick, initialBusinesses }) => {
   if (!isOpen || !post) return null;
 
-  const platformInfo = platformDetails[post.platform] || platformDetails.Default;
+  const platformInfo = platformDetails[post.platformName] || { name: 'Unknown', icon: <Tag className="w-4 h-4 text-gray-400"/>, colorValue: '#A0AEC0' };
   const statusColorClass = statusColors[post.status] || 'bg-gray-200 text-gray-700';
-  const businessName = initialBusinesses.find(b => b.id === post.businessId)?.name || post.businessId || 'N/A';
+  const businessName = initialBusinesses.find(b => b.id === post.product_id)?.product_name || post.product_id || 'N/A';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg transform transition-all duration-300 ease-out scale-95 opacity-0 animate-modal-scale-in">
         <div 
           className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center rounded-t-xl"
-          style={{ backgroundColor: `${platformInfo.colorValue}20`}} // Using platform color with opacity
+          style={{ backgroundColor: `${platformInfo.colorValue}20`}}
         >
           <div className="flex items-center gap-2">
             {React.cloneElement(platformInfo.icon, { className: "w-5 h-5", style: {color: platformInfo.colorValue} })}
-            <h3 className="text-lg font-semibold" style={{color: platformInfo.colorValue}}>{post.title}</h3>
+            <h3 className="text-lg font-semibold" style={{color: platformInfo.colorValue}}>{post.post_title}</h3>
           </div>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
             <X className="w-5 h-5" />
@@ -28,9 +28,9 @@ const PostPreviewModalCalendar = ({ isOpen, onClose, post, platformDetails, stat
         <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-4">
           <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md">
             <Calendar className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
-            Scheduled for: <strong className="ml-1 text-gray-700 dark:text-gray-300">{format(parse(post.date, 'yyyy-MM-dd', new Date()), 'MMMM d, yyyy')}</strong>
+            Scheduled for: <strong className="ml-1 text-gray-700 dark:text-gray-300">{format(parse(post.scheduled_time, 'yyyy-MM-dd', new Date()), 'MMMM d, yyyy')}</strong>
             <Clock className="w-4 h-4 ml-3 mr-1 text-gray-500 dark:text-gray-400" />
-            at <strong className="ml-1 text-gray-700 dark:text-gray-300">{post.time}</strong>
+            at <strong className="ml-1 text-gray-700 dark:text-gray-300">{post.post_s_time}</strong>
           </div>
           
           <div className="flex items-center">
@@ -47,7 +47,7 @@ const PostPreviewModalCalendar = ({ isOpen, onClose, post, platformDetails, stat
                 <Type className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400"/> Content:
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md whitespace-pre-wrap border border-gray-200 dark:border-gray-700">
-                {post.contentPreview}
+                {post.description}
               </p>
             </div>
           )}
@@ -59,7 +59,7 @@ const PostPreviewModalCalendar = ({ isOpen, onClose, post, platformDetails, stat
               </h4>
               <div className="p-2 border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-700/50">
                 <img 
-                  src={post.image} 
+                  src={post?.image} 
                   alt="Post image preview" 
                   className="w-full max-h-60 object-contain rounded-md"
                 />

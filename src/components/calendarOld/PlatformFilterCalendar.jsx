@@ -1,18 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, Filter as FilterIconLucide, Check } from 'lucide-react'; // Renamed Filter to avoid conflict
+import { ChevronDown, Filter, Check } from 'lucide-react'; // Filter is correctly imported
+import { Facebook, Instagram, Twitter, Linkedin, Youtube } from 'lucide-react';
+
+const platformOptions = [
+  { id: 'all', name: 'All Platforms', icon: <Filter size={16} /> }, // Using Filter here for the 'All' option
+  { id: 'facebook', name: 'facebook', icon: <Facebook size={16} className="text-blue-600" /> },
+  { id: 'instagram', name: 'instagram', icon: <Instagram size={16} className="text-pink-600" /> },
+  { id: 'twitter', name: 'twitter', icon: <Twitter size={16} className="text-blue-400" /> },
+  { id: 'linkedin', name: 'linkedIn', icon: <Linkedin size={16} className="text-blue-700" /> },
+  { id: 'youtube', name: 'youTube', icon: <Youtube size={16} className="text-red-600" /> },
+];
 
 const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  console.log("Platforms1: ", platforms)
+  console.log("Platforms2: ", activeFilters)
+  console.log("platforms3:", setActiveFilters)
+//   const platforms = socialMediaDatas.reduce((acc, platform) => {
+//   acc[platform.id] = {
+//     name: platform.name,
+//     icon: React.cloneElement(platform.icon, { className: "w-4 h-4 text-white" }),
+//     colorValue: platform.colorValue,
+//     tagColor: platform.tagColor
+//   };
+//   return acc;
+// }, {});
 
+  // Dynamically create options based on the passed 'platforms' prop
   const dynamicPlatformOptions = [
-    { id: 'all', name: 'All Platforms', icon: <FilterIconLucide size={16} /> },
-    ...Object.entries(platforms).filter(([id]) => id !== 'Default').map(([id, { name, icon }]) => ({
+    { id: 'all', type: 'All Platforms', icon: <Filter size={16} /> },
+    ...Object.entries(platforms)?.map(([id, { type, icon }]) => ({
       id,
-      name,
-      icon: React.cloneElement(icon, { size: 16, className: 'text-current' }) // Ensure icon inherits color
+      type,
+      icon: React.cloneElement(icon, { size: 16 }) // Ensure icon size is consistent
     }))
   ];
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -26,7 +50,7 @@ const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) 
 
   const handleTogglePlatform = (platformId) => {
     if (platformId === 'all') {
-      const allActualPlatforms = Object.keys(platforms).filter(p => p !== 'Default');
+      const allActualPlatforms = Object.keys(platforms);
       const allCurrentlySelected = allActualPlatforms.every(pId => activeFilters.includes(pId)) && activeFilters.length === allActualPlatforms.length;
       
       if (allCurrentlySelected) {
@@ -44,12 +68,12 @@ const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) 
   };
   
   const getButtonLabel = () => {
-    const numSelectablePlatforms = Object.keys(platforms).filter(p => p !== 'Default').length;
-    if (activeFilters.length === 0 || activeFilters.length === numSelectablePlatforms) {
-        return 'All Platforms';
+    if (activeFilters.length === 0 || activeFilters.length === Object.keys(platforms).length) {
+      return 'All Platforms';
     }
     if (activeFilters.length === 1) {
-        return platforms[activeFilters[0]]?.name || 'Select Platforms';
+      // return platforms[activeFilters[0]]?.type || 'Select Platforms';
+      return (activeFilters[0]?.type) ? (activeFilters[0]?.type)?.toUpperCase() + str.slice(1) :  'Select Platforms';
     }
     return `${activeFilters.length} Platforms Selected`;
   };
@@ -60,7 +84,7 @@ const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) 
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-sm"
       >
-        <FilterIconLucide className="w-4 h-4" />
+        <Filter className="w-4 h-4" /> {/* Corrected: Filter instead of FilterIcon */}
         <span>{getButtonLabel()}</span>
         <ChevronDown className="w-4 h-4" />
       </button>
@@ -74,23 +98,23 @@ const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) 
               >
                 <span className="flex items-center gap-2">
                   {dynamicPlatformOptions.find(p => p.id === 'all').icon}
-                  {dynamicPlatformOptions.find(p => p.id === 'all').name}
+                  {dynamicPlatformOptions.find(p => p.id === 'all').type}
                 </span>
-                {(activeFilters.length === Object.keys(platforms).filter(p=>p !== 'Default').length) && (
+                {(activeFilters.length === Object.keys(platforms).length) && (
                   <Check size={16} className="text-theme-primary" />
                 )}
               </button>
             </li>
             <hr className="my-1 border-gray-200 dark:border-gray-700" />
-            {dynamicPlatformOptions.filter(p => p.id !== 'all').map(({ id, name, icon }) => (
+            {dynamicPlatformOptions.filter(p => p.id !== 'all').map(({ id, type, icon }) => (
               <li key={id}>
                 <button
                   onClick={() => handleTogglePlatform(id)}
                   className="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between"
                 >
-                  <span className="flex items-center gap-2" style={{color: platforms[id]?.colorValue}}>
+                  <span className="flex items-center gap-2">
                     {icon}
-                    {name}
+                   {type}
                   </span>
                   {activeFilters.includes(id) && (
                     <Check size={16} className="text-theme-primary" />
@@ -104,5 +128,11 @@ const PlatformFilterCalendar = ({ platforms, activeFilters, setActiveFilters }) 
     </div>
   );
 };
+
+// Need to import platform icons if they are not passed via props and are used directly here.
+// For this fix, assuming `platforms` prop provides all necessary details including icons.
+// If `platformOptions` constant was intended for internal use, ensure icons are imported:
+
+
 
 export default PlatformFilterCalendar;

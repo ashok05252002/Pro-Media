@@ -13,11 +13,11 @@ import { extCompanyProductData,
   extCompanyProductDataById,
 } from '../API/api';
 
-// const initialBusinesses = [
-//   { id: 1, name: 'TechCorp Solutions' },
-//   { id: 2, name: 'Innovate Hub' },
-//   { id: 3, name: 'GreenLeaf Organics' },
-// ];
+const initialBusinesses = [
+  { id: 1, name: 'TechCorp Solutions' },
+  { id: 2, name: 'Innovate Hub' },
+  { id: 3, name: 'GreenLeaf Organics' },
+];
 
 const today = new Date();
 const initialPosts = [
@@ -26,21 +26,21 @@ const initialPosts = [
   { id: '2', title: 'LI Article: Future of Work', date: format(addDays(today, 2), 'yyyy-MM-dd'), time: '14:00', platform: 'LinkedIn', status: 'Posted', contentPreview: 'Exploring the evolving landscape of remote work and hybrid models. #FutureOfWork #LinkedInArticle', image: null, businessId: 1 },
   { id: '3', title: 'IG Story Teaser - New Product', date: format(addDays(today, 2), 'yyyy-MM-dd'), time: '11:00', platform: 'Instagram', status: 'Draft', contentPreview: 'Something exciting is launching soon! Keep an eye out. 👀 #NewProduct #Teaser', image: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/BA55D3/FFFFFF?text=Product+Teaser', businessId: 2 },
   { id: '4', title: 'Twitter Q&A Session', date: format(addDays(today, 2), 'yyyy-MM-dd'), time: '16:00', platform: 'Twitter', status: 'Scheduled', contentPreview: 'Join us for a live Q&A session this Friday! Ask us anything. #AskUsAnything #TwitterChat', image: null, businessId: 2 },
-  { id: '5', title: 'YouTube Premiere: Product Demo', date: format(addDays(today, 4), 'yyyy-MM-dd'), time: '18:00', platform: 'Youtube', status: 'Scheduled', contentPreview: 'Watch the premiere of our new product demo. Set your reminders! 🚀 #YouTubePremiere #ProductDemo', image: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/FF0000/FFFFFF?text=YouTube+Video+Thumb', businessId: 3 },
+  { id: '5', title: 'YouTube Premiere: Product Demo', date: format(addDays(today, 4), 'yyyy-MM-dd'), time: '18:00', platform: 'YouTube', status: 'Scheduled', contentPreview: 'Watch the premiere of our new product demo. Set your reminders! 🚀 #YouTubePremiere #ProductDemo', image: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/FF0000/FFFFFF?text=YouTube+Video+Thumb', businessId: 3 },
   { id: '6', title: 'Evening IG Post - 10K Followers!', date: format(today, 'yyyy-MM-dd'), time: '20:00', platform: 'Instagram', status: 'Posted', contentPreview: 'Wow! We just hit 10,000 followers! Thank you all for your amazing support. ❤️ #Milestone #Community', image: 'https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://img-wrapper.vercel.app/image?url=https://placehold.co/600x400/FFD700/000000?text=10K+Followers', businessId: 1 },
   { id: '7', title: 'TechCorp Blog Update', date: format(today, 'yyyy-MM-dd'), time: '10:00', platform: 'LinkedIn', status: 'Draft', contentPreview: 'Our latest blog post on AI trends is now live. Check it out!', businessId: 1 },
   { id: '8', title: 'Innovate Hub Webinar', date: format(addDays(today, 3), 'yyyy-MM-dd'), time: '15:00', platform: 'LinkedIn', status: 'Scheduled', contentPreview: 'Webinar on disruptive technologies.', businessId: 2 },
   { id: '9', title: 'GreenLeaf Product Highlight', date: format(addDays(today, 1), 'yyyy-MM-dd'), time: '12:00', platform: 'Instagram', status: 'Scheduled', contentPreview: 'Spotlight on our new organic tea.', businessId: 3 },
   { id: '10', title: 'Facebook Ad Campaign Launch', date: format(today, 'yyyy-MM-dd'), time: '08:00', platform: 'Facebook', status: 'Posted', contentPreview: 'Our new ad campaign is live! Check it out and let us know what you think.', businessId: 2 },
   { id: '11', title: 'Twitter Poll: Next Feature', date: format(addDays(today, 3), 'yyyy-MM-dd'), time: '10:00', platform: 'Twitter', status: 'Draft', contentPreview: 'Help us decide our next big feature! Vote in our poll today.', businessId: 1 },
-  { id: '12', title: 'YouTube Behind the Scenes', date: format(addDays(today, 5), 'yyyy-MM-dd'), time: '13:00', platform: 'Youtube', status: 'Scheduled', contentPreview: 'A sneak peek into how we create our magic. Full video coming soon!', businessId: 3 },
+  { id: '12', title: 'YouTube Behind the Scenes', date: format(addDays(today, 5), 'yyyy-MM-dd'), time: '13:00', platform: 'YouTube', status: 'Scheduled', contentPreview: 'A sneak peek into how we create our magic. Full video coming soon!', businessId: 3 },
   { id: '13', title: 'Mid-day IG Reel', date: format(addDays(today, 1), 'yyyy-MM-dd'), time: '13:00', platform: 'Instagram', status: 'Scheduled', contentPreview: 'Quick tips for your Monday motivation! #MondayMotivation #QuickTips', businessId: 2 },
   { id: '14', title: 'LinkedIn Thought Leadership', date: format(addDays(today, 4), 'yyyy-MM-dd'), time: '09:00', platform: 'LinkedIn', status: 'Draft', contentPreview: 'The importance of sustainable practices in modern business. #Sustainability #BusinessEthics', businessId: 1 },
   { id: '15', title: 'Weekend Special FB Offer', date: format(addDays(today, 5), 'yyyy-MM-dd'), time: '17:00', platform: 'Facebook', status: 'Scheduled', contentPreview: 'Exclusive weekend offer for our loyal followers. Don\'t miss out!', businessId: 3 },
     // Week 2 (Next Week)
   { id: '16', title: 'Weekly Newsletter Summary', date: format(addDays(today, 7), 'yyyy-MM-dd'), time: '10:00', platform: 'LinkedIn', status: 'Scheduled', contentPreview: 'Catch up on this week\'s highlights from our newsletter.', businessId: 1 },
   { id: '17', title: 'Instagram Live Q&A', date: format(addDays(today, 8), 'yyyy-MM-dd'), time: '19:00', platform: 'Instagram', status: 'Draft', contentPreview: 'Join our CEO for a live Q&A session. Get your questions ready!', businessId: 2 },
-  { id: '18', title: 'New Tutorial Video (YT)', date: format(addDays(today, 10), 'yyyy-MM-dd'), time: '15:00', platform: 'Youtube', status: 'Scheduled', contentPreview: 'Step-by-step guide to using our latest feature.', businessId: 3 },
+  { id: '18', title: 'New Tutorial Video (YT)', date: format(addDays(today, 10), 'yyyy-MM-dd'), time: '15:00', platform: 'YouTube', status: 'Scheduled', contentPreview: 'Step-by-step guide to using our latest feature.', businessId: 3 },
 
   // Week 0 (Previous Week for more data)
   { id: '19', title: 'Throwback Thursday Post', date: format(subDays(today, 3), 'yyyy-MM-dd'), time: '11:00', platform: 'Instagram', status: 'Posted', contentPreview: '#TBT to our company\'s first office!', businessId: 1 },
@@ -57,7 +57,7 @@ const platformDetails = {
   Instagram: { name: 'Instagram', icon: <Instagram className="w-4 h-4 text-white" />, colorValue: '#ec4899', tagColor: 'bg-pink-100 text-pink-700 dark:bg-pink-700 dark:text-pink-200' },
   Twitter: { name: 'Twitter', icon: <Twitter className="w-4 h-4 text-white" />, colorValue: '#0ea5e9', tagColor: 'bg-sky-100 text-sky-700 dark:bg-sky-700 dark:text-sky-200' },
   LinkedIn: { name: 'LinkedIn', icon: <Linkedin className="w-4 h-4 text-white" />, colorValue: '#0e76a8', tagColor: 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' },
-  Youtube: { name: 'Youtube', icon: <Youtube className="w-4 h-4 text-white" />, colorValue: '#ff0000', tagColor: 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-200' },
+  YouTube: { name: 'YouTube', icon: <Youtube className="w-4 h-4 text-white" />, colorValue: '#ff0000', tagColor: 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-200' },
   Default: { name: 'Platform', icon: <Tag className="w-4 h-4 text-white"/>, colorValue: '#64748b', tagColor: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200'}
 };
 
@@ -76,9 +76,8 @@ const CalendarViewPage = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [modalDateTime, setModalDateTime] = useState({ date: null, time: null });
   const [activePlatformFilters, setActivePlatformFilters] = useState(Object.keys(platformDetails).filter(p => p !== 'Default'));
-  const [selectedBusinessId, setSelectedBusinessId] = useState();
-  const [initialBusinesses, setInitialBusinesses] = useState([]);
-
+  const [selectedBusinessId, setSelectedBusinessId] = useState(initialBusinesses[0].id);
+  
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [postForPreview, setPostForPreview] = useState(null);
   
@@ -154,14 +153,6 @@ const CalendarViewPage = () => {
         setLoading(true);
         const response = await extCompanyProductData(); // Your endpoint to get products
         setProductDatas(response.data)
-        const transformedData = response.data.map(item => ({
-          ...item,
-          name: item.product_name  // Fallbacks product_name field added here as name
-        }));
-        setInitialBusinesses(transformedData)
-         if (transformedData.length > 0) {
-          setSelectedBusinessId(transformedData[0].id);
-        }
         // if (response?.data?.length > 0) {
         //   setSelectedBusinessId(response?.data[0]?.id)
         // }
@@ -223,13 +214,10 @@ const CalendarViewPage = () => {
                           ...post,
                           date: format(new Date(post?.scheduled_time),'yyyy-MM-dd'),
                           time: format(new Date(post?.scheduled_time),'HH:mm'),
-                          contentReview:post?.description,
-                          title:post.post_title,
                           businessId:product.id,
                           extDsId:externalData.id,
-                          platformId:platformInfo.id,
-                          platform: platformInfo?.type ? (platformInfo.type.charAt(0).toUpperCase() + platformInfo.type.slice(1).toLowerCase()): 'Default' // Add platform name here
-                          
+                          platform: platformInfo.type, // Add platform name here
+                          platformId:platformInfo.id
                         }))
                       : [];
   
@@ -270,7 +258,7 @@ const CalendarViewPage = () => {
           console.log("ALL POSTS", allPosts)
           
           // setProductCreationPosts(allPosts); // Set the posts state
-          setPosts(allPosts)
+          // setPosts(allPosts)
           // setPosts(initialPosts)
           setProductDatas(localProducts); // Set products data if needed
           return localProducts;
@@ -288,14 +276,9 @@ const CalendarViewPage = () => {
 
   useEffect(() => {
     fetchAllData();
-    console.log("INITIALBUSINESSES", initialBusinesses)
-    if (selectedBusinessId == null || 
-      !initialBusinesses.some(b => b.id === selectedBusinessId)) {
-      setSelectedBusinessId(initialBusinesses[0]?.id);
-    }
-    // setPosts(initialPosts);
+    setPosts(initialPosts);
     console.log("SELECTEDBUSINESSID: ",selectedBusinessId)
-  }, []);
+  }, [posts, selectedBusinessId]);
   
   const filteredPosts = useMemo(() => {
     console.log("activePlatformFilters Length, activePlatformFilters,  Object.keys(platfrmsDtls).length, POSTS", selectedBusinessId, activePlatformFilters.length, activePlatformFilters, Object.keys(platformDetails).filter(p=>p !== 'Default').length, posts)
