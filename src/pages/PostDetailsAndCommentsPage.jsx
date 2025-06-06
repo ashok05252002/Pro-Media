@@ -145,12 +145,6 @@ const PostDetailsAndCommentsPage = () => {
   }, [comments]);
   useEffect(() => {
     
-    // const foundPost = mockPostsData.find(p => p.id === postId);
-    // setPost(foundPost);
-    // if (foundPost) {
-    //   const postComments = mockAllComments.filter(c => c.postId === postId);
-    //   setComments(postComments);
-    // }
     // Fetch post details
     const fetchPostDetails = async () => {
       try {
@@ -178,13 +172,17 @@ const PostDetailsAndCommentsPage = () => {
         const response = await extCompanyPrdctListCommentsByPlatform(postId, platform);
         if (response && Array.isArray(response?.data)) {
           setComments(response.data);
+          console.log("Comments:", response.data)
+          return response.data
         } else {
           setComments([]);
           console.warn("Unexpected comments structure:", response);
+          return [];
         }
       } catch (error) {
         setCommentsError(error.message || "Failed to fetch comments");
         console.error('Error fetching comments:', error);
+        return [];
       } finally {
         setLoadingComments(false);
       }
@@ -326,7 +324,7 @@ const PostDetailsAndCommentsPage = () => {
         {comments.length > 0 ? (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {comments.map(comment => (
-              <div key={comment.review_id}>
+              <div key={comment.id}>
                 <CommentItem
                   comment={comment}
                   platform={platform}
