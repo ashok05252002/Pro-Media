@@ -161,7 +161,7 @@ function App() {
         element: <AddBusinessPage />
       },
       {
-        path: "post/:postId/details-and-comments",
+        path: "post/:postId/:platform/details-and-comments",
         element: <PostDetailsAndCommentsPage />
       }
     ]

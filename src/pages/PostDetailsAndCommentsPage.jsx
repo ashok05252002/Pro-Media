@@ -324,16 +324,16 @@ const PostDetailsAndCommentsPage = () => {
         {comments.length > 0 ? (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {comments.map(comment => (
-              <div key={comment.id}>
+              <div key={comment.review_id}>
                 <CommentItem
                   comment={comment}
                   platform={platform}
-                  onReplyClick={()=>handleReplyClick}
+                  onReplyClick={()=>handleReplyClick(comment.review_id)}
                 />
                 {replyingToCommentId === comment.review_id && (
                   
                   <div className="p-4 ml-14 bg-gray-50 dark:bg-gray-700/30 rounded-b-md">
-                    <p>{comment.review_id}</p>
+                    {/* <p>{comment.reviewer_name}</p> */}
                     <textarea
                       value={currentReplyText}
                       onChange={(e) => setCurrentReplyText(e.target.value)}
