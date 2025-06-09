@@ -198,15 +198,14 @@ const RegisterPage = () => {
         if (response.status === (200 || 201)) {
           // navigate("/")
           setCodeVerified(true);
-          setErrors({});
-
+          setErrors({}); 
         } else if (response.status === 401) {
           setCanResendCode(false);
           setErrors({ message: 'Invalid verification code. Pls Resend Code' });
-
         }
 
       }).catch(error => {
+        setErrors({ message: error?.response?.data?.error ?? '' });
         console.error("Error registering verification Code:", error);
       });
     // For demo, assume code '123456' is correct
