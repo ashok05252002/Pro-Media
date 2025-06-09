@@ -11,15 +11,12 @@ const LinkedInCallback = () => {
   useEffect(() => {
     const code = searchParams.get("code");
     const state = searchParams.get("state");
-
     const storedState = sessionStorage.getItem("linkedin_oauth_state");
     const product_url = sessionStorage.getItem("product_url");
     const product_id = sessionStorage.getItem("product_id");
     const page_name = sessionStorage.getItem("page_name");
     console.log(state);
-    console.log(storedState);
-
-
+    console.log(storedState); 
     if (!state || state !== storedState) {
       setMessage("Invalid or missing state. Possible CSRF attack.");
       return;
