@@ -42,7 +42,7 @@ function App() {
   const router = createBrowserRouter([
     {
     path: "/",
-    element: !isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />,
+    element:<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />,
   },
   {
     path: "/login",
