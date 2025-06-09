@@ -110,16 +110,12 @@ const Login = () => {
 
   return (
    <div
-  className={`bg-cover bg-gradient-to-br from-[#7337FF] via-[#000000] to-[#0C7EA8]`}
-  style={{
-    backgroundImage: 'url(https://elements-resized.envatousercontent.com/elements-video-cover-images/290cc56e-3c94-432e-bc65-525fcb9495f1/video_preview/video_preview_0000.jpg?w=500&cf_fit=cover&q=85&format=auto&s=d6d71504b3053979e8f0233fc798db18d10c857c14063a9a8bdc0a946563149e)',
-  }}
->
-  <div className="min-h-screen flex items-center justify-center backdrop-brightness-50 py-12 px-4 sm:px-6 lg:px-8">
+  className={`bg-gray-100`}>
+  <div className="min-h-screen flex items-center justify-center  py-12 px-4 sm:px-6 lg:px-8">
     <div className="max-w-md w-full space-y-8">
       <div className="text-center">
-        <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-white">Welcome Back</h2>
-        <p className="mt-2 text-sm text-gray-300">Sign in to your social media management account</p>
+        <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-b;ack">Welcome Back</h2>
+        <p className="mt-2 text-sm text-gray-900">Sign in to your social media management account</p>
       </div>
 
       <div className={`mt-8 bg-white/30 backdrop-blur-md py-10 px-6 shadow-2xl border border-orange-200 sm:rounded-3xl sm:px-12 transition-all duration-300 ${isDarkMode ? 'bg-gray-800/50 border-gray-700 text-white' : ''}`}>
@@ -133,7 +129,7 @@ const Login = () => {
         <form className="space-y-6" onSubmit={handleSubmit}>
           {/* Email */}
           <div>
-            <label htmlFor="email" className={`block text-sm font-semibold mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-100'}`}>Email address</label>
+            <label htmlFor="email" className={`block text-sm font-semibold mb-1 ${isDarkMode ? 'text-gray-900' : 'text-gray-700'}`}>Email address</label>
             <input
               id="email"
               name="email"
@@ -148,7 +144,7 @@ const Login = () => {
 
           {/* Password */}
           <div>
-            <label htmlFor="password" className={`block text-sm font-semibold mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-100'}`}>Password</label>
+            <label htmlFor="password" className={`block text-sm font-semibold mb-1 ${isDarkMode ? 'text-gray-900' : 'text-gray-700'}`}>Password</label>
             <div className="relative">
               <input
                 id="password"
@@ -175,7 +171,7 @@ const Login = () => {
                 type="checkbox"
                 className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
               />
-              <span className={`${isDarkMode ? 'text-gray-300' : 'text-gray-100'}`}>Remember me</span>
+              <span className={`${isDarkMode ? 'text-gray-900' : 'text-gray-700'}`}>Remember me</span>
             </label>
             <Link to="/forgotpwd" className="text-orange-500 hover:underline">
               Forgot password?
@@ -191,17 +187,23 @@ const Login = () => {
             {isLoading ? 'Signing in...' : 'Sign in'}
           </button>
 
-          <div className="w-full flex justify-center text-gray-300 text-sm">or</div>
+          <div className="w-full flex justify-center text-gray-800 text-sm">or</div>
 
           {/* Sign Up */}
-          <button
+          {/* <button
             type="button"
             onClick={onClickRegister}
             disabled={isLoading}
             className="w-full py-2 px-4 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-700 font-semibold shadow-md transition disabled:opacity-70"
           >
             {isLoading ? 'Redirecting...' : 'Sign Up'}
-          </button>
+          </button> */}
+          <div className="mt-6 text-center text-sm">
+              Don't have an account?{' '}
+              <Link to="/register" className="font-medium text-[#F97316] hover:text-[#F97316]/80">
+                Register here
+              </Link>
+            </div>
         </form>
 
         {/* Social */}
