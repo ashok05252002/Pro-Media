@@ -45,7 +45,7 @@ const Profile = () => {
   useEffect(() => {
   const authToken = localStorage.getItem('authToken'); // Or your specific token key
 
-  axios.get("http://127.0.0.1:5001/company/profile-info", {
+  axios.get("http://127.0.0.1:5000/company/profile-info", {
     headers: {
       Authorization: `Bearer ${authToken}`
     }

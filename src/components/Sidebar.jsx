@@ -24,7 +24,8 @@ const Sidebar = () => {
   const { isDarkMode, themeColors } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const navigate = useNavigate();
-  const userName = localStorage.getItem('userName') || "Vijaya";
+  // const userName = localStorage.getItem('userName') || "Vijaya";
+  const userName = localStorage.getItem('username') || "";
 
   const menuItems = [
     { path: '/dashboard', name: 'Dashboard', icon: <LayoutGrid className="w-5 h-5" /> },

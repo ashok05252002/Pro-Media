@@ -5,6 +5,7 @@ import axios from './axios';
 
 // Example: Get all users
 export const extCompanyLogin = (userData) => {
+    console.log("BASE URL: ", import.meta.env.VITE_BASE_API_URL)
     console.log("debugging", userData)
     // return axios.post(`/company/login`, {
     //     'email':userData.email,
