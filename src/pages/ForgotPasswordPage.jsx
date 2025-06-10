@@ -65,7 +65,7 @@ const ForgotPasswordPage = () => {
     // Simulate sending OTP
     console.log(`Simulating sending OTP to ${email}`);
     try {
-      // const response = await axios.post("http://127.0.01:5000/company/forgetpasswrd", {
+      // const response = await axios.post(import.meta.env.VITE_BASE_API_URL+"/company/forgetpasswrd", {
       //   email: email,
       // });
       const response = await extCompanyUserForgetpwd(email)

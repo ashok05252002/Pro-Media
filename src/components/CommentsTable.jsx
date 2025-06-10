@@ -61,7 +61,7 @@ export default function CommentsTable() {
       console.log("Debugging",authTokens)
       // axios({
       //   method: "GET",
-      //   url:"http://127.0.0.1:5000/youtube/channels",
+      //   url:import.meta.env.VITE_BASE_API_URL+"/youtube/channels",
       //   headers: { Authorization: `Bearer ${authTokens}` },
       // })
       // .then((response) => {
@@ -83,7 +83,7 @@ export default function CommentsTable() {
       // console.log("axios")
       // axios({
       //   method: "GET",
-      //   url:"http://127.0.0.1:5000/youtube/youtube_video/",
+      //   url:import.meta.env.VITE_BASE_API_URL+"/youtube/youtube_video/",
       //   headers: { Authorization: `Bearer ${authTokens}` },
       // })
       // .then((response) => {
@@ -110,7 +110,7 @@ export default function CommentsTable() {
       
       axios({
         method: "GET",
-        url:"http://127.0.0.1:5000/facebook/fblistcomments/" + video_id1,
+        url:import.meta.env.VITE_BASE_API_URL+"/facebook/fblistcomments/" + video_id1,
         headers: { Authorization: `Bearer ${authTokens}` },
       })
       .then((response) => {

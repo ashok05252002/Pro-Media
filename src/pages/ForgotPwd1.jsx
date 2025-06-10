@@ -21,7 +21,7 @@ const ForgotPwd = () => {
     setMessage("");
 
     try {
-      const response = await axios.post("http://127.0.0.1:5000/company/forgetpasswrd", {
+      const response = await axios.post(import.meta.env.VITE_BASE_API_URL  +"/company/forgetpasswrd", {
         email: email,
       });
 
@@ -51,7 +51,7 @@ const ForgotPwd = () => {
     setMessage("");
 
     try {
-      const response = await axios.post("http://127.0.0.1:5000/company/reset-password", {
+      const response = await axios.post(import.meta.env.VITE_BASE_API_URL +"/company/reset-password", {
         "email":email,
         "otp":otp,
         "new_password":newPassword,
