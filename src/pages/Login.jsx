@@ -114,8 +114,8 @@ const Login = () => {
   <div className="min-h-screen flex items-center justify-center  py-12 px-4 sm:px-6 lg:px-8">
     <div className="max-w-md w-full space-y-8">
       <div className="text-center">
-        <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-b;ack">Welcome Back</h2>
-        <p className="mt-2 text-sm text-gray-900">Sign in to your social media management account</p>
+        <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-b;ack">Sign In</h2>
+        <p className="mt-2 text-sm text-gray-900">Join us to manage all your social media in one place</p>
       </div>
 
       <div className={`mt-8 bg-white/30 backdrop-blur-md py-10 px-6 shadow-2xl border border-orange-200 sm:rounded-3xl sm:px-12 transition-all duration-300 ${isDarkMode ? 'bg-gray-800/50 border-gray-700 text-white' : ''}`}>
@@ -201,7 +201,7 @@ const Login = () => {
           <div className="mt-6 text-center text-sm">
               Don't have an account?{' '}
               <Link to="/register" className="font-medium text-[#F97316] hover:text-[#F97316]/80">
-                Register here
+                Create One
               </Link>
             </div>
         </form>

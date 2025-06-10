@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Building, UserCircle, CheckCircle, ArrowRight, ArrowLeft, Mail, Lock, ShieldCheck, RefreshCw } from 'lucide-react'; // Added ShieldCheck
+import { Building, UserCircle, CheckCircle, ArrowRight, ArrowLeft, Mail, Lock, ShieldCheck, RefreshCw, Eye, EyeOff } from 'lucide-react'; // Added ShieldCheck
 import { useTheme } from '../contexts/ThemeContext';
 import { extCompanyUserRegister, extCompanyUserRegVerifyOTP, extCompanyUserRegResendOTP, } from "../API/api";
 
@@ -59,7 +59,7 @@ const Stepper = ({ currentStep }) => {
   );
 };
 
-const InputField = ({ id, label, type, value, onChange, error, icon, required = true, placeholder, maxLength }) => (
+const InputField = ({ id, label, type, value, onChange, error, icon, required = true, placeholder, maxLength, showPasswordToggle, onPasswordToggle, isPasswordVisible }) => (
   <div>
     <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
       {label} {required && <span className="text-red-500">*</span>}
@@ -74,10 +74,20 @@ const InputField = ({ id, label, type, value, onChange, error, icon, required = 
         onChange={onChange}
         placeholder={placeholder}
         maxLength={maxLength}
-        className={`w-full ${icon ? 'pl-10' : 'px-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${
+        className={`w-full ${icon ? 'pl-10' : 'px-3'} ${showPasswordToggle ? 'pr-10' : 'pr-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${
           error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
         }`}
       />
+      {showPasswordToggle && (
+        <button
+          type="button"
+          onClick={onPasswordToggle}
+          className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+          aria-label={isPasswordVisible ? "Hide password" : "Show password"}
+        >
+          {isPasswordVisible ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+        </button>
+      )}
     </div>
     {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
   </div>
@@ -124,6 +134,8 @@ const RegisterPage = () => {
   const [codeVerified, setCodeVerified] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
   const [canResendCode, setCanResendCode] = useState(false);
+   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
 
@@ -311,7 +323,7 @@ const RegisterPage = () => {
       <div className="max-w-2xl w-full">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold">Create Your Account</h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Join us and streamline your social media management.</p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Join us to manage all your social media in one place</p>
         </div>
 
         <div className={`py-8 px-6 sm:px-10 shadow-xl rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
@@ -341,8 +353,12 @@ const RegisterPage = () => {
             <form className="space-y-6" noValidate>
               <InputField id="fullName" label="Full Name" type="text" value={formData.fullName} onChange={handleChange} error={errors.fullName} icon={<UserCircle />} placeholder="John Doe"/>
               <InputField id="userEmail" label="Your Email" type="email" value={formData.userEmail} onChange={handleChange} error={errors.userEmail} icon={<Mail />} placeholder="you@example.com"/>
-              <InputField id="password" label="Password" type="password" value={formData.password} onChange={handleChange} error={errors.password} icon={<Lock />} placeholder="Min. 8 characters"/>
-              <InputField id="confirmPassword" label="Confirm Password" type="password" value={formData.confirmPassword} onChange={handleChange} error={errors.confirmPassword} icon={<Lock />} placeholder="Re-enter your password"/>
+              <InputField id="password" label="Create Password " type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} error={errors.password} icon={<Lock />} placeholder="Min. 8 characters" showPasswordToggle={true}
+                onPasswordToggle={() => setShowPassword(!showPassword)}
+                isPasswordVisible={showPassword}/>
+              <InputField id="confirmPassword" label="Confirm Password" type={showConfirmPassword ? "text" : "password"}  value={formData.confirmPassword} onChange={handleChange} error={errors.confirmPassword} icon={<Lock />} placeholder="Re-enter your password" showPasswordToggle={true}
+                onPasswordToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+                isPasswordVisible={showConfirmPassword}/>
             </form>
           )}
 
@@ -351,7 +367,7 @@ const RegisterPage = () => {
               {!codeVerified ? (
                 <div className="space-y-6">
                   <p className="text-center text-gray-600 dark:text-gray-400">
-                    A 6-digit verification code has been sent to {formData.userEmail}. Please enter it below. (Hint: try 123456)
+                    A 6-digit verification code has been sent to {formData.userEmail}. Please enter it below. 
                   </p>
                   <InputField 
                     id="verificationCode" 
@@ -385,13 +401,13 @@ const RegisterPage = () => {
                   <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
                   <h3 className="text-2xl font-semibold mb-2">Verification Successful!</h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    Your account has been created and verified. You can now log in.
+                    Your account has been created and verified. You can now Sign In.
                   </p>
                   <button
                     onClick={() => navigate('/login')}
                     className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-theme-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-primary"
                   >
-                    Go to Login
+                    Go to Sign In
                   </button>
                 </div>
               )}
@@ -435,7 +451,7 @@ const RegisterPage = () => {
             <div className="mt-6 text-center text-sm">
                 Already have an account?{' '}
                 <Link to="/login" className="font-medium text-theme-primary hover:text-opacity-80">
-                    Login here
+                    Sign In here
                 </Link>
             </div>
         )}
