@@ -24,7 +24,7 @@ const ForgotPwd = () => {
    
 
     try {
-      // const response = await axios.post("http://127.0.01:5000/company/forgetpasswrd", {
+      // const response = await axios.post(import.meta.env.VITE_BASE_API_URL+"/company/forgetpasswrd", {
       //   email: email,
       // });
       const response = await extCompanyUserForgetpwd (email)
@@ -58,7 +58,7 @@ const ForgotPwd = () => {
       "new_password": newPassword,
     }
     try {
-      // const response = await axios.post("http://127.0.01:5000/company/reset-password", {
+      // const response = await axios.post(import.meta.env.VITE_BASE_API_URL+"/company/reset-password", {
       //   "email":email,
       //   "otp":otp,
       //   "new_password": newPassword,

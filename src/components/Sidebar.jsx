@@ -53,7 +53,7 @@ const Sidebar = () => {
     localStorage.removeItem('authToken');
     sessionStorage.removeItem("authToken")
     
-    navigate('/');
+    navigate('/login');
   };
 
   const handleViewProfile = () => {

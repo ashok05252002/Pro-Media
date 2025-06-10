@@ -44,7 +44,7 @@ const FacebookCallback = () => {
     //     "product_Url":product_url
     //   }
       // Send the code to your backend to exchange for an access token
-      // axios.post('http://localhost:5000/auth/facebook', {
+      // axios.post(import.meta.env.VITE_BASE_API_URL+'/auth/facebook', {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify({ code, product_id, master_data_source_id, product_url}),

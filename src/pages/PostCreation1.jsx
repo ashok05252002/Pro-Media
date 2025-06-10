@@ -326,7 +326,7 @@ const PostCreation = () => {
 
       // Send API request
       // const response = await axios.post(
-      //   `http://192.168.80.100:5000/${selectedPlatform}_post/addposts`,
+      //   `${import.meta.env.VITE_BASE_API_URL}/${selectedPlatform}_post/addposts`,
       //   payload
       // );
       const response = await extCompanyPrdctCreatePost(selectedPlatform, payload)
