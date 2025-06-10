@@ -103,9 +103,13 @@ const RegProduct = (props) => {
   const LinkedInAuthButton = () => {
       // LinkedIn app credentials
      const scopes = [
-    'profile',      // Basic profile info (formerly 'profile')
+    'profile',
+    'r_basicprofile',
     'w_member_social',    // Posting permissions
-    'r_organization_admin' // Organization admin access
+    'r_organization_admin', // Organization admin access
+    'r_organization_social',
+    'rw_organization_admin',
+    'w_organization_social'
   ].join(' '); // Space separated
 
       // Generate random state for CSRF protection
