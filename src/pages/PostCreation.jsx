@@ -453,34 +453,34 @@ const PostCreation = () => {
         </select>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowDiscardConfirmModal(true)}
-            className="flex items-center justify-center gap-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-red-500 dark:text-red-400"
-          >
-            <Trash2 className="w-4 h-4" />
-            <span>Discard</span>
-          </button>
-          <button
-            onClick={() => setShowSaveDraftConfirmModal(true)}
-            className="flex items-center justify-center gap-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-          >
-            <Save className="w-4 h-4" />
-            <span>Save Draft</span>
-          </button>
-          <button
-            onClick={() => setShowScheduleModal(true)}
-            className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-theme-secondary hover:bg-opacity-90 text-white rounded-md"
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Schedule</span>
-          </button>
-          <button
-            onClick={() => setShowPostPreviewModal(true)}
-            className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-theme-primary hover:bg-opacity-90 text-white rounded-md"
-          >
-            <Send className="w-4 h-4" />
-            <span>Post Now</span>
-          </button>
+            <button 
+                onClick={() => setShowDiscardConfirmModal(true)} 
+                className="flex items-center justify-center gap-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-red-500 dark:text-red-400"
+            >
+                <Trash2 className="w-4 h-4" />
+                <span>Discard</span>
+            </button>
+            <button 
+                onClick={() => setShowSaveDraftConfirmModal(true)} 
+                className="flex items-center justify-center gap-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+                <Save className="w-4 h-4" />
+                <span>Save Draft</span>
+            </button>
+            <button 
+                onClick={() => setShowScheduleModal(true)} 
+                className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-theme-secondary hover:bg-opacity-90 text-white rounded-md"
+            >
+                <Calendar className="w-4 h-4" />
+                <span className='text-white'>Schedule</span>
+            </button>
+            <button 
+                onClick={() => setShowPostPreviewModal(true)} 
+                className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-theme-primary  hover:bg-opacity-90 text-white rounded-md"
+            >
+                <Send className="w-4 h-4" />
+                  <span className='text-white'>Post Now</span>
+            </button>
         </div>
       </div>
 

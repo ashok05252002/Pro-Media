@@ -13,6 +13,7 @@ import {
   HelpCircle,
   LogOut,
   FileText,
+  Briefcase,
   User
 } from 'lucide-react';
 import { useSidebar } from '../contexts/SidebarContext';
@@ -24,11 +25,12 @@ const Sidebar = () => {
   const { isDarkMode, themeColors } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const navigate = useNavigate();
-  const userName = localStorage.getItem('userName') || "Vijaya";
+  // const userName = localStorage.getItem('userName') || "Vijaya";
+  const userName = localStorage.getItem('username') || "";
 
   const menuItems = [
     { path: '/dashboard', name: 'Dashboard', icon: <LayoutGrid className="w-5 h-5" /> },
-    { path: '/channels', name: 'My Business', icon: <Globe className="w-5 h-5" /> },
+    { path: '/channels', name: 'My Business', icon: <Briefcase className="w-5 h-5" /> },
     // { path: '/products', name: 'My Products', icon: <ShoppingBag className="w-5 h-5" /> },
     { path: '/calendar-view', name: 'Calendar View', icon: <FileEdit className="w-5 h-5" /> },
     // { path: '/ViewComments', name: 'View comments', icon: <MessageSquare className="w-5 h-5" /> },
