@@ -152,8 +152,12 @@ const RegisterProduct = (props) => {
                 const redirectUri = import.meta.env.VITE_REACT_APP_LINKEDIN_REDIRECT_URI;
                 const scopes = [
                     'profile',
-                    'w_member_social',
-                    'r_organization_admin'
+                    'r_basicprofile',
+                    'w_member_social',    // Posting permissions
+                    'r_organization_admin', // Organization admin access
+                    'r_organization_social',
+                    'rw_organization_admin',
+                    'w_organization_social'
                 ].join(' ');
                 authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${import.meta.env.VITE_REACT_APP_LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(import.meta.env.VITE_REACT_APP_LINKEDIN_REDIRECT_URI)}&state=${state}&scope=${scopes}`;
                 break;

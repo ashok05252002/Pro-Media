@@ -1,12 +1,15 @@
 import React from 'react';
-import { Plus } from 'lucide-react'; // Removed useDrop
+import { useDrop } from 'react-dnd';
+import { Plus } from 'lucide-react';
 import PostCardCalendar from './PostCardCalendar';
+import { ItemTypes } from '../../constants/ItemTypes';
 // Removed ItemTypes import as it's no longer needed
 
 const TimeSlotCell = ({ 
   date, 
   time, 
   postsInSlot, 
+  onDropPost, 
   onAddPostClick, 
   onPostCardClick,
   platformDetails, 
@@ -14,6 +17,20 @@ const TimeSlotCell = ({
   isToday,
   themeColors
 }) => {
+
+  const [{ isOver, canDrop }, drop] = useDrop(() => ({
+      accept: ItemTypes.POST_CARD,
+      drop: (item) => {
+        if (item.originalDate !== date || item.originalTime !== time) {
+          onDropPost(item.id, date, time);
+        }
+      },
+      canDrop: (item) => item.originalDate !== date || item.originalTime !== time,
+      collect: (monitor) => ({
+        isOver: !!monitor.isOver(),
+        canDrop: !!monitor.canDrop(),
+      }),
+    }));
   // Removed useDrop hook and related logic
 
   let hoverBgClass = 'hover:bg-gray-100/70 dark:hover:bg-gray-700/50';
@@ -22,9 +39,14 @@ const TimeSlotCell = ({
   }
   // Removed isOver && canDrop condition for hoverBgClass as drag-drop is removed
 
+  if (isOver && canDrop) {
+    hoverBgClass = 'bg-green-100 dark:bg-green-900/40';
+  }
+
   return (
     <div
       // Removed ref={drop}
+      ref={drop}
       className={`min-h-[4rem] border-b border-gray-200 dark:border-gray-700 p-1.5 relative group 
                   ${hoverBgClass}
                   transition-colors duration-150 flex flex-col`}
