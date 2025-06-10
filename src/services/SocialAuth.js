@@ -17,10 +17,10 @@ const openPopup = (url, title, width, height) => {
         );
 
         const interval = setInterval(() => {
-            if (popup.closed) {
-                clearInterval(interval);
-                resolve(null); // user closed the popup
-            }
+            // if (popup.closed) {
+            //     clearInterval(interval);
+            //     resolve(null); // user closed the popup
+            // }
         }, 500);
 
         resolve(popup);

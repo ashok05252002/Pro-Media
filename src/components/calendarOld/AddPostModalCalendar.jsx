@@ -4,18 +4,22 @@ import { format, parse } from 'date-fns';
 
 const AddPostModalCalendar = ({ isOpen, onClose, onSave, selectedDate, selectedTime, platforms, timeSlots }) => {
   const [title, setTitle] = useState('');
-  const [platform, setPlatform] = useState(Object.keys(platforms).find(key => key !== 'Default') || '');
+  const [platform, setPlatform] = useState(Object.keys(platforms)[0] || '');
   const [status, setStatus] = useState('Draft');
   const [contentPreview, setContentPreview] = useState('');
-  const [postTime, setPostTime] = useState(selectedTime || '09:00');
+  const [postTime, setPostTime] = useState(selectedTime || '09:00'); // Default or passed time
 
   useEffect(() => {
-    if (isOpen) {
-      setPostTime(selectedTime || '09:00'); // Reset time if modal reopens for a new slot
-      setTitle('');
-      setPlatform(Object.keys(platforms).find(key => key !== 'Default') || '');
-      setStatus('Draft');
-      setContentPreview('');
+    if (selectedTime) {
+      setPostTime(selectedTime);
+    } else if (isOpen) { // Reset to default if no specific time passed when opening
+      setPostTime('09:00');
+    }
+    if (!isOpen) { // Reset form on close
+        setTitle('');
+        setPlatform(Object.keys(platforms)[0] || '');
+        setStatus('Draft');
+        setContentPreview('');
     }
   }, [isOpen, selectedTime, platforms]);
 
@@ -32,10 +36,11 @@ const AddPostModalCalendar = ({ isOpen, onClose, onSave, selectedDate, selectedT
       title,
       platform,
       status,
-      date: selectedDate, 
-      time: postTime,     
+      date: selectedDate, // Date is passed directly
+      time: postTime,     // Time is from the modal's state
       contentPreview,
     });
+    // Don't reset here, useEffect handles it on close
   };
 
   return (
@@ -92,7 +97,7 @@ const AddPostModalCalendar = ({ isOpen, onClose, onSave, selectedDate, selectedT
                 onChange={(e) => setPlatform(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700"
               >
-                {Object.entries(platforms).filter(([key]) => key !== 'Default').map(([key, {name}]) => (
+                {Object.entries(platforms).map(([key, {name}]) => (
                   <option key={key} value={key}>{name}</option>
                 ))}
               </select>

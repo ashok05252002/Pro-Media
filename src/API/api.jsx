@@ -5,6 +5,7 @@ import axios from './axios';
 
 // Example: Get all users
 export const extCompanyLogin = (userData) => {
+    console.log("BASE URL: ", import.meta.env.VITE_BASE_API_URL)
     console.log("debugging", userData)
     // return axios.post(`/company/login`, {
     //     'email':userData.email,
@@ -274,11 +275,11 @@ export const extCompanyPrdctListCommentsByPlatform = (postId, platform) => {
                 return axios.get(`/facebook/listcomments/${postId}`);
             }
         case 'twitter':
-            return axios.post(`/twitter/listcomments/${postId}`);
+            return axios.get(`/twitter/listcomments/${postId}`);
         case 'youtube':
-            return axios.post(`/youtube/listcomments/get-reviews/${postId}`);
+            return axios.get(`/youtube/listcomments/get-reviews`, {"product_data_source_video_id": postId});
         case 'instagram':
-            return axios.get(`/instagram/listComments/${postId}`);
+            return axios.get(`/instagram/listcomments/${postId}`);
         default:
             return Promise.reject(new Error(`Unsupported platform: ${postId}`));
     }
@@ -311,7 +312,8 @@ export const extCompanyEditedCreateddPost = (platformName, postId, payload) => {
 };
 
 export const replyComment = (cmtData) => {
-    return axios.post(`${cmtData.platform}/reply_cmt/${cmtData.reviewId}`, {
+    const comment_id = cmtData.reviewId
+    return axios.post(`${cmtData.platform}/reply_cmt/${comment_id}`, {
 
         "reply_text": cmtData.replyText,
         "ext_product_data_source_id": cmtData.extDSId

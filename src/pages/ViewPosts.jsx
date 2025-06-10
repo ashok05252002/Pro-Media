@@ -632,7 +632,7 @@ const ViewPosts = () => {
     if (searchQueryPosts && !post.video_title.toLowerCase().includes(searchQueryPosts.toLowerCase())) return false;
 
     const postDate = new Date(post?.video_publish_date);
-    console.log("postDate", postDate);
+    // console.log("postDate", postDate);
     if (dateFilterTypePosts === 'date' && selectedDatePosts) {
       const selected = new Date(selectedDatePosts);
       return postDate.getFullYear() === selected.getFullYear() && postDate.getMonth() === selected.getMonth() && postDate.getDate() === selected.getDate();
@@ -813,7 +813,7 @@ const ViewPosts = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredPosts.length > 0 ? (
               filteredPosts.map(post => (
-                <div key={post.id} className={`rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-[1.02] ${post.color}`}>
+                <div key={post.video_id} className={`rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-[1.02] ${post.color}`}>
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-3"><div className="flex items-center">{platformIconMap[post?.platformType]}<span className="ml-2 font-medium">{post?.platformType}</span></div><button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"><MoreHorizontal className="w-5 h-5" /></button></div>
                     <h2 className="text-xl font-semibold mb-3">{post.video_title}</h2>
@@ -822,7 +822,7 @@ const ViewPosts = () => {
                     <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400"><div className="flex items-center"><Calendar className="w-4 h-4 mr-1" /><span>{formatDate(post?.video_publish_date)}</span></div><span>{getTimeAgo(post.video_publish_date)}</span></div>
                     <div className="mt-4 flex justify-between border-t pt-4 border-gray-200 dark:border-gray-700">
                       <div className="flex items-center text-gray-600 dark:text-gray-400"><Heart className="w-4 h-4 mr-1" /><span className="text-sm">{post?.likes_count?.toLocaleString()}</span></div>
-                      <button onClick={() => handleViewPostComments(post?.id, post?.platformType)} className="flex items-center text-gray-600 dark:text-gray-400 hover:text-theme-primary dark:hover:text-theme-primary" title="View Comments"><MessageSquare className="w-4 h-4 mr-1" /><span className="text-sm"></span></button>
+                      <button onClick={() => handleViewPostComments(post?.id, post?.platformType)} className="flex items-center text-gray-600 dark:text-gray-400 hover:text-theme-primary dark:hover:text-theme-primary" title="View Comments"><MessageSquare className="w-4 h-4 mr-1" /><span className="text-sm">{ filteredComments.filter(comment => (comment.product_data_source_video_id === post.id) && (comment.data_source_id === post.data_source_id)).length}</span></button>
                       <div className="flex items-center text-gray-600 dark:text-gray-400"><Repeat className="w-4 h-4 mr-1" /><span className="text-sm">{post?.shares_count?.toLocaleString()}</span></div>
                       <div className="flex items-center text-gray-600 dark:text-gray-400"><Eye className="w-4 h-4 mr-1" /><span className="text-sm">{post?.views_count?.toLocaleString()}</span></div>
                     </div>

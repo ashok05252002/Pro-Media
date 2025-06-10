@@ -10,9 +10,9 @@ export default function YoutubeCallback() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get("code");
-    const product_url = localStorage.getItem("product_url");
-    const product_id = localStorage.getItem("product_id");
-    const page_name = localStorage.getItem("page_name");
+    const product_url = sessionStorage.getItem("product_url");
+    const product_id = sessionStorage.getItem("product_id");
+    const page_name = sessionStorage.getItem("page_name");
 
     const inputData = {
       code: code,

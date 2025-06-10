@@ -16,23 +16,23 @@ const Stepper = ({ currentStep }) => {
       <ol role="list" className="flex items-center gap-24">
         {steps.map((step, stepIdx) => (
           <li key={step.name} className={`relative ${stepIdx !== steps.length - 1 ? 'flex-1' : ''}`}>
-            {stepIdx < currentStep -1 ? ( // Completed step
+            {stepIdx < currentStep - 1 ? ( // Completed step
               <>
                 <div className="absolute inset-0 w-40 top-1/2 transform -translate-y-1/2 flex items-center" aria-hidden="true">
                   <div className="h-0.5 w-full bg-theme-primary"></div>
                 </div>
                 <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-theme-primary hover:bg-opacity-90">
-                   {React.cloneElement(step.icon, { className: "w-5 h-5 text-white"})}
+                  {React.cloneElement(step.icon, { className: "w-5 h-5 text-white" })}
                 </div>
                 <span className="absolute top-full left-1/2 -translate-x-1/2 text-xs text-center mt-2 text-theme-primary font-medium whitespace-nowrap">{step.name}</span>
               </>
-            ) : stepIdx === currentStep -1 ? ( // Current step
+            ) : stepIdx === currentStep - 1 ? ( // Current step
               <>
                 <div className="absolute inset-0 top-1/2  transform -translate-y-1/2 flex items-center" aria-hidden="true">
                   <div className={`h-0.5 w-full ${stepIdx === 0 ? 'bg-transparent' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
                 </div>
                 <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-theme-primary bg-white dark:bg-gray-800">
-                  {React.cloneElement(step.icon, { className: "w-5 h-5 text-theme-primary"})}
+                  {React.cloneElement(step.icon, { className: "w-5 h-5 text-theme-primary" })}
                 </div>
                 <span className="absolute top-full left-1/2 -translate-x-1/2 text-xs text-center mt-2 text-theme-primary font-medium whitespace-nowrap">{step.name}</span>
               </>
@@ -42,14 +42,14 @@ const Stepper = ({ currentStep }) => {
                   <div className="h-0.5 w-full bg-gray-200 dark:bg-gray-700"></div>
                 </div>
                 <div className="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500">
-                  {React.cloneElement(step.icon, { className: "w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400"})}
+                  {React.cloneElement(step.icon, { className: "w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400" })}
                 </div>
-                 <span className="absolute top-full left-1/2 -translate-x-1/2 text-xs text-center mt-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">{step.name}</span>
+                <span className="absolute top-full left-1/2 -translate-x-1/2 text-xs text-center mt-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">{step.name}</span>
               </>
             )}
             {stepIdx < steps.length - 1 && (
               <div className="absolute inset-0 w-24 top-1/2 left-full transform -translate-y-1/2 w-24 hidden sm:block" aria-hidden="true">
-                 <div className={`h-0.5 w-full ${stepIdx < currentStep - 1 ? 'bg-theme-primary' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
+                <div className={`h-0.5 w-full ${stepIdx < currentStep - 1 ? 'bg-theme-primary' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
               </div>
             )}
           </li>
@@ -65,7 +65,7 @@ const InputField = ({ id, label, type, value, onChange, error, icon, required = 
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="relative">
-      {icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">{React.cloneElement(icon, { className: "w-5 h-5 text-gray-400"})}</div>}
+      {icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">{React.cloneElement(icon, { className: "w-5 h-5 text-gray-400" })}</div>}
       <input
         type={type}
         id={id}
@@ -74,9 +74,14 @@ const InputField = ({ id, label, type, value, onChange, error, icon, required = 
         onChange={onChange}
         placeholder={placeholder}
         maxLength={maxLength}
+<<<<<<< HEAD
         className={`w-full ${icon ? 'pl-10' : 'px-3'} ${showPasswordToggle ? 'pr-10' : 'pr-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${
           error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
         }`}
+=======
+        className={`w-full ${icon ? 'pl-10' : 'px-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
+          }`}
+>>>>>>> e731a5988042c3c589b92bf649eb572cd4cf698e
       />
       {showPasswordToggle && (
         <button
@@ -99,15 +104,14 @@ const SelectField = ({ id, label, value, onChange, error, children, icon, requir
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="relative">
-      {icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">{React.cloneElement(icon, { className: "w-5 h-5 text-gray-400"})}</div>}
-       <select
+      {icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">{React.cloneElement(icon, { className: "w-5 h-5 text-gray-400" })}</div>}
+      <select
         id={id}
         name={id}
         value={value}
         onChange={onChange}
-        className={`w-full ${icon ? 'pl-10' : 'px-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${
-          error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
-        }`}
+        className={`w-full ${icon ? 'pl-10' : 'px-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
+          }`}
       >
         {children}
       </select>
@@ -193,36 +197,34 @@ const RegisterPage = () => {
     } else if (!/^\d{6}$/.test(formData.verificationCode)) {
       newErrors.verificationCode = 'Code must be 6 digits.';
     }
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    
+
     // Simulate API call for code verification
     console.log("Verifying code:", formData.verificationCode);
     const userData = {
-                email: formData.userEmail,
-                otp: formData.verificationCode,
-              };
+      email: formData.userEmail,
+      otp: formData.verificationCode,
+    };
     console.log("Verifying code1:", userData);
     extCompanyUserRegVerifyOTP(userData)
       .then((response) => {
         console.log("OTP Verified", response);
-        if (response.status === (200 || 201)){
+        if (response.status === (200 || 201)) {
           // navigate("/")
           setCodeVerified(true);
-          setErrors({});
-         
-        }else if(response.status === 401)
-        {
-          setCanResendCode(false);  
-          setErrors({ message:'Invalid verification code. Pls Resend Code' });
-            
+          setErrors({}); 
+        } else if (response.status === 401) {
+          setCanResendCode(false);
+          setErrors({ message: 'Invalid verification code. Pls Resend Code' });
         }
-        
+
       }).catch(error => {
-              console.error("Error registering verification Code:", error);
+        setErrors({ message: error?.response?.data?.error ?? '' });
+        console.error("Error registering verification Code:", error);
       });
     // For demo, assume code '123456' is correct
     // if (formData.verificationCode === '123456') {
@@ -243,21 +245,20 @@ const RegisterPage = () => {
     extCompanyUserRegResendOTP(formData)
       .then((response) => {
         console.log("OTP Resend Verified", response);
-        if (response.status === (200 || 201)){
+        if (response.status === (200 || 201)) {
           // navigate("/")
           setCanResendCode(false)
           setErrors({});
           console.log("ResendCode:", response)
-         
-        }else 
-        {
-          setCanResendCode(true);  
+
+        } else {
+          setCanResendCode(true);
           console.log("ResendCode:", response)
-            
+
         }
-        
+
       }).catch(error => {
-              console.error("Error registering verification Code:", error);
+        console.error("Error registering verification Code:", error);
       });
 
     // Optionally, show a temporary message like "New code sent!"
@@ -268,42 +269,46 @@ const RegisterPage = () => {
       setCurrentStep(2);
       setErrors({});
     } else if (currentStep === 2 && validateStep2()) {
-     
+
       setCodeVerified(false); // Reset verification status when entering step 3
       extCompanyUserRegister(formData)
-      .then((response) => {
-        console.log(response);
-        if (response.status === 200 || response.status === 201) {
-          console.log("Submitted successfully");
-          setCurrentStep(3);
-          setCodeVerified(false); 
-          setResendTimer(30); // Reset timer for step 3
-          setCanResendCode(false);
-          setErrors({});
-          // const userData = {
-          //       email: userInput.userEmail,
-          //       otp: userInput.OTPCode,
-          //     };
+        .then((response) => {
+          console.log(response);
+          if (response.status === 200 || response.status === 201) {
+            console.log("Submitted successfully");
+            setCurrentStep(3);
+            setCodeVerified(false);
+            setResendTimer(30); // Reset timer for step 3
+            setCanResendCode(false);
+            setErrors({});
+            // const userData = {
+            //       email: userInput.userEmail,
+            //       otp: userInput.OTPCode,
+            //     };
+
+            //     extCompanyUserRegVerifyOTP(userInput)
+            //       .then((response) => {
+            //         console.log("OTP Verified", response);
+            //         if (response.status === (200 || 201)){
+            //           navigate("/")
+            //         }
+
+            //       }).catch(error => {
+            //               console.error("Error registering company User:", error);
+            //       });
+          }
+          else {
+            setErrors({ message: "Error registering company User:" })
+          }
+
+          console.log();
           
-          //     extCompanyUserRegVerifyOTP(userInput)
-          //       .then((response) => {
-          //         console.log("OTP Verified", response);
-          //         if (response.status === (200 || 201)){
-          //           navigate("/")
-          //         }
-                  
-          //       }).catch(error => {
-          //               console.error("Error registering company User:", error);
-          //       });
-        }
-        else{
-            setErrors({message:"Error registering company User:"})
-        }
-        
-      }).catch(error => {
-              setErrors({message:error.message})
-              console.error("Error registering company User:", error);
-      });
+
+        }).catch(error => {
+          setErrors({ message: error?.response?.data?.error ?? error.message })
+          // setErrors({ message: error.message })
+          console.error("Error registering company User:", error);
+        });
       setErrors({});
       // Simulate sending verification code email
       console.log("Simulating sending verification code to:", formData.userEmail);
@@ -330,13 +335,13 @@ const RegisterPage = () => {
           <div className="flex justify-center w-full">
             <Stepper currentStep={currentStep} />
           </div>
-          <h5>
-            {errors?.message?errors.message:""}
+          <h5 className="text-red-500 text-sm mt-1 mb-2">
+            {errors?.message ? errors.message : ""}
           </h5>
 
           {currentStep === 1 && (
             <form className="space-y-6" noValidate>
-              <InputField id="companyName" label="Company Name" type="text" value={formData.companyName} onChange={handleChange} error={errors.companyName} icon={<Building />} placeholder="Your Company Inc."/>
+              <InputField id="companyName" label="Company Name" type="text" value={formData.companyName} onChange={handleChange} error={errors.companyName} icon={<Building />} placeholder="Your Company Inc." />
               <SelectField id="companyType" label="Company Type" value={formData.companyType} onChange={handleChange} error={errors.companyType} icon={<Building />}>
                 <option value="">Select type...</option>
                 {companyTypes.map(type => <option key={type} value={type}>{type}</option>)}
@@ -345,7 +350,7 @@ const RegisterPage = () => {
                 <option value="">Select size...</option>
                 {employeeSizes.map(size => <option key={size} value={size}>{size}</option>)}
               </SelectField>
-              <InputField id="companyEmail" label="Company Email ID" type="email" value={formData.companyEmail} onChange={handleChange} error={errors.companyEmail} icon={<Mail />} placeholder="contact@yourcompany.com"/>
+              <InputField id="companyEmail" label="Company Email ID" type="email" value={formData.companyEmail} onChange={handleChange} error={errors.companyEmail} icon={<Mail />} placeholder="contact@yourcompany.com" />
             </form>
           )}
 
@@ -369,14 +374,14 @@ const RegisterPage = () => {
                   <p className="text-center text-gray-600 dark:text-gray-400">
                     A 6-digit verification code has been sent to {formData.userEmail}. Please enter it below. 
                   </p>
-                  <InputField 
-                    id="verificationCode" 
-                    label="Verification Code" 
-                    type="text" 
-                    value={formData.verificationCode} 
-                    onChange={handleChange} 
-                    error={errors.verificationCode} 
-                    icon={<ShieldCheck />} 
+                  <InputField
+                    id="verificationCode"
+                    label="Verification Code"
+                    type="text"
+                    value={formData.verificationCode}
+                    onChange={handleChange}
+                    error={errors.verificationCode}
+                    icon={<ShieldCheck />}
                     placeholder="Enter 6-digit code"
                     maxLength={6}
                   />
@@ -419,12 +424,12 @@ const RegisterPage = () => {
               type="button"
               onClick={prevStep}
               disabled={currentStep === 1 || (currentStep === 3 && codeVerified)}
-              className={`inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-primary ${ (currentStep === 1 || (currentStep === 3 && codeVerified)) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-theme-primary ${(currentStep === 1 || (currentStep === 3 && codeVerified)) ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Previous
             </button>
-            
+
             {currentStep < 3 && (
               <button
                 type="button"

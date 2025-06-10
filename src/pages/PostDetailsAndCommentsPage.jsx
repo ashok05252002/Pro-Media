@@ -145,12 +145,6 @@ const PostDetailsAndCommentsPage = () => {
   }, [comments]);
   useEffect(() => {
     
-    // const foundPost = mockPostsData.find(p => p.id === postId);
-    // setPost(foundPost);
-    // if (foundPost) {
-    //   const postComments = mockAllComments.filter(c => c.postId === postId);
-    //   setComments(postComments);
-    // }
     // Fetch post details
     const fetchPostDetails = async () => {
       try {
@@ -178,13 +172,17 @@ const PostDetailsAndCommentsPage = () => {
         const response = await extCompanyPrdctListCommentsByPlatform(postId, platform);
         if (response && Array.isArray(response?.data)) {
           setComments(response.data);
+          console.log("Comments:", response.data)
+          return response.data
         } else {
           setComments([]);
           console.warn("Unexpected comments structure:", response);
+          return [];
         }
       } catch (error) {
         setCommentsError(error.message || "Failed to fetch comments");
         console.error('Error fetching comments:', error);
+        return [];
       } finally {
         setLoadingComments(false);
       }
@@ -330,12 +328,12 @@ const PostDetailsAndCommentsPage = () => {
                 <CommentItem
                   comment={comment}
                   platform={platform}
-                  onReplyClick={()=>handleReplyClick}
+                  onReplyClick={()=>handleReplyClick(comment.review_id)}
                 />
                 {replyingToCommentId === comment.review_id && (
                   
                   <div className="p-4 ml-14 bg-gray-50 dark:bg-gray-700/30 rounded-b-md">
-                    <p>{comment.review_id}</p>
+                    {/* <p>{comment.reviewer_name}</p> */}
                     <textarea
                       value={currentReplyText}
                       onChange={(e) => setCurrentReplyText(e.target.value)}
