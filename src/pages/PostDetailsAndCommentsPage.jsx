@@ -300,7 +300,7 @@ const PostDetailsAndCommentsPage = () => {
         </div>
        {platform==='youtube'?
         (<h1 className="text-2xl font-semibold mb-2">{post[0]?.video_title}</h1>):""}
-         <p className="text-2xl font mb-2">{post[0]?.video_url}</p>
+       
         <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-4">
           <Calendar className="w-3 h-3 mr-1" />
           <span>Posted on {new Date(post[0]?.video_publish_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
@@ -313,6 +313,52 @@ const PostDetailsAndCommentsPage = () => {
           />
         )}
         <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{post[0]?.video_content}</p>
+{post[0]?.media_url && (
+  <div className="mb-4">
+    {/* Check if it's an image */}
+    {/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(post[0]?.media_url) ? (
+      <img 
+        src={post[0]?.media_url}
+        alt={post[0]?.video_title || "Post image"} 
+        className="w-full h-48 object-cover rounded-lg"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = '/fallback-image.jpg';
+        }}
+      />
+    ) : 
+    /* Check if it's a video */
+    /\.(mp4|webm|ogg|mov|avi)$/i.test(post[0]?.media_url) ? (
+      <video
+        controls
+        className="w-full h-48 object-cover rounded-lg"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.parentElement.innerHTML = `
+            <div class="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg">
+              Video failed to load
+            </div>`;
+        }}
+      >
+        <source 
+          src={post[0]?.media_url}
+          type={`video/${post[0]?.media_url?.split('.').pop()}`} 
+        />
+        Your browser does not support the video tag.
+      </video>
+    ) : (
+      /* Unsupported format or link */
+      <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg">
+        <p className="text-red-500">
+          Unsupported media format: {post[0]?.media_url?.split('/').pop()}
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
+
+
         <div className="mt-4 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400 border-t pt-3 border-gray-200 dark:border-gray-700">
             <div className="flex items-center"><ThumbsUp size={16} className="mr-1"/> {post[0]?.likes_count?.toLocaleString()} Likes</div>
             <div className="flex items-center"><MessageSquare size={16} className="mr-1"/> {comments.length} Comments</div>

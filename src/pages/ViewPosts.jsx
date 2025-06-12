@@ -818,8 +818,63 @@ const ViewPosts = () => {
                     <div className="flex justify-between items-start mb-3"><div className="flex items-center">{platformIconMap[post?.platformType]}<span className="ml-2 font-medium">{post?.platformType}</span></div><button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"><MoreHorizontal className="w-5 h-5" /></button></div>
                     <h2 className="text-xl font-semibold mb-3">{post.video_title}</h2>
                     <p className="mb-4 text-gray-700 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">{post.video_content}</p>
-                    {post.image && (<div className="mb-4"><img src={post?.image} alt={post?.video_title} className="w-full h-48 object-cover rounded-lg" /></div>)}
-                    <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400"><div className="flex items-center"><Calendar className="w-4 h-4 mr-1" /><span>{formatDate(post?.video_publish_date)}</span></div><span>{getTimeAgo(post.video_publish_date)}</span></div>
+                    {/* {post.media_url && 
+                    (<div className="mb-4">
+                      <img src={post?.media_url} 
+                           alt={post?.video_title} 
+                           className="w-full h-48 object-cover rounded-lg" />
+                    </div>)} */}
+
+                    {/* handle Show the Image or Video or link   */}
+{post.media_url && (
+  <div className="mb-4">
+    {/* Check if it's an image */}
+    {/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(post.media_url) ? (
+      <img 
+        src={post.media_url}
+        alt={post.video_title || "Post image"} 
+        className="w-full h-48 object-cover rounded-lg"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = '/fallback-image.jpg';
+        }}
+      />
+    ) : 
+    /* Check if it's a video */
+    /\.(mp4|webm|ogg|mov|avi)$/i.test(post.media_url) ? (
+      <video
+        controls
+        className="w-full h-48 object-cover rounded-lg"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.parentElement.innerHTML = `
+            <div class="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg">
+              Video failed to load
+            </div>`;
+        }}
+      >
+        <source 
+          src={post.media_url}
+          type={`video/${post.media_url.split('.').pop()}`} 
+        />
+        Your browser does not support the video tag.
+      </video>
+    ) : (
+      /* Unsupported format or link */
+      <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg">
+        <p className="text-red-500">
+          Unsupported media format: {post.media_url.split('/').pop()}
+        </p>
+      </div>
+    )}
+  </div>
+)}
+                    <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        <span>{formatDate(post?.video_publish_date)}</span>
+                      </div>
+                      <span>{getTimeAgo(post.video_publish_date)}</span></div>
                     <div className="mt-4 flex justify-between border-t pt-4 border-gray-200 dark:border-gray-700">
                       <div className="flex items-center text-gray-600 dark:text-gray-400"><Heart className="w-4 h-4 mr-1" /><span className="text-sm">{post?.likes_count?.toLocaleString()}</span></div>
                       <button onClick={() => handleViewPostComments(post?.id, post?.platformType)} className="flex items-center text-gray-600 dark:text-gray-400 hover:text-theme-primary dark:hover:text-theme-primary" title="View Comments"><MessageSquare className="w-4 h-4 mr-1" /><span className="text-sm">{ filteredComments.filter(comment => (comment.product_data_source_video_id === post.id) && (comment.data_source_id === post.data_source_id)).length}</span></button>
