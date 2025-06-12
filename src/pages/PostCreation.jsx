@@ -71,6 +71,7 @@ const PostCreation = () => {
   const [availablePlatforms, setAvailablePlatforms] = useState(platforms);
 
   const [dataSources, setDataSources] = useState([]);
+  const [postLoader, setPostLoader] = useState(false);
 
 
 
@@ -212,6 +213,8 @@ const PostCreation = () => {
     setScheduleTime('');
     setShowPlatformWarning(false);
     setShowScheduleModal(false);
+    setShowPostPreviewModal(false)
+    setSelectedBusiness('');
   };
 
   const handleDiscard = () => {
@@ -278,14 +281,17 @@ const PostCreation = () => {
 
 
   const handlePostNow = () => {
-    handlePostAction({
-      status: 'posted',
-      // scheduledTime: new Date().toISOString(),
-      scheduledTime: getISOStringWithoutMilliseconds(new Date()),
-    });
+    if (!postLoader) {
+      handlePostAction({
+        status: 'posted',
+        // scheduledTime: new Date().toISOString(),
+        scheduledTime: getISOStringWithoutMilliseconds(new Date()),
+      });
+    }
   };
 
   const handlePostAction = async ({ status, scheduledTime }) => {
+    setPostLoader(true);
     const postTitle = postContent.split('\n')[0] || 'Untitled Post';
     const description = postContent;
     const mediaUrl = selectedMediaPreviewUrl || selectedVideoPreviewUrl || ''; // replace with real upload if needed
@@ -320,11 +326,11 @@ const PostCreation = () => {
         posts,
         {
           headers: {
-            'Content-Type': 'application/json', 
+            'Content-Type': 'application/json',
           },
         }
       );
-      if(response.status == 207){
+      if (response.status == 207) {
         toast.success('Post added successfully!');
         resetPostState();
       }
@@ -332,6 +338,8 @@ const PostCreation = () => {
       // Optionally reset form here
     } catch (error) {
       toast.danger('API Error: ' + error.message);
+    } finally {
+      setPostLoader(false);
     }
     // console.log('Post published now:', { postContent, selectedMediaFile, selectedVideoFile, selectedPlatforms });
     // setShowPostPreviewModal(false);
@@ -706,7 +714,9 @@ const PostCreation = () => {
                 )}
                 {selectedVideoPreviewUrl && isOnlyYouTubeSelected && (<video controls src={selectedVideoPreviewUrl} className="w-full max-h-60 rounded-md bg-black">Your browser does not support the video tag.</video>)}</div></div>
               <div className="mb-4"><h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Will be posted to:</h4><div className="flex flex-wrap gap-2">{platforms.map((platform) => (selectedPlatforms[platform.id] && (<div key={platform.id} className="flex items-center gap-1 px-2 py-1 rounded-full text-xs" style={{ backgroundColor: platform.bgColor, color: platform.color }}>{platform.icon}<span>{platform.name}</span></div>)))}</div></div>
-              <div className="flex justify-end gap-3 mt-6"><button onClick={() => setShowPostPreviewModal(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button><button onClick={handlePostNow} disabled={isOnlyYouTubeSelected && !youtubeTitle.trim()} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center gap-1 disabled:opacity-50"><Check className="w-4 h-4" />Publish Now</button></div>
+              <div className="flex justify-end gap-3 mt-6"><button onClick={() => setShowPostPreviewModal(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
+
+                <button onClick={handlePostNow} disabled={isOnlyYouTubeSelected && !youtubeTitle.trim()} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center gap-1 disabled:opacity-50"><Check className="w-4 h-4" />Publish Now</button></div>
             </div>
           </div>
         </div>

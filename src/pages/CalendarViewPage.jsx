@@ -1,4 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import { format, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, isToday as dateFnsIsToday, addDays, subDays, parse } from 'date-fns';
 import { ChevronLeft, ChevronRight, Facebook, Instagram, Twitter, Linkedin, Youtube, Briefcase, Tag, PlusCircle } from 'lucide-react';
 import AddPostModalCalendar from '../components/calendar/AddPostModalCalendar';
@@ -97,6 +99,14 @@ const CalendarViewPage = () => {
   const handlePrevWeek = () => setCurrentWeekStart(subWeeks(currentWeekStart, 1));
   const handleNextWeek = () => setCurrentWeekStart(addWeeks(currentWeekStart, 1));
   const handleToday = () => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }));
+
+  const movePost = useCallback((postId, newDate, newTime) => {
+      setPosts(prevPosts =>
+        prevPosts.map(post =>
+          post.id === postId ? { ...post, date: newDate, time: newTime } : post
+        )
+      );
+    }, []);
 
   const handleAddPostClick = (date, time) => {
     setModalDateTime({ date, time: time || '09:00' }); // Default to 09:00 if time is null (e.g. clicking day header +)
@@ -218,19 +228,45 @@ const CalendarViewPage = () => {
                       
                     // console.log("POSTS",postsResponse)  
                     // Add platformName to each post
-                    const posts = postsResponse?.data 
-                      ? postsResponse.data.map(post => ({
-                          ...post,
-                          date: format(new Date(post?.scheduled_time),'yyyy-MM-dd'),
-                          time: format(new Date(post?.scheduled_time),'HH:mm'),
-                          contentReview:post?.description,
-                          title:post.post_title,
-                          businessId:product.id,
-                          extDsId:externalData.id,
-                          platformId:platformInfo.id,
-                          platform: platformInfo?.type ? (platformInfo.type.charAt(0).toUpperCase() + platformInfo.type.slice(1).toLowerCase()): 'Default' // Add platform name here
+                    // const posts = postsResponse?.data 
+                    //   ? postsResponse.data.map(post => ({
+                    //        ...post,
+                    //       date: format(new Date(post?.scheduled_time),'yyyy-MM-dd'),//format(new Date(post?.scheduled_time),'yyyy-MM-dd'),
+                    //       time: "09:00",//format(new Date(post?.scheduled_time),'HH:mm'),
+                    //       contentReview:post?.description,
+                    //       title: post?.description,
+                    //       businessId:product.id,
+                    //       extDsId:externalData.id,
+                    //       platformId:platformInfo.id,
+                    //       platform: platformInfo?.type ? (platformInfo.type.charAt(0).toUpperCase() + platformInfo.type.slice(1).toLowerCase()): 'Default' // Add platform name here
                           
-                        }))
+                    //     }))
+                    //   : [];
+
+                    const posts = postsResponse?.data 
+                      ? postsResponse.data.map(post => {
+                          const scheduledTime = new Date(post?.scheduled_time);
+                          const minutes = scheduledTime.getMinutes();
+                          
+                          if (minutes >= 30) {
+                            scheduledTime.setHours(scheduledTime.getHours() + 1); // Round up
+                          }
+                          scheduledTime.setMinutes(0, 0, 0); // Reset minutes & seconds
+                          
+                          return {
+                            ...post,
+                            date: format(new Date(post?.scheduled_time), 'yyyy-MM-dd'),
+                            time: format(scheduledTime, 'HH:mm'), // "10:00" (if original was 09:49)
+                            contentReview: post?.description,
+                            title: post?.description,
+                            businessId: product.id,
+                            extDsId: externalData.id,
+                            platformId: platformInfo.id,
+                            platform: platformInfo?.type 
+                              ? (platformInfo.type.charAt(0).toUpperCase() + platformInfo.type.slice(1).toLowerCase())
+                              : 'Default'
+                          };
+                        })
                       : [];
   
                     return {
@@ -309,113 +345,116 @@ const CalendarViewPage = () => {
   console.log("FILTERED POSTS:", filteredPosts)
 
   return (
-    <div className="flex flex-col h-full p-3 sm:p-4 bg-gray-100 dark:bg-gray-900">
-      {/* Header: Navigation and Filters */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-        <div className="flex items-center gap-2 mb-3 sm:mb-0">
-          <button onClick={handlePrevWeek} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors shadow-sm border border-gray-300 dark:border-gray-600"><ChevronLeft size={20} className="text-gray-600 dark:text-gray-300"/></button>
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-700 dark:text-gray-200 w-auto text-center whitespace-nowrap px-2">
-            {format(currentWeekStart, 'MMM d')} - {format(endOfWeek(currentWeekStart, { weekStartsOn: 0 }), 'MMM d, yyyy')}
-          </h2>
-          <button onClick={handleNextWeek} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors shadow-sm border border-gray-300 dark:border-gray-600"><ChevronRight size={20} className="text-gray-600 dark:text-gray-300"/></button>
-          <button 
-            onClick={handleToday} 
-            className="px-3 py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm font-medium"
-          >
-            Today
-          </button>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="relative">
-            <select
-              value={selectedBusinessId}
-              onChange={(e) => setSelectedBusinessId(Number(e.target.value))}
-              className="appearance-none pl-3 pr-8 py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700 shadow-sm"
+    <DndProvider backend={HTML5Backend}>
+      <div className="flex flex-col h-full p-3 sm:p-4 bg-gray-100 dark:bg-gray-900">
+        {/* Header: Navigation and Filters */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+          <div className="flex items-center gap-2 mb-3 sm:mb-0">
+            <button onClick={handlePrevWeek} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors shadow-sm border border-gray-300 dark:border-gray-600"><ChevronLeft size={20} className="text-gray-600 dark:text-gray-300"/></button>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-700 dark:text-gray-200 w-auto text-center whitespace-nowrap px-2">
+              {format(currentWeekStart, 'MMM d')} - {format(endOfWeek(currentWeekStart, { weekStartsOn: 0 }), 'MMM d, yyyy')}
+            </h2>
+            <button onClick={handleNextWeek} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors shadow-sm border border-gray-300 dark:border-gray-600"><ChevronRight size={20} className="text-gray-600 dark:text-gray-300"/></button>
+            <button 
+              onClick={handleToday} 
+              className="px-3 py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm font-medium"
             >
-              {initialBusinesses.map(biz => (
-                <option key={biz.id} value={biz.id}>{biz.name}</option>
-              ))}
-            </select>
-            <Briefcase className="w-3 h-3 sm:w-4 sm:h-4 absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+              Today
+            </button>
           </div>
-          <PlatformFilterCalendar 
-            platforms={platformDetails} 
-            activeFilters={activePlatformFilters} 
-            setActiveFilters={setActivePlatformFilters} 
-          />
-        </div>
-      </div>
-
-      {/* Calendar Grid Area */}
-      <div className="flex-grow flex overflow-auto custom-scrollbar border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg bg-white dark:bg-gray-800">
-        {/* Time Axis */}
-        <div className={`w-16 sm:w-20 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'} sticky left-0 z-20 rounded-l-xl`}>
-          <div className={`h-12 flex items-center justify-center border-b border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-500 dark:text-gray-400 sticky top-0 z-10 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-tl-xl`}>
-            Time
-          </div>
-          {TIME_SLOTS.map(time => (
-            <div key={time} className="h-16 flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
-              {time.substring(0,2)}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="relative">
+              <select
+                value={selectedBusinessId}
+                onChange={(e) => setSelectedBusinessId(Number(e.target.value))}
+                className="appearance-none pl-3 pr-8 py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700 shadow-sm"
+              >
+                {initialBusinesses.map(biz => (
+                  <option key={biz.id} value={biz.id}>{biz.name}</option>
+                ))}
+              </select>
+              <Briefcase className="w-3 h-3 sm:w-4 sm:h-4 absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
             </div>
-          ))}
+            <PlatformFilterCalendar 
+              platforms={platformDetails} 
+              activeFilters={activePlatformFilters} 
+              setActiveFilters={setActivePlatformFilters} 
+            />
+          </div>
         </div>
 
-        {/* Day Columns Container */}
-        <div className="flex flex-row flex-grow">
-          {weekDays.map((day, index) => {
-            const dayKey = format(day, 'yyyy-MM-dd');
-            const postsForDay = filteredPosts.filter(post => post.date === dayKey);
-            const isCurrentDay = dateFnsIsToday(day);
+        {/* Calendar Grid Area */}
+        <div className="flex-grow flex overflow-auto custom-scrollbar border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg bg-white dark:bg-gray-800">
+          {/* Time Axis */}
+          <div className={`w-16 sm:w-20 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'} sticky left-0 z-20 rounded-l-xl`}>
+            <div className={`h-12 flex items-center justify-center border-b border-gray-200 dark:border-gray-700 text-xs font-medium text-gray-500 dark:text-gray-400 sticky top-0 z-10 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'} rounded-tl-xl`}>
+              Time
+            </div>
+            {TIME_SLOTS.map(time => (
+              <div key={time} className="h-16 flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+                {time.substring(0,2)}
+              </div>
+            ))}
+          </div>
 
-            return (
-              <DayColumnWithTimes
-                key={dayKey}
-                date={day}
-                isToday={isCurrentDay}
-                postsForDay={postsForDay}
-                timeSlots={TIME_SLOTS}
-                onAddPostClick={handleAddPostClick}
-                onPostCardClick={handlePostCardClick}
-                platformDetails={platformDetails}
-                statusColors={statusColors}
-                themeColors={themeColors}
-                isFirstColumn={index === 0}
-              />
-            );
-          })}
+          {/* Day Columns Container */}
+          <div className="flex flex-row flex-grow">
+            {weekDays.map((day, index) => {
+              const dayKey = format(day, 'yyyy-MM-dd');
+              const postsForDay = filteredPosts.filter(post => post.date === dayKey);
+              const isCurrentDay = dateFnsIsToday(day);
+
+              return (
+                <DayColumnWithTimes
+                  key={dayKey}
+                  date={day}
+                  isToday={isCurrentDay}
+                  postsForDay={postsForDay}
+                  timeSlots={TIME_SLOTS}
+                  onDropPost={movePost}
+                  onAddPostClick={handleAddPostClick}
+                  onPostCardClick={handlePostCardClick}
+                  platformDetails={platformDetails}
+                  statusColors={statusColors}
+                  themeColors={themeColors}
+                  isFirstColumn={index === 0}
+                />
+              );
+            })}
+          </div>
         </div>
+        {isAddModalOpen && (
+          <AddPostModalCalendar
+            isOpen={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
+            onSave={handleSavePost}
+            selectedDate={modalDateTime.date}
+            selectedTime={modalDateTime.time}
+            platforms={platformDetails}
+            timeSlots={TIME_SLOTS}
+          />
+        )}
+        {isPreviewModalOpen && postForPreview && (
+          <PostPreviewModalCalendar
+            isOpen={isPreviewModalOpen}
+            onClose={() => setIsPreviewModalOpen(false)}
+            post={postForPreview}
+            platformDetails={platformDetails}
+            statusColors={statusColors}
+            onDeleteClick={() => openDeleteConfirmModal(postForPreview.id)}
+            initialBusinesses={initialBusinesses}
+          />
+        )}
+        <ConfirmationModal
+          isOpen={isDeleteConfirmOpen}
+          onClose={() => setIsDeleteConfirmOpen(false)}
+          onConfirm={handleConfirmDeletePost}
+          title="Delete Post"
+          message="Are you sure you want to delete this scheduled post? This action cannot be undone."
+          confirmText="Delete Post"
+        />
       </div>
-      {isAddModalOpen && (
-        <AddPostModalCalendar
-          isOpen={isAddModalOpen}
-          onClose={() => setIsAddModalOpen(false)}
-          onSave={handleSavePost}
-          selectedDate={modalDateTime.date}
-          selectedTime={modalDateTime.time}
-          platforms={platformDetails}
-          timeSlots={TIME_SLOTS}
-        />
-      )}
-      {isPreviewModalOpen && postForPreview && (
-        <PostPreviewModalCalendar
-          isOpen={isPreviewModalOpen}
-          onClose={() => setIsPreviewModalOpen(false)}
-          post={postForPreview}
-          platformDetails={platformDetails}
-          statusColors={statusColors}
-          onDeleteClick={() => openDeleteConfirmModal(postForPreview.id)}
-          initialBusinesses={initialBusinesses}
-        />
-      )}
-      <ConfirmationModal
-        isOpen={isDeleteConfirmOpen}
-        onClose={() => setIsDeleteConfirmOpen(false)}
-        onConfirm={handleConfirmDeletePost}
-        title="Delete Post"
-        message="Are you sure you want to delete this scheduled post? This action cannot be undone."
-        confirmText="Delete Post"
-      />
-    </div>
+    </DndProvider>
   );
 };
 

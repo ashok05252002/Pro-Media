@@ -86,7 +86,7 @@ export default function BasicTable() {
       console.log("Debugging",authTokens)
       // axios({
       //   method: "GET",
-      //   url:"http://127.0.0.1:5000/youtube/channels",
+      //   url:import.meta.env.VITE_BASE_API_URL+"/youtube/channels",
       //   headers: { Authorization: `Bearer ${authTokens}` },
       // })
       // .then((response) => {
@@ -108,7 +108,7 @@ export default function BasicTable() {
       // console.log("axios")
       // axios({
       //   method: "GET",
-      //   url:"http://127.0.0.1:5000/youtube/youtube_video/",
+      //   url:import.meta.env.VITE_BASE_API_URL+"/youtube/youtube_video/",
       //   headers: { Authorization: `Bearer ${authTokens}` },
       // })
       // .then((response) => {
@@ -165,7 +165,7 @@ export default function BasicTable() {
       console.log("debuggong ext_prdct_data_source_id", ext_prdct_data_source_id, productId)
       // axios({
       //   method: "GET",
-      //   url:"http://127.0.0.1:5000/facebook/fblistposts/" + ext_prdct_data_source_id,
+      //   url:import.meta.env.VITE_BASE_API_URL+"/facebook/fblistposts/" + ext_prdct_data_source_id,
       //   headers: { Authorization: `Bearer ${authTokens}` },
       // })
       platform_name = platform_name ?? "facebook";

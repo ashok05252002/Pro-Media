@@ -44,7 +44,7 @@ const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
 // const facebookAuthUrl = `https://www.facebook.com/v18.0/dialog/oauth?` +
 //    `client_id=2203905400004927&` +
 //   //  'client_secret_key=101b701919c90ac95749ed11e877c079&'
-//    `redirect_uri=http://localhost:5000/auth/facebook/callback&` +
+//    `redirect_uri=${import.meta.env.VITE_BASE_API_URL}/auth/facebook/callback&` +
 //    `response_type=code&` +
 //    `scope=public_profile,email,pages_show_list`;
 
@@ -103,9 +103,13 @@ const RegProduct = (props) => {
   const LinkedInAuthButton = () => {
       // LinkedIn app credentials
      const scopes = [
-    'profile',      // Basic profile info (formerly 'profile')
+    'profile',
+    'r_basicprofile',
     'w_member_social',    // Posting permissions
-    'r_organization_admin' // Organization admin access
+    'r_organization_admin', // Organization admin access
+    'r_organization_social',
+    'rw_organization_admin',
+    'w_organization_social'
   ].join(' '); // Space separated
 
       // Generate random state for CSRF protection

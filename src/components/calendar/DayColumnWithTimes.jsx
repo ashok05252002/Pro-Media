@@ -9,6 +9,7 @@ const DayColumnWithTimes = ({
   isToday, 
   postsForDay, 
   timeSlots, 
+  onDropPost,
   onAddPostClick,
   onPostCardClick,
   platformDetails, 
@@ -55,7 +56,7 @@ const DayColumnWithTimes = ({
               date={dayKey}
               time={time}
               postsInSlot={postsInSlot}
-              // onDropPost is removed as drag-drop is disabled
+              onDropPost={onDropPost}
               onAddPostClick={onAddPostClick}
               onPostCardClick={onPostCardClick}
               platformDetails={platformDetails}

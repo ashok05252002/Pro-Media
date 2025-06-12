@@ -42,7 +42,7 @@ const ContentScheduler = () => {
   ];
 
   const handleCreatePost = () => {
-    window.location.href = "http://localhost:3000/post-creation";
+    window.location.href = import.meta.env.VITE_BASE_API_URL + "/post-creation";
     // navigate("/post-creation");
   };
 
@@ -76,7 +76,7 @@ const ContentScheduler = () => {
 
       if (platform) {
         // fetch(
-        //   `http://192.168.80.100:5000/${platform.name}_post/deleteposts/${post.id}`,
+        //   `${import.meta.env.VITE_BASE_API_URL}/${platform.name}_post/deleteposts/${post.id}`,
         //   { method: "DELETE" }
         // )
 
@@ -126,7 +126,7 @@ const ContentScheduler = () => {
             console.log("platform name:", platform.name);
             console.log("platform postCode:", platform.postCode);
             // const res = await fetch(
-            //   `http://192.168.80.100:5000/${platform.name}_post/${platform.postCode}posts`
+            //   `${import.meta.env.VITE_BASE_API_URL }/${platform.name}_post/${platform.postCode}posts`
             // );
             const res = await extCompanyGetAllCreatePosts(platform);
 

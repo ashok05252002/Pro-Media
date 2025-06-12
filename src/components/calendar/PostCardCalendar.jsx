@@ -1,8 +1,17 @@
 import React from 'react';
+import { useDrag } from 'react-dnd';
+import { ItemTypes } from '../../constants/ItemTypes';
 import { Tag } from 'lucide-react'; // Removed useDrag as it's no longer needed
 
 const PostCardCalendar = ({ post, platformDetails, statusColors, onPreviewClick }) => {
   // Removed useDrag hook and related logic
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: ItemTypes.POST_CARD,
+    item: { id: post.id, originalDate: post.date, originalTime: post.time },
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  }));
 
   const platformInfo = platformDetails[post.platform] || platformDetails.Default;
   const statusColorClass = statusColors[post.status] || 'bg-gray-500 text-white';
@@ -14,10 +23,13 @@ const PostCardCalendar = ({ post, platformDetails, statusColors, onPreviewClick 
 
   return (
     <div
+      ref={drag}
       onClick={handleCardClick}
       className={`p-2 rounded-lg text-white shadow-md hover:shadow-lg transition-all duration-200 ease-in-out cursor-pointer`}
       style={{ 
+        opacity: isDragging ? 0.5 : 1,
         backgroundColor: platformInfo.colorValue,
+        transform: isDragging ? 'scale(1.05)' : 'scale(1)',
       }}
       title={`${post.title} - ${platformInfo.name} (${post.status}) at ${post.time}`}
     >
