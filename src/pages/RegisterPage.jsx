@@ -74,14 +74,9 @@ const InputField = ({ id, label, type, value, onChange, error, icon, required = 
         onChange={onChange}
         placeholder={placeholder}
         maxLength={maxLength}
-<<<<<<< HEAD
         className={`w-full ${icon ? 'pl-10' : 'px-3'} ${showPasswordToggle ? 'pr-10' : 'pr-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${
           error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
         }`}
-=======
-        className={`w-full ${icon ? 'pl-10' : 'px-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
-          }`}
->>>>>>> e731a5988042c3c589b92bf649eb572cd4cf698e
       />
       {showPasswordToggle && (
         <button
