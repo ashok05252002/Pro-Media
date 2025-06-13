@@ -306,6 +306,9 @@ const ViewPosts = () => {
             // Fetch external data (array of 5 rows per product)
             const externalDataArray = await fetchExternalData(product.id).catch(() => []);
             console.log(`External data for product ${product.id}:`, externalDataArray);
+            // fetch comments using by product.id
+            
+
 
             // Process each external data row
             const enrichedExternalData = await Promise.all(
@@ -377,26 +380,26 @@ const ViewPosts = () => {
                   };
 
                   // Fetch both posts and comments in parallel
-                  const [posts, comments] = await Promise.all([
+                  const [posts, comments] = await Promise.all([ // comments removed
                     fetchers.posts[platform]?.(externalData.id)
                       .then(items => items.map(item => ({
                         ...item,
                         type: 'post',
                         platformName: platformInfo.name,
                         platformType: platformInfo.type,
-                        productId: product.id,
-                        productName: product.product_name
+                        productId: externalData.product_id,
+                        productName: externalData.product_id === product.id ? product.product_name : null
                       })))
                       .catch(() => []),
 
-                    fetchers.comments[platform]?.(externalData.id)
+                    fetchers.comments[platform]?.(externalData?.product_id)
                       .then(items => items.map(item => ({
                         ...item,
                         type: 'comment',
-                        platformName: platformInfo.name,
-                        platformType: platformInfo.type,
-                        productId: product.id,
-                        productName: product.product_name
+                        platformName: platformInfo?.name,
+                        platformType: platformInfo?.type,
+                        productId: externalData?.product_id,
+                        productName: externalData?.product_id === product.id ? product.product_name : null
                       })))
                       .catch(() => [])
                   ]);
@@ -473,7 +476,7 @@ const ViewPosts = () => {
             productName: product.product_name,
             data_source_id: data.data_source_id,
             // platformName: data.platformInfo?.name || 'Unknown Platform',
-            platformType: data.platformInfo?.type || 'unknown',
+            platformType: data.platformInfo?.type || 'Unknown Platform',
             color: platformColors[data.platformInfo?.type?.toLowerCase()] || platformColors.default
           }))
         )
@@ -654,7 +657,7 @@ const ViewPosts = () => {
       comment.product_data_source_video_id !== selectedPostFilterComments.id && comment.platformType !== selectedPostFilterComments.platformType) {
       return false;
     }
-    if (searchQueryComments && !comment.review_text.toLowerCase().includes(searchQueryComments.toLowerCase()) && !comment.user.toLowerCase().includes(searchQueryComments.toLowerCase())) return false;
+    if (searchQueryComments && !comment.review_text.toLowerCase().includes(searchQueryComments.toLowerCase()) && !comment?.reviewer_name.toLowerCase().includes(searchQueryComments.toLowerCase())) return false;
 
     const commentDate = new Date(comment.review_date);
     if (dateFilterTypeComments === 'date' && selectedDateComments) {
