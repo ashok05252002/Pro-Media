@@ -13,6 +13,7 @@ import { extCompanyProductData,
   extCompanyMstrDataSource, 
   extCompanyGetPostCreationByBusiness,
   extCompanyProductDataById,
+  deletePostDraft,
 } from '../API/api';
 
 // const initialBusinesses = [
@@ -86,6 +87,8 @@ const CalendarViewPage = () => {
   
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [postToDeleteId, setPostToDeleteId] = useState(null);
+  const [postToDeletePlatform, setPostToDeletePlatform] = useState(null);
+
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -128,12 +131,35 @@ const CalendarViewPage = () => {
     setIsPreviewModalOpen(true);
   };
 
-  const openDeleteConfirmModal = (postId) => {
+  const openDeleteConfirmModal = (postId, postPlatform) => {
+    console.log("PostToDelete ID: ", postId, "PostToDeletePlatform: ", postPlatform)
     setPostToDeleteId(postId);
+    setPostToDeletePlatform(postPlatform)
     setIsDeleteConfirmOpen(true);
   };
 
+  const handleDelete = async () => {
+    console.log("PostToDelete ID: ", postToDeleteId, "PostToDeletePlatform: ", postToDeletePlatform)
+    if (!postToDeleteId || !postToDeletePlatform) {
+      setMessage('Please Select a post');
+      return;
+    }
+    // const postToDelete = posts.find(post => post.id === postToDeleteId);
+    try {
+      const response = await deletePostDraft(postToDeletePlatform, postToDeleteId);
+      console.log("Delete Response",response)
+      setMessage({Success: response?.data?.message});
+    } catch (error) {
+      if (error.response) {
+       // setMessage(Error: ${error.response.data.error});
+      } else {
+        //setMessage('Error: Unable to delete post');
+      }
+    }
+  };
   const handleConfirmDeletePost = () => {
+    console.log("PostToDelete ID: ", postToDeleteId, "PostToDeletePlatform: ", postToDeletePlatform)
+    handleDelete();
     setPosts(prevPosts => prevPosts.filter(post => post.id !== postToDeleteId));
     setIsDeleteConfirmOpen(false);
     setPostToDeleteId(null);
@@ -441,7 +467,7 @@ const CalendarViewPage = () => {
             post={postForPreview}
             platformDetails={platformDetails}
             statusColors={statusColors}
-            onDeleteClick={() => openDeleteConfirmModal(postForPreview.id)}
+            onDeleteClick={() => openDeleteConfirmModal(postForPreview.id, postForPreview.platform)}
             initialBusinesses={initialBusinesses}
           />
         )}
