@@ -7,6 +7,7 @@ const LinkedInCallback = () => {
   const [message, setMessage] = useState("Authenticating...");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [once, setOnce] = useState(false);
 
   useEffect(() => {
     const code = searchParams.get("code");
@@ -43,7 +44,9 @@ const LinkedInCallback = () => {
     console.log(inputData);
     console.log('====================================');
 
-    extCompanyAuthLinkedin(inputData)
+    if (!once){
+      setOnce(true)
+      extCompanyAuthLinkedin(inputData)
       .then((res) => {
         console.log("✅ Access Token:", res.data.access_token);
         setMessage("Authentication successful!");
@@ -56,7 +59,9 @@ const LinkedInCallback = () => {
         console.error("❌ LinkedIn Auth Error:", err);
         setMessage("Authentication failed."); 
         // navigate("/reg_prdt_success");
-      });
+      }); 
+    }
+    
   }, [searchParams, navigate]);
 
   return <p>{message}</p>;
