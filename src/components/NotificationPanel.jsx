@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
-const notifications = [
+const notifications1 = [
   {
     id: 1,
     title: 'New post scheduled',
@@ -32,7 +32,10 @@ const notifications = [
   }
 ];
 
-const NotificationPanel = ({ onClose }) => {
+const NotificationPanel = ({ onClose, notifications = [] }) => {
+  console.log('====================================');
+  console.log(notifications);
+  console.log('====================================');
   return (
     <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50 overflow-hidden">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
@@ -61,7 +64,7 @@ const NotificationPanel = ({ onClose }) => {
                   <div className={notification.read ? 'ml-4' : ''}>
                     <h4 className="font-medium text-sm">{notification.title}</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{notification.message}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{notification.time}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{notification.created_on}</p>
                   </div>
                 </div>
               </div>

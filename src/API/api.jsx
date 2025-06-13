@@ -324,5 +324,9 @@ export const replyComment = (cmtData) => {
 export const extCompanyGetPostCreationByBusiness = (platformType, extDsId) => {
     console.log("inside api call")
     return axios.get(`${platformType}_post/datasource/posts/${extDsId}`);
-
 };
+
+// Notification
+export const getNotification = ()=>{
+    return axios.get(`${import.meta.env.VITE_BASE_API_URL}/notification/user_notifications`)
+}
