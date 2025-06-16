@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { format, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, isToday as dateFnsIsToday, addDays, subDays, parse } from 'date-fns';
+import { format, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, isToday as dateFnsIsToday, addDays, subDays, parse, parseISO} from 'date-fns';
 import { ChevronLeft, ChevronRight, Facebook, Instagram, Twitter, Linkedin, Youtube, Briefcase, Tag, PlusCircle } from 'lucide-react';
 import AddPostModalCalendar from '../components/calendar/AddPostModalCalendar';
 import PlatformFilterCalendar from '../components/calendar/PlatformFilterCalendar';
@@ -79,6 +79,8 @@ const CalendarViewPage = () => {
   // const [posts, setPosts] = useState(initialPosts);
   const [posts, setPosts] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] =useState(false)
+
   const [modalDateTime, setModalDateTime] = useState({ date: null, time: null });
   const [activePlatformFilters, setActivePlatformFilters] = useState(Object.keys(platformDetails).filter(p => p !== 'Default'));
   const [selectedBusinessId, setSelectedBusinessId] = useState();
@@ -189,16 +191,7 @@ const CalendarViewPage = () => {
       const extData = await fetchExternalData(selectedBusinessId);
       console.log("ExtData:", extData);
       
-      // if (!extData) {
-      //   setIsAddModalOpen(false);
-      //   return;
-      // }
-
-      // const filteredData = socialMediaDatas?.filter(socialItem => 
-      //             extData.some(extItem => extItem.data_source_id === socialItem.id)
-      // )
-      // console.log("FilteredSocialData", filteredData, socialMediaDatas);
-      // return filteredData;
+      
       if (!extData || !extData.length) {
         setIsAddModalOpen(false);
         return [];
@@ -258,7 +251,16 @@ const CalendarViewPage = () => {
         p => p.type.toLowerCase() === newPost.platform.toLowerCase()
       )?.extDataId || null;
     };
-    const scheduled_time = new Date(`${newPost?.date}T${newPost?.time}:00`).toISOString().replace('T', ' ').substring(0, 19)
+    // const scheduled_time = new Date(`${newPost?.date}T${newPost?.time}:00`).toISOString().replace('T', ' ').substring(0, 19)
+    // const scheduled_time = format(
+    //             parse(`${newPost.date} ${newPost.time}`, 'yyyy-MM-dd HH:mm', new Date()),
+    //             "yyyy-MM-dd HH:mm:ss"
+    //           );
+    const scheduled_time = format(
+        parseISO(`${newPost.date}T${newPost.time}:00`),
+        "yyyy-MM-dd'T'HH:mm:ss'Z'"
+      );
+
     console.log("scheduled_time", scheduled_time)
     const newPostWithData = [
       {
@@ -299,6 +301,13 @@ const CalendarViewPage = () => {
     setPostToDeleteId(postId);
     setPostToDeletePlatform(postPlatform)
     setIsDeleteConfirmOpen(true);
+  };
+
+   const openEditConfirmModal = (post) => {
+    // console.log("PostToDelete ID: ", postId, "PostToDeletePlatform: ", postPlatform)
+    // setPostToDeleteId(postId);
+    // setPostToDeletePlatform(postPlatform)
+    setIsEditModalOpen(true);
   };
 
   const handleDelete = async () => {
@@ -625,7 +634,7 @@ const CalendarViewPage = () => {
           />
         )}
         {isPreviewModalOpen && postForPreview && (
-          <PostPreviewModalCalendar
+          <PostPreviewModalCalendar                
             isOpen={isPreviewModalOpen}
             onClose={() => setIsPreviewModalOpen(false)}
             post={postForPreview}
