@@ -4,6 +4,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { format, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, isToday as dateFnsIsToday, addDays, subDays, parse, parseISO} from 'date-fns';
 import { ChevronLeft, ChevronRight, Facebook, Instagram, Twitter, Linkedin, Youtube, Briefcase, Tag, PlusCircle } from 'lucide-react';
 import AddPostModalCalendar from '../components/calendar/AddPostModalCalendar';
+import EditPostModalCalendar from '../components/calendar/EditPostModalCalendar'
 import PlatformFilterCalendar from '../components/calendar/PlatformFilterCalendar';
 import DayColumnWithTimes from '../components/calendar/DayColumnWithTimes';
 import PostPreviewModalCalendar from '../components/calendar/PostPreviewModalCalendar';
@@ -14,6 +15,7 @@ import { extCompanyProductData,
   extCompanyGetPostCreationByBusiness,
   extCompanyProductDataById,
   addPost,
+  updatePost,
   deletePostDraft,
 } from '../API/api';
 import { Await } from 'react-router-dom';
@@ -108,10 +110,20 @@ const CalendarViewPage = () => {
   const handleNextWeek = () => setCurrentWeekStart(addWeeks(currentWeekStart, 1));
   const handleToday = () => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }));
 
-  const movePost = useCallback((postId, newDate, newTime) => {
+  const movePost = useCallback((postId, platform, newDate, newTime) => {
+      console.log("PLATFORM", platform, postId)
+      if (!postId)
+      {
+        return;
+      } 
+      const scheduled_time = format(
+        parseISO(`${newDate}T${newTime}:00`),
+        "yyyy-MM-dd'T'HH:mm:ss'Z'"
+      );
+
       setPosts(prevPosts =>
         prevPosts.map(post =>
-          post.id === postId ? { ...post, date: newDate, time: newTime } : post
+          ((post.id === postId) && (post.platform === platform)) ? { ...post, date: newDate, time: newTime } : post
         )
       );
     }, []);
@@ -303,11 +315,188 @@ const CalendarViewPage = () => {
     setIsDeleteConfirmOpen(true);
   };
 
-   const openEditConfirmModal = (post) => {
+   const openEditConfirmModal = async (post) => {
     // console.log("PostToDelete ID: ", postId, "PostToDeletePlatform: ", postPlatform)
     // setPostToDeleteId(postId);
     // setPostToDeletePlatform(postPlatform)
+
+     if(!selectedBusinessId)
+    { 
+      //no businessId selected
+      setIsEditModalOpen(false);
+      setIsPreviewModalOpen(true)
+    }
+   const loadFilterData = async () => {
+    try {
+      const extData = await fetchExternalData(selectedBusinessId);
+      console.log("ExtData:", extData);
+      
+     
+      if (!extData || !extData.length) {
+        setIsEditModalOpen(false);
+        setIsPreviewModalOpen(true)
+
+        return [];
+      }
+
+      // Create a map of data_source_id to extItem.id for quick lookup
+      const extDataMap = new Map();
+      extData.forEach(extItem => {
+        extDataMap.set(extItem.data_source_id, extItem.id);
+      });
+
+      // Filter and include the extItem.id
+      const filteredDataWithIds = socialMediaDatas
+        ?.filter(socialItem => extDataMap.has(socialItem.id))
+        .map(socialItem => ({
+          ...socialItem,
+          extDataId: extDataMap.get(socialItem.id) // Add the extItem.id
+        })) || [];
+
+      console.log("FilteredSocialData with extData IDs:", filteredDataWithIds);
+      return filteredDataWithIds;
+
+
+
+      // Use filteredData here or set state
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    // Call the async function
+    const filteredPlatforms = await loadFilterData();
+    console.log("FilteredSocialData", filteredPlatforms, socialMediaDatas)
+    const matchedDetailsOnly = filteredPlatforms
+      ?.map(item => platformDetails[item?.type?.charAt(0)?.toUpperCase() + item?.type?.slice(1)])
+      .filter(Boolean);
+
+    console.log("matchedDetailsOnly", matchedDetailsOnly)
+    const matchedDetailsObject = matchedDetailsOnly.reduce((acc, platform) => {
+      if (platform && platform.name) {
+        acc[platform.name] = platform;
+      }
+      return acc;
+    }, {});
+
+    console.log("matchedDetailsOnly", matchedDetailsObject)
+    setPlatformObject(matchedDetailsObject)
+    setModalDateTime({ date: post?.date, time: post.time || '09:00' }); // Default to 09:00 if time is null (e.g. clicking day header +)
+    setIsPreviewModalOpen(false)
     setIsEditModalOpen(true);
+  };
+
+
+
+  const handleEditSavePost = async (newPostData) => {
+    if(!selectedBusinessId)
+    { 
+      //no businessId selected
+      setIsEditModalOpen(false);
+    }
+    const loadAndFilterData = async () => {
+    try {
+      const extData = await fetchExternalData(selectedBusinessId);
+      console.log("ExtData:", extData);
+      
+      
+      if (!extData || !extData.length) {
+        setIsEditModalOpen(false);
+        return [];
+      }
+
+      // Create a map of data_source_id to extItem.id for quick lookup
+      const extDataMap = new Map();
+      extData.forEach(extItem => {
+        extDataMap.set(extItem.data_source_id, extItem.id);
+      });
+
+      // Filter and include the extItem.id
+      const filteredDataWithIds = socialMediaDatas
+        ?.filter(socialItem => extDataMap.has(socialItem.id))
+        .map(socialItem => ({
+          ...socialItem,
+          extDataId: extDataMap.get(socialItem.id) // Add the extItem.id
+        })) || [];
+
+      console.log("FilteredSocialData with extData IDs:", filteredDataWithIds);
+      return filteredDataWithIds;
+
+
+
+      // Use filteredData here or set state
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    // Call the async function
+    const filteredPlatforms = await loadAndFilterData()
+    console.log("FilteredSocialData", filteredPlatforms, socialMediaDatas)
+    const matchedDetailsOnly = filteredPlatforms
+      ?.map(item => platformDetails[item?.type?.charAt(0)?.toUpperCase() + item?.type?.slice(1)])
+      .filter(Boolean);
+
+    console.log("matchedDetailsOnly", matchedDetailsOnly)
+    const matchedDetailsObject = matchedDetailsOnly.reduce((acc, platform) => {
+      if (platform && platform.name) {
+        acc[platform.name] = platform;
+      }
+      return acc;
+    }, {});
+
+    console.log("matchedDetailsOnly", matchedDetailsObject)
+    setPlatformObject(matchedDetailsObject)
+
+    const newPost = { 
+      ...newPostData, 
+      // id: String(Date.now() + Math.random()),
+      businessId: selectedBusinessId
+    };
+    // Get the matching platform's extDataId
+    const getDataSourceId = () => {
+      return filteredPlatforms?.find(
+        p => p.type.toLowerCase() === newPost.platform.toLowerCase()
+      )?.extDataId || null;
+    };
+    // const scheduled_time = new Date(`${newPost?.date}T${newPost?.time}:00`).toISOString().replace('T', ' ').substring(0, 19)
+    // const scheduled_time = format(
+    //             parse(`${newPost.date} ${newPost.time}`, 'yyyy-MM-dd HH:mm', new Date()),
+    //             "yyyy-MM-dd HH:mm:ss"
+    //           );
+    const scheduled_time = format(
+        parseISO(`${newPost.date}T${newPost.time}:00`),
+        "yyyy-MM-dd'T'HH:mm:ss'Z'"
+      );
+
+    console.log("scheduled_time", scheduled_time)
+    const newPostWithData = [
+      {
+
+        "post_id":newPost?.id,
+        "platform":newPost.platform.toLowerCase(),     
+        "post_title":newPost?.title,
+        "description": newPost?.contentPreview,
+        "media_url":"",
+        "scheduled_time": scheduled_time,
+        "status":newPost?.status,
+        "repeat_interval": "none",
+      },
+  
+    ]
+    console.log("NEW POST: ", newPostWithData)
+    const response = await updatePost(newPostWithData)
+    if (response)
+    {
+      console.log("Post is Updated successfully: ", response)
+      setPosts(prevPosts => 
+        prevPosts.map(post => (post.id === newPost.id) && (post.platform.toLowerCase() ===newPost.platform.toLowerCase
+      ()) ? newPost : post)
+      );
+      setIsEditModalOpen(false);
+    }
+     console.log("Post is failure: ", response)
+    
   };
 
   const handleDelete = async () => {
@@ -640,8 +829,21 @@ const CalendarViewPage = () => {
             post={postForPreview}
             platformDetails={platformDetails}
             statusColors={statusColors}
+            onEditClick = {()=>openEditConfirmModal(postForPreview)}
             onDeleteClick={() => openDeleteConfirmModal(postForPreview.id, postForPreview.platform)}
             initialBusinesses={initialBusinesses}
+          />
+        )}
+         {isEditModalOpen && (
+          <EditPostModalCalendar
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+            onSave={handleEditSavePost}
+            post = {postForPreview}
+            selectedDate={modalDateTime.date}
+            selectedTime={modalDateTime.time}
+            platforms={platformObject}
+            timeSlots={TIME_SLOTS}
           />
         )}
         <ConfirmationModal
@@ -652,6 +854,8 @@ const CalendarViewPage = () => {
           message="Are you sure you want to delete this scheduled post? This action cannot be undone."
           confirmText="Delete Post"
         />
+
+
       </div>
     </DndProvider>
   );

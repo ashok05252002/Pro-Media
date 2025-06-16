@@ -22,7 +22,7 @@ const TimeSlotCell = ({
       accept: ItemTypes.POST_CARD,
       drop: (item) => {
         if (item.originalDate !== date || item.originalTime !== time) {
-          onDropPost(item.id, date, time);
+          onDropPost(item.id, item.platform, date, time);
         }
       },
       canDrop: (item) => item.originalDate !== date || item.originalTime !== time,
