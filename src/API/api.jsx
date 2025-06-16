@@ -339,3 +339,9 @@ export const addPost = (payload) => {
     return axios.post(`/post_system/addposts`, payload);
     // return axios.get(`/ext-product/list`)   
 };
+
+export const updatePost = (updatePost) => {
+    console.log("UPDATEDPOST: ", updatePost)
+    return axios.patch(`/${updatePost[0]?.platform}_post/updateposts/${updatePost[0]?.post_id}`, updatePost);
+    // return axios.get(`/ext-product/list`)   
+};

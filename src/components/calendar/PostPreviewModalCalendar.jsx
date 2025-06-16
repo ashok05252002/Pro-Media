@@ -2,7 +2,7 @@ import React from 'react';
 import { X, Calendar, Clock, Tag, Type, Image as ImageIcon, Trash2, Edit2 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 
-const PostPreviewModalCalendar = ({ isOpen, onClose, post, platformDetails, statusColors, onDeleteClick, initialBusinesses }) => {
+const PostPreviewModalCalendar = ({ isOpen, onClose, post, platformDetails, statusColors, onEditClick, onDeleteClick, initialBusinesses }) => {
   if (!isOpen || !post) return null;
 
   const platformInfo = platformDetails[post.platform] || platformDetails.Default;
@@ -45,7 +45,7 @@ const PostPreviewModalCalendar = ({ isOpen, onClose, post, platformDetails, stat
             <div>
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center">
                 <Type className="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400"/> Content:
-              </h4>
+              </h4> 
               <p className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md whitespace-pre-wrap border border-gray-200 dark:border-gray-700">
                 {post.contentPreview}
               </p>
@@ -77,7 +77,8 @@ const PostPreviewModalCalendar = ({ isOpen, onClose, post, platformDetails, stat
         
         <div className="p-4 bg-gray-50 dark:bg-gray-700/50 flex justify-between items-center rounded-b-xl border-t border-gray-200 dark:border-gray-700">
           <button
-            onClick={() => { alert('Edit functionality to be implemented.'); }}
+            // onClick={() => {alert('Edit functionality to be implemented.'); }}
+            onClick= {onEditClick}
             className="flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-md border border-blue-300 dark:border-blue-700 font-medium"
           >
             <Edit2 className="w-4 h-4" />
