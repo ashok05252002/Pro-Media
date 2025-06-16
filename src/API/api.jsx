@@ -336,3 +336,8 @@ export const deletePostDraft = (platform, postToDeleteId) => {
     return axios.delete(`/${platformLower}_post/deleteposts/${postToDeleteId}`);
 
 };
+
+export const addPost = (payload) => {
+    return axios.post(`/post_system/addposts`, payload);
+    // return axios.get(`/ext-product/list`)   
+};
