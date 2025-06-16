@@ -313,7 +313,7 @@ export const extCompanyEditedCreateddPost = (platformName, postId, payload) => {
 
 export const replyComment = (cmtData) => {
     const comment_id = cmtData.reviewId
-    return axios.post(`${cmtData.platform}/reply_cmt/${comment_id}`, {
+    return axios.post(`/${cmtData.platform}/reply_cmt/${comment_id}`, {
 
         "reply_text": cmtData.replyText,
         "ext_product_data_source_id": cmtData.extDSId
@@ -325,4 +325,17 @@ export const extCompanyGetPostCreationByBusiness = (platformType, extDsId) => {
     console.log("inside api call")
     return axios.get(`${platformType}_post/datasource/posts/${extDsId}`);
 
+};
+
+export const deletePostDraft = (platform, postToDeleteId) => {
+    console.log("inside api call")
+    const platformLower = platform?.toLowerCase();
+
+    return axios.delete(`/${platformLower}_post/deleteposts/${postToDeleteId}`);
+
+};
+
+export const addPost = (payload) => {
+    return axios.post(`/post_system/addposts`, payload);
+    // return axios.get(`/ext-product/list`)   
 };

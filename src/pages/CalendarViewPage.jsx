@@ -13,7 +13,10 @@ import { extCompanyProductData,
   extCompanyMstrDataSource, 
   extCompanyGetPostCreationByBusiness,
   extCompanyProductDataById,
+  addPost,
+  deletePostDraft,
 } from '../API/api';
+import { Await } from 'react-router-dom';
 
 // const initialBusinesses = [
 //   { id: 1, name: 'TechCorp Solutions' },
@@ -80,12 +83,15 @@ const CalendarViewPage = () => {
   const [activePlatformFilters, setActivePlatformFilters] = useState(Object.keys(platformDetails).filter(p => p !== 'Default'));
   const [selectedBusinessId, setSelectedBusinessId] = useState();
   const [initialBusinesses, setInitialBusinesses] = useState([]);
+  const [platformObject, setPlatformObject] = useState({}); // Initialize with empty object
 
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [postForPreview, setPostForPreview] = useState(null);
   
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [postToDeleteId, setPostToDeleteId] = useState(null);
+  const [postToDeletePlatform, setPostToDeletePlatform] = useState(null);
+
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -108,17 +114,177 @@ const CalendarViewPage = () => {
       );
     }, []);
 
-  const handleAddPostClick = (date, time) => {
+  const handleAddPostClick = async (date, time) => {
+    if(!selectedBusinessId)
+    { 
+      //no businessId selected
+      setIsAddModalOpen(false);
+    }
+   const loadFilterData = async () => {
+    try {
+      const extData = await fetchExternalData(selectedBusinessId);
+      console.log("ExtData:", extData);
+      
+     
+      if (!extData || !extData.length) {
+        setIsAddModalOpen(false);
+        return [];
+      }
+
+      // Create a map of data_source_id to extItem.id for quick lookup
+      const extDataMap = new Map();
+      extData.forEach(extItem => {
+        extDataMap.set(extItem.data_source_id, extItem.id);
+      });
+
+      // Filter and include the extItem.id
+      const filteredDataWithIds = socialMediaDatas
+        ?.filter(socialItem => extDataMap.has(socialItem.id))
+        .map(socialItem => ({
+          ...socialItem,
+          extDataId: extDataMap.get(socialItem.id) // Add the extItem.id
+        })) || [];
+
+      console.log("FilteredSocialData with extData IDs:", filteredDataWithIds);
+      return filteredDataWithIds;
+
+
+
+      // Use filteredData here or set state
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    // Call the async function
+    const filteredPlatforms = await loadFilterData();
+    console.log("FilteredSocialData", filteredPlatforms, socialMediaDatas)
+    const matchedDetailsOnly = filteredPlatforms
+      ?.map(item => platformDetails[item?.type?.charAt(0)?.toUpperCase() + item?.type?.slice(1)])
+      .filter(Boolean);
+
+    console.log("matchedDetailsOnly", matchedDetailsOnly)
+    const matchedDetailsObject = matchedDetailsOnly.reduce((acc, platform) => {
+      if (platform && platform.name) {
+        acc[platform.name] = platform;
+      }
+      return acc;
+    }, {});
+
+    console.log("matchedDetailsOnly", matchedDetailsObject)
+    setPlatformObject(matchedDetailsObject)
+
     setModalDateTime({ date, time: time || '09:00' }); // Default to 09:00 if time is null (e.g. clicking day header +)
     setIsAddModalOpen(true);
   };
 
-  const handleSavePost = (newPostData) => {
+  const handleSavePost = async (newPostData) => {
+    if(!selectedBusinessId)
+    { 
+      //no businessId selected
+      setIsAddModalOpen(false);
+    }
+  const loadAndFilterData = async () => {
+    try {
+      const extData = await fetchExternalData(selectedBusinessId);
+      console.log("ExtData:", extData);
+      
+      // if (!extData) {
+      //   setIsAddModalOpen(false);
+      //   return;
+      // }
+
+      // const filteredData = socialMediaDatas?.filter(socialItem => 
+      //             extData.some(extItem => extItem.data_source_id === socialItem.id)
+      // )
+      // console.log("FilteredSocialData", filteredData, socialMediaDatas);
+      // return filteredData;
+      if (!extData || !extData.length) {
+        setIsAddModalOpen(false);
+        return [];
+      }
+
+      // Create a map of data_source_id to extItem.id for quick lookup
+      const extDataMap = new Map();
+      extData.forEach(extItem => {
+        extDataMap.set(extItem.data_source_id, extItem.id);
+      });
+
+      // Filter and include the extItem.id
+      const filteredDataWithIds = socialMediaDatas
+        ?.filter(socialItem => extDataMap.has(socialItem.id))
+        .map(socialItem => ({
+          ...socialItem,
+          extDataId: extDataMap.get(socialItem.id) // Add the extItem.id
+        })) || [];
+
+      console.log("FilteredSocialData with extData IDs:", filteredDataWithIds);
+      return filteredDataWithIds;
+
+
+
+      // Use filteredData here or set state
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    // Call the async function
+    const filteredPlatforms = await loadAndFilterData()
+    console.log("FilteredSocialData", filteredPlatforms, socialMediaDatas)
+    const matchedDetailsOnly = filteredPlatforms
+      ?.map(item => platformDetails[item?.type?.charAt(0)?.toUpperCase() + item?.type?.slice(1)])
+      .filter(Boolean);
+
+    console.log("matchedDetailsOnly", matchedDetailsOnly)
+    const matchedDetailsObject = matchedDetailsOnly.reduce((acc, platform) => {
+      if (platform && platform.name) {
+        acc[platform.name] = platform;
+      }
+      return acc;
+    }, {});
+
+    console.log("matchedDetailsOnly", matchedDetailsObject)
+    setPlatformObject(matchedDetailsObject)
+
     const newPost = { 
       ...newPostData, 
       id: String(Date.now() + Math.random()),
       businessId: selectedBusinessId
     };
+    // Get the matching platform's extDataId
+    const getDataSourceId = () => {
+      return filteredPlatforms?.find(
+        p => p.type.toLowerCase() === newPost.platform.toLowerCase()
+      )?.extDataId || null;
+    };
+    const scheduled_time = new Date(`${newPost?.date}T${newPost?.time}:00`).toISOString().replace('T', ' ').substring(0, 19)
+    console.log("scheduled_time", scheduled_time)
+    const newPostWithData = [
+      {
+        "platform":Number(filteredPlatforms?.find(
+                      p => String(p?.type).toLowerCase() === String(newPost?.platform).toLowerCase()
+                    )?.id),
+        "mstr_id":Number(filteredPlatforms?.find(
+                      p => String(p?.type).toLowerCase() === String(newPost?.platform).toLowerCase()
+                    )?.id),      
+        "post_title":newPost?.title,
+        "description": newPost?.contentPreview,
+        "media_url":"",
+        "scheduled_time": scheduled_time,
+        "status":newPost?.status,
+        "repeat_interval": "none",
+        "ext_product_data_source_id":  getDataSourceId()
+      },
+  
+    ]
+    console.log("NEW POST: ", newPostWithData)
+    const response = await addPost(newPostWithData)
+    if (response)
+    {
+      console.log("Post is added successfully: ", response)
+    }
+     console.log("Post is failure: ", response)
     setPosts(prevPosts => [...prevPosts, newPost]);
     setIsAddModalOpen(false);
   };
@@ -128,12 +294,35 @@ const CalendarViewPage = () => {
     setIsPreviewModalOpen(true);
   };
 
-  const openDeleteConfirmModal = (postId) => {
+  const openDeleteConfirmModal = (postId, postPlatform) => {
+    console.log("PostToDelete ID: ", postId, "PostToDeletePlatform: ", postPlatform)
     setPostToDeleteId(postId);
+    setPostToDeletePlatform(postPlatform)
     setIsDeleteConfirmOpen(true);
   };
 
+  const handleDelete = async () => {
+    console.log("PostToDelete ID: ", postToDeleteId, "PostToDeletePlatform: ", postToDeletePlatform)
+    if (!postToDeleteId || !postToDeletePlatform) {
+      setMessage('Please Select a post');
+      return;
+    }
+    // const postToDelete = posts.find(post => post.id === postToDeleteId);
+    try {
+      const response = await deletePostDraft(postToDeletePlatform, postToDeleteId);
+      console.log("Delete Response",response)
+      setMessage({Success: response?.data?.message});
+    } catch (error) {
+      if (error.response) {
+       // setMessage(Error: ${error.response.data.error});
+      } else {
+        //setMessage('Error: Unable to delete post');
+      }
+    }
+  };
   const handleConfirmDeletePost = () => {
+    console.log("PostToDelete ID: ", postToDeleteId, "PostToDeletePlatform: ", postToDeletePlatform)
+    handleDelete();
     setPosts(prevPosts => prevPosts.filter(post => post.id !== postToDeleteId));
     setIsDeleteConfirmOpen(false);
     setPostToDeleteId(null);
@@ -210,7 +399,8 @@ const CalendarViewPage = () => {
           // 2. Validate and prepare data
           const localProducts = Array.isArray(localProductsResponse) ? localProductsResponse : [];
           const masterData = Array.isArray(masterDataResponse) ? masterDataResponse : [];
-  
+          
+          
            // 3. Process each product with its external data and posts
           const productsWithAllData = await Promise.all(
             localProducts.map(async (product) => {
@@ -430,7 +620,7 @@ const CalendarViewPage = () => {
             onSave={handleSavePost}
             selectedDate={modalDateTime.date}
             selectedTime={modalDateTime.time}
-            platforms={platformDetails}
+            platforms={platformObject}
             timeSlots={TIME_SLOTS}
           />
         )}
@@ -441,7 +631,7 @@ const CalendarViewPage = () => {
             post={postForPreview}
             platformDetails={platformDetails}
             statusColors={statusColors}
-            onDeleteClick={() => openDeleteConfirmModal(postForPreview.id)}
+            onDeleteClick={() => openDeleteConfirmModal(postForPreview.id, postForPreview.platform)}
             initialBusinesses={initialBusinesses}
           />
         )}
