@@ -82,7 +82,7 @@ const MediaUploadModal = ({ isOpen, onClose, onMediaUpload, acceptTypes = "image
               <label htmlFor="media-upload-input" className="cursor-pointer">
                 <FileUp className="w-12 h-12 mx-auto text-gray-400" />
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Click to upload or drag and drop
+                  Click to upload or drag & drop
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Supports: Images, Videos, GIFs

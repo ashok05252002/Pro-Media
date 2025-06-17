@@ -64,7 +64,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUpload }) => {
               <label htmlFor="video-upload-input" className="cursor-pointer">
                 <Video className="w-12 h-12 mx-auto text-gray-400" />
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Click to upload or drag and drop
+                  Click to upload or drag & drop
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   MP4, MOV, AVI, etc.

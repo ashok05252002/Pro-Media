@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { format, addWeeks, subWeeks, startOfWeek, endOfWeek, eachDayOfInterval, isToday as dateFnsIsToday, addDays, subDays, parse, parseISO} from 'date-fns';
-import { ChevronLeft, ChevronRight, Facebook, Instagram, Twitter, Linkedin, Youtube, Briefcase, Tag, PlusCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Facebook, Instagram, Twitter, Linkedin, Youtube, Briefcase, Tag, PlusCircle, LayoutList, CalendarDays } from 'lucide-react';
 import AddPostModalCalendar from '../components/calendar/AddPostModalCalendar';
 import EditPostModalCalendar from '../components/calendar/EditPostModalCalendar'
 import PlatformFilterCalendar from '../components/calendar/PlatformFilterCalendar';
@@ -20,7 +20,7 @@ import { extCompanyProductData,
   updateTimePost,
   deletePostDraft,
 } from '../API/api';
-import { Await } from 'react-router-dom';
+import { Await, Link } from 'react-router-dom';
 
 // const initialBusinesses = [
 //   { id: 1, name: 'TechCorp Solutions' },
@@ -84,7 +84,6 @@ const CalendarViewPage = () => {
   const [posts, setPosts] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] =useState(false)
-
   const [modalDateTime, setModalDateTime] = useState({ date: null, time: null });
   const [activePlatformFilters, setActivePlatformFilters] = useState(Object.keys(platformDetails).filter(p => p !== 'Default'));
   const [selectedBusinessId, setSelectedBusinessId] = useState();
@@ -212,7 +211,16 @@ const CalendarViewPage = () => {
       const extData = await fetchExternalData(selectedBusinessId);
       console.log("ExtData:", extData);
       
-      
+      // if (!extData) {
+      //   setIsAddModalOpen(false);
+      //   return;
+      // }
+
+      // const filteredData = socialMediaDatas?.filter(socialItem => 
+      //             extData.some(extItem => extItem.data_source_id === socialItem.id)
+      // )
+      // console.log("FilteredSocialData", filteredData, socialMediaDatas);
+      // return filteredData;
       if (!extData || !extData.length) {
         setIsAddModalOpen(false);
         return [];
@@ -272,16 +280,7 @@ const CalendarViewPage = () => {
         p => p.type.toLowerCase() === newPost.platform.toLowerCase()
       )?.extDataId || null;
     };
-    // const scheduled_time = new Date(`${newPost?.date}T${newPost?.time}:00`).toISOString().replace('T', ' ').substring(0, 19)
-    // const scheduled_time = format(
-    //             parse(`${newPost.date} ${newPost.time}`, 'yyyy-MM-dd HH:mm', new Date()),
-    //             "yyyy-MM-dd HH:mm:ss"
-    //           );
-    const scheduled_time = format(
-        parseISO(`${newPost.date}T${newPost.time}:00`),
-        "yyyy-MM-dd'T'HH:mm:ss'Z'"
-      );
-
+    const scheduled_time = new Date(`${newPost?.date}T${newPost?.time}:00`).toISOString().replace('T', ' ').substring(0, 19)
     console.log("scheduled_time", scheduled_time)
     const newPostWithData = [
       {
@@ -747,7 +746,28 @@ const CalendarViewPage = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="flex flex-col h-full p-3 sm:p-4 bg-gray-100 dark:bg-gray-900">
+      <div className="flex flex-col h-full sm:p-4  dark:bg-gray-900">
+        <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-semibold">Content Scheduler</h1>
+                <div className="flex gap-3">
+        
+                  <div className="flex items-center gap-2 mt-3 sm:mt-0">
+  <Link
+    to="/scheduler"
+    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+  >
+    <LayoutList className="w-4 h-4" />
+    List View
+  </Link>
+  <button
+    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors bg-theme-primary text-white shadow-md"
+  >
+    <CalendarDays className="w-4 h-4" />
+    Calendar View
+  </button>
+</div>
+                </div>
+              </div>
         {/* Header: Navigation and Filters */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-4 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
           <div className="flex items-center gap-2 mb-3 sm:mb-0">
@@ -836,7 +856,7 @@ const CalendarViewPage = () => {
           />
         )}
         {isPreviewModalOpen && postForPreview && (
-          <PostPreviewModalCalendar                
+          <PostPreviewModalCalendar
             isOpen={isPreviewModalOpen}
             onClose={() => setIsPreviewModalOpen(false)}
             post={postForPreview}
