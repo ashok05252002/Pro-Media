@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
+
 const notifications1 = [
   {
     id: 1,
@@ -32,7 +33,12 @@ const notifications1 = [
   }
 ];
 
-const NotificationPanel = ({ onClose, notifications = [] }) => {
+
+
+const NotificationPanel = ({ onClose, notifications = [], onClick, onMarkAllAsRead}) => {
+
+  
+
   console.log('====================================');
   console.log(notifications);
   console.log('====================================');
@@ -55,6 +61,7 @@ const NotificationPanel = ({ onClose, notifications = [] }) => {
             {notifications.map((notification) => (
               <div 
                 key={notification.id} 
+                onClick={() => onClick(notification.id)}
                 className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${notification.read ? 'opacity-70' : ''}`}
               >
                 <div className="flex items-start">
@@ -74,8 +81,10 @@ const NotificationPanel = ({ onClose, notifications = [] }) => {
       </div>
       
       <div className="p-3 border-t border-gray-200 dark:border-gray-700 text-center">
-        <button className="text-theme-primary hover:text-opacity-80 text-sm font-medium">
+        <button className="text-theme-primary hover:text-opacity-80 text-sm font-medium"
+        onClick={onMarkAllAsRead}>
           Mark all as read
+          
         </button>
       </div>
     </div>

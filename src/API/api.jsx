@@ -353,3 +353,34 @@ export const updateTimePost = (platform, scheduledTime, postId) => {
     return axios.patch(`/${platform.toLowerCase()}_post/updatetime/${postId}`, {"scheduled_time":scheduledTime});
     // return axios.get(`/ext-product/list`)   
 };
+
+
+// // Mark notification as read by ID
+// export const markNotificationAsRead = async (id) => {
+//   try {
+//     const response = await axios.patch(
+//       `${import.meta.env.VITE_BASE_API_URL}/notification/read/${id}`,
+//       { status: "read" }
+//     );
+//     return response;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+// Mark multiple notifications as read
+export const markNotificationsAsRead = async (ids) => {
+  try {
+    const response = await axios.patch(
+      `${import.meta.env.VITE_BASE_API_URL}/notification/read`,
+      {
+        ids, // array of IDs
+        status: "read" // or "read", depending on your backend model
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Failed to mark notifications as read:", error);
+    throw error;
+  }
+};
