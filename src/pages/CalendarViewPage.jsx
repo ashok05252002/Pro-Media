@@ -16,6 +16,8 @@ import { extCompanyProductData,
   extCompanyProductDataById,
   addPost,
   updatePost,
+
+  updateTimePost,
   deletePostDraft,
 } from '../API/api';
 import { Await } from 'react-router-dom';
@@ -120,12 +122,19 @@ const CalendarViewPage = () => {
         parseISO(`${newDate}T${newTime}:00`),
         "yyyy-MM-dd'T'HH:mm:ss'Z'"
       );
-
-      setPosts(prevPosts =>
+      const response =  updateTimePost(platform, scheduled_time, postId)
+      if (response)
+      {
+        console.log("Post is added successfully: ", response)
+        setPosts(prevPosts =>
         prevPosts.map(post =>
           ((post.id === postId) && (post.platform === platform)) ? { ...post, date: newDate, time: newTime } : post
         )
       );
+      }
+      console.log("Post is failure: ", response)
+
+      
     }, []);
 
   const handleAddPostClick = async (date, time) => {
@@ -633,18 +642,22 @@ const CalendarViewPage = () => {
 
                     const posts = postsResponse?.data 
                       ? postsResponse.data.map(post => {
-                          const scheduledTime = new Date(post?.scheduled_time);
-                          const minutes = scheduledTime.getMinutes();
-                          
-                          if (minutes >= 30) {
-                            scheduledTime.setHours(scheduledTime.getHours() + 1); // Round up
-                          }
-                          scheduledTime.setMinutes(0, 0, 0); // Reset minutes & seconds
-                          
+                          // const scheduledTime = new Date(post?.scheduled_time);
+                          // const minutes = scheduledTime.getMinutes();
+                          // console.log("SCHEDULED_TIME: ", scheduledTime)
+                          // if (minutes >= 30) {
+                          //   scheduledTime.setHours(scheduledTime.getHours() + 1); // Round up
+                          // }
+                          // scheduledTime.setMinutes(0, 0, 0); // Reset minutes & seconds
+                          const dateStr = post?.scheduled_time;//"Fri, 13 Jun 2025 09:13:14 GMT";
+                          const timePart = dateStr.split(" ")[4]; // "09:13:14"
+                          const hours = timePart.split(":")[0].padStart(2, "0"); // "09"
+                          const hhmm = `${hours}:00`; // "
+                          console.log("SCHEDULED_TIME: ",post?.scheduled_time,  hhmm);
                           return {
                             ...post,
                             date: format(new Date(post?.scheduled_time), 'yyyy-MM-dd'),
-                            time: format(scheduledTime, 'HH:mm'), // "10:00" (if original was 09:49)
+                            time: hhmm, //format(scheduledTime, 'HH:mm'), // "10:00" (if original was 09:49)
                             contentReview: post?.description,
                             title: post?.description,
                             businessId: product.id,
