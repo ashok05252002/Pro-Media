@@ -263,7 +263,7 @@ const CalendarViewPage = () => {
 
     const newPost = { 
       ...newPostData, 
-      id: String(Date.now() + Math.random()),
+      // id: String(Date.now() + Math.random()),
       businessId: selectedBusinessId
     };
     // Get the matching platform's extDataId
