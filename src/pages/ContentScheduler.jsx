@@ -7,9 +7,9 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
-  X,
+  X,LayoutList, CalendarDays
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { extCompanyPrdctCreatePost, extCompanyDeleteCreatedPost, extCompanyGetAllCreatePosts } from "../API/api";
 import PostCardItem from "./post/PostCard"; 
 import EditPostModal from "./post/EditPost";
@@ -193,26 +193,25 @@ const ContentScheduler = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 mt-4">
         <h1 className="text-2xl font-semibold">Content Scheduler</h1>
         <div className="flex gap-3">
-          <button
-            className={`flex items-center gap-2 px-4 py-2 border ${showFilters
-              ? "border-[#F97316] text-[#F97316]"
-              : "border-gray-300 dark:border-gray-600"
-              } rounded-md hover:bg-gray-50 dark:hover:bg-gray-700`}
-            onClick={toggleFilters}
-          >
-            <Filter className="w-4 h-4" />
-            <span>Filter</span>
-          </button>
-          <button
-            className="flex items-center gap-2 px-4 py-2 bg-[#F97316] hover:bg-[#F97316]/80 text-white rounded-md"
-            onClick={handleCreatePost}
-          >
-            <Plus className="w-4 h-4" />
-            <span className='text-white'>Create Post</span>
-          </button>
+
+          <div className="flex items-center gap-2 mt-3 sm:mt-0">
+  <button
+    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors bg-theme-primary text-white shadow-md"
+  >
+    <LayoutList className="w-4 h-4" />
+    List View
+  </button>
+  <Link
+    to="/calendar-view"
+    className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+  >
+    <CalendarDays className="w-4 h-4" />
+    Calendar View
+  </Link>
+</div>
         </div>
       </div>
 
