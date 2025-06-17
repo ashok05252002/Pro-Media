@@ -341,3 +341,15 @@ export const addPost = (payload) => {
     return axios.post(`/post_system/addposts`, payload);
     // return axios.get(`/ext-product/list`)   
 };
+
+export const updatePost = (updatePost) => {
+    console.log("UPDATEDPOST: ", updatePost)
+    return axios.patch(`/${updatePost[0]?.platform}_post/updateposts/${updatePost[0]?.post_id}`, updatePost);
+    // return axios.get(`/ext-product/list`)   
+};
+
+export const updateTimePost = (platform, scheduledTime, postId) => {
+    console.log("UPDATEDPOST: ", platform.toLowerCase())
+    return axios.patch(`/${platform.toLowerCase()}_post/updatetime/${postId}`, {"scheduled_time":scheduledTime});
+    // return axios.get(`/ext-product/list`)   
+};
