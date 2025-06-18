@@ -280,7 +280,12 @@ const CalendarViewPage = () => {
         p => p.type.toLowerCase() === newPost.platform.toLowerCase()
       )?.extDataId || null;
     };
-    const scheduled_time = new Date(`${newPost?.date}T${newPost?.time}:00`).toISOString().replace('T', ' ').substring(0, 19)
+    console.log("NEWPOST DATE: ", newPost?.date, "NEWPOST TIME: ", newPost?.time)
+    // const scheduled_time = new Date(`${newPost?.date}T${newPost?.time}:00`).toISOString().replace('T', ' ').substring(0, 19)
+    const [year, month, day] = newPost?.date.split('-');
+    const [hours, minutes] = newPost?.time.split(':');
+    const date = new Date(year, month - 1, day, hours, minutes);
+    const scheduled_time = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`;
     console.log("scheduled_time", scheduled_time)
     const newPostWithData = [
       {
