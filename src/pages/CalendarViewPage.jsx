@@ -658,7 +658,7 @@ const CalendarViewPage = () => {
                             date: format(new Date(post?.scheduled_time), 'yyyy-MM-dd'),
                             time: hhmm, //format(scheduledTime, 'HH:mm'), // "10:00" (if original was 09:49)
                             contentReview: post?.description,
-                            title: post?.description?.replace(/<[^>]*>/g, '').substring(0, 20) + (post?.description?.replace(/<[^>]*>/g, '').length > 20 ? '' : ''),
+                            title: post?.description?.replace(/<[^>]*>/g, '').substring(0, 20) + (post?.description?.replace(/<[^>]*>/g, '').length > 20 ? '...' : ''),
                             businessId: product.id,
                             extDsId: externalData.id,
                             platformId: platformInfo.id,
