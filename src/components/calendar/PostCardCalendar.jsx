@@ -7,7 +7,7 @@ const PostCardCalendar = ({ post, platformDetails, statusColors, onPreviewClick 
   // Removed useDrag hook and related logic
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ItemTypes.POST_CARD,
-    item: { id: post.id, originalDate: post.date, originalTime: post.time },
+    item: { id: post.id, originalDate: post.date, originalTime: post.time, platform: post.platform },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),

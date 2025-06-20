@@ -1,226 +1,280 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ConnectChannelModal from '../components/ConnectChannelModal';
-import {
-  Facebook,
-  Twitter,
-  Youtube as YoutubeIcon,
-  Instagram as InstagramIcon,
-  Linkedin,
-  Package,
-  Briefcase
+import { 
+  Facebook, Twitter, Youtube as YoutubeIcon, Instagram as InstagramIcon, 
+  Linkedin, Package, Briefcase, Link2, Edit2, ExternalLink, CheckCircle, XCircle, PlusCircle
 } from 'lucide-react';
+import { useTheme } from '../contexts/ThemeContext';
 import { extCompanyProductData, extCompanyProductDataSource } from '../API/api';
 
-// Helper functions for platform icons, colors, and names
-const getPlatformIcon = (dataSourceId) => {
-  const platformIcons = {
-    7066: <Facebook />,
-    8487: <Twitter />,
-    7378: <InstagramIcon />,
-    7668: <Linkedin />,
-    8984: <YoutubeIcon />
-  };
-  return platformIcons[dataSourceId] || <Package />;
-};
+// Platform configuration
+const baseSocialPlatforms = [
+  { id: '7066', name: 'Facebook', IconComponent: Facebook, color: '#4267B2' },
+  { id: '8487', name: 'Twitter', IconComponent: Twitter, color: '#1DA1F2' },
+  { id: '7378', name: 'Instagram', IconComponent: InstagramIcon, color: '#E1306C' },
+  { id: '7668', name: 'LinkedIn', IconComponent: Linkedin, color: '#0077B5' },
+  { id: '8984', name: 'YouTube', IconComponent: YoutubeIcon, color: '#FF0000' },
+];
 
-const getPlatformColor = (dataSourceId) => {
-  const platformColors = {
-    7066: 'text-blue-600',
-    8487: 'text-black dark:text-white',
-    7378: 'text-pink-600',
-    7668: 'text-blue-700',
-    8984: 'text-red-600'
-  };
-  return platformColors[dataSourceId] || 'text-gray-400';
-};
+const PlatformCard = ({ platform, connectionStatus, onConnect, onEdit }) => {
+  const { isDarkMode } = useTheme();
+  const isConnected = connectionStatus?.isConnected;
+  const Icon = platform.IconComponent;
 
-const getPlatformType = (dataSourceId) => {
-  const platformTypes = {
-    7066: 'Facebook',
-    8487: 'Twitter',
-    7378: 'Instagram',
-    7668: 'LinkedIn',
-    8984: 'YouTube'
-  };
-  return platformTypes[dataSourceId] || 'Unknown';
-};
+  return (
+    <div 
+      className={`bg-white dark:bg-gray-800 p-3 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all duration-300 flex flex-col justify-between min-h-[180px] transform hover:-translate-y-1`}
+      style={{ borderTop: `3px solid ${platform.color}` }}
+    >
+      <div>
+        <div className="flex items-center mb-2.5"> 
+          <div className="p-2 rounded-full mr-2.5" style={{ backgroundColor: `${platform.color}1A` }}> 
+            <Icon className="w-5 h-5" style={{ color: platform.color }} /> 
+          </div>
+          <h3 className="text-base font-semibold text-gray-700 dark:text-gray-200">{platform.name}</h3> 
+        </div>
 
-const SocialMediaCard = ({ platform, icon, connected, details, color, onLink }) => (
-  <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-    <div className="flex items-center justify-between mb-2">
-      <div className="flex items-center gap-3">
-        {React.cloneElement(icon, { className: `w-6 h-6 ${color}` })}
-        <h3 className="text-lg font-medium">{platform}</h3>
+        {isConnected ? (
+          <div className="space-y-1.5 text-xs"> 
+            <div className="flex items-center text-green-600 dark:text-green-400 font-medium">
+              <CheckCircle className="w-3.5 h-3.5 mr-1 flex-shrink-0" /> 
+              <span>Connected</span>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 truncate" title={connectionStatus.pageName}>
+              Page: <span className="font-semibold">{connectionStatus.pageName}</span>
+            </p>
+            <div className="flex items-center space-x-2 pt-1"> 
+              <a 
+                href={connectionStatus.displayLink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[10px] text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline font-medium"
+              >
+                <ExternalLink size={11} /> View
+              </a>
+              <button 
+                onClick={onEdit}
+                className="flex items-center gap-1 text-[10px] text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:underline font-medium"
+              >
+                <Edit2 size={11} /> Edit
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-1.5 text-xs"> 
+            <div className="flex items-center text-red-600 dark:text-red-400 font-medium">
+              <XCircle className="w-3.5 h-3.5 mr-1 flex-shrink-0" /> 
+              <span>Not Connected</span>
+            </div>
+            <p className="text-gray-500 dark:text-gray-400 text-[11px]">Link this platform to manage its content.</p>
+          </div>
+        )}
       </div>
-      {!connected && (
-        <button
-          onClick={onLink}
-          className="text-xs bg-theme-primary/10 hover:bg-theme-primary/20 text-theme-primary py-1 px-2 rounded-md"
+      
+      {!isConnected && (
+        <button 
+          onClick={onConnect}
+          className="mt-3 w-full py-1.5 px-2.5 rounded-lg text-[11px] font-semibold text-white transition-colors flex items-center justify-center gap-1 shadow-md hover:shadow-lg"
+          style={{ backgroundColor: platform.color, filter: 'brightness(0.95)' }}
+          onMouseOver={(e) => e.currentTarget.style.filter = 'brightness(1.1)'}
+          onMouseOut={(e) => e.currentTarget.style.filter = 'brightness(0.95)'}
         >
-          Link
+          <Link2 className="w-3 h-3" /> Connect {platform.name}
         </button>
       )}
     </div>
-    {connected ? (
-      <>
-        <div className="text-sm text-green-500 mb-1">Connected</div>
-        {details?.pageName && (
-          <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate" title={details.pageName}>
-            {details.pageName}
-          </p>
-        )}
-      </>
-    ) : (
-      <>
-        <div className="text-sm text-red-500 mb-2">Not Connected</div>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Click 'Link' to connect this platform.
-        </p>
-      </>
-    )}
-  </div>
-);
+  );
+};
 
 const MyBusiness = () => {
   const [showConnectModal, setShowConnectModal] = useState(false);
-  const [business, setBusiness] = useState([]);
+  const [platformToConnect, setPlatformToConnect] = useState(null);
+  const [businesses, setBusinesses] = useState([]);
   const [selectedBusinessId, setSelectedBusinessId] = useState('');
-  const [prdctDataSourcePlatform, setPrdctDatasourcePlatform] = useState([]);
+  const [currentBusinessChannels, setCurrentBusinessChannels] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-  const selectedId = e.target.value;
-  setSelectedBusinessId(selectedId);
-  setLoading(true);
-  setError(null);
-
-  extCompanyProductDataSource(selectedId)
-    .then((response) => {
-      if (response.status === 200 || response.status === 201) {
-        if (!Array.isArray(response.data) || response.data.length === 0) {
-          setPrdctDatasourcePlatform([]);
-        } else {
-          const transformedData = response.data.map((item) => ({
-            ...item,
-            icon: getPlatformIcon(item.data_source_id),
-            color: getPlatformColor(item.data_source_id),
-            platformType: getPlatformType(item.data_source_id),
-            connected: true,
-            details: { pageName: item.account_name }
-          }));
-          setPrdctDatasourcePlatform(transformedData);
-        }
-      } else {
-        setError(`Unexpected status code: ${response.status}`);
-      }
-    })
-    .catch((error) => {
-      // If a network error, just clear platforms (don’t show error message)
-      setPrdctDatasourcePlatform([]);
-      // Comment out or remove the below line so no error text is shown:
-      // setError(error.message || 'Failed to fetch product data');
-    })
-    .finally(() => {
-      setLoading(false);
-    });
-};
-
+  // Fetch businesses on component mount
   useEffect(() => {
     setLoading(true);
-    setError(null);
     extCompanyProductData()
       .then((prodRes) => {
         if (prodRes.status === 200 || prodRes.status === 201) {
-          setBusiness(prodRes.data);
+          setBusinesses(prodRes.data);
+          if (prodRes.data.length > 0) {
+            setSelectedBusinessId(prodRes.data[0].id);
+          }
         } else {
-          setBusiness([]);
+          setBusinesses([]);
         }
       })
       .catch(() => {
         setError('Failed to fetch businesses');
-        setBusiness([]);
+        setBusinesses([]);
       })
       .finally(() => {
         setLoading(false);
       });
   }, []);
 
+  // Fetch channels when selected business changes
+  useEffect(() => {
+    if (selectedBusinessId) {
+      setLoading(true);
+      extCompanyProductDataSource(selectedBusinessId)
+        .then((response) => {
+          if (response.status === 200 || response.status === 201) {
+            const channelsStatus = {};
+            
+            // Initialize all platforms as not connected
+            baseSocialPlatforms.forEach(platform => {
+              channelsStatus[platform.id] = {
+                isConnected: false,
+                pageName: '',
+                displayLink: ''
+              };
+            });
+
+            // Update connected platforms
+            if (Array.isArray(response.data) && response.data.length > 0) {
+              response.data.forEach(item => {
+                if (channelsStatus[item.data_source_id]) {
+                  channelsStatus[item.data_source_id] = {
+                    isConnected: true,
+                    pageName: item.account_name,
+                    displayLink: '' // You might want to add this field in your API response
+                  };
+                }
+              });
+            }
+
+            setCurrentBusinessChannels(channelsStatus);
+          } else {
+            setError(`Unexpected status code: ${response.status}`);
+          }
+        })
+        .catch(() => {
+          // If error occurs, set all platforms as not connected
+          const initialStatus = {};
+          baseSocialPlatforms.forEach(platform => {
+            initialStatus[platform.id] = { isConnected: false, pageName: '', displayLink: '' };
+          });
+          setCurrentBusinessChannels(initialStatus);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      // If no business selected, set all platforms as not connected
+      const initialStatus = {};
+      baseSocialPlatforms.forEach(platform => {
+        initialStatus[platform.id] = { isConnected: false, pageName: '', displayLink: '' };
+      });
+      setCurrentBusinessChannels(initialStatus);
+      setLoading(false);
+    }
+  }, [selectedBusinessId]);
+
+  const handleConnectClick = (platformId) => {
+    setPlatformToConnect(platformId);
+    setShowConnectModal(true); 
+  };
+  
+  const handleEditClick = (platformId) => {
+    navigate('/add-business', { state: { businessId: selectedBusinessId, platformToEdit: platformId } });
+  };
+
+  const selectedBusinessName = businesses.find(b => b.id === selectedBusinessId)?.product_name || "No Business Selected";
+
   return (
     <div className="space-y-8">
-      <div className="bg-[#FDE5E3] dark:bg-[#FDE5E3]/10 rounded-lg p-8">
-        <h2 className="text-2xl font-semibold mb-2">Connect All Your Social Media in One Place</h2>
-        <p className="text-gray-700 dark:text-gray-300 mb-6">
-          Seamlessly integrate, manage, and grow your social presence across all platforms with ease.
-        </p>
-        <button
-          className="bg-[#EC5347] hover:bg-[#D9382B] text-white font-medium py-2 px-6 rounded-md transition-colors flex items-center gap-2"
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <h1 className="text-3xl font-bold mb-3 md:mb-0 text-gray-800 dark:text-gray-100">My Business Profiles</h1>
+        <button 
+          className="flex items-center gap-2 px-5 py-2.5 bg-theme-primary hover:bg-opacity-90 text-white rounded-lg shadow-lg transition-colors text-sm font-semibold"
           onClick={() => navigate('/add-business')}
         >
-          <Briefcase className="w-4 h-4" />
-          Manage Business
+          <Briefcase className="w-5 h-5" />
+          <span>Manage Businesses</span>
         </button>
       </div>
 
-      <div className="mb-6">
-        <label htmlFor="businessSelect" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Viewing Channels For:
+      <div className="mb-6 bg-white dark:bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+        <label htmlFor="businessSelect" className="block text-md font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          Viewing Channels For: <span className="text-theme-primary">{selectedBusinessName}</span>
         </label>
         <select
           id="businessSelect"
           value={selectedBusinessId}
-          onChange={handleChange}
-          className="w-full max-w-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700"
+          onChange={(e) => setSelectedBusinessId(e.target.value)}
+          className="w-full max-w-lg px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700 shadow-sm text-gray-800 dark:text-gray-100"
+          disabled={loading}
         >
-          <option value="">Select a business</option>
-          {business?.map((biz) => (
-            <option key={biz?.id} value={biz?.id}>
-              {biz?.product_name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {loading && <div className="text-center">Loading...</div>}
-      {error && <div className="text-center text-red-600">{error}</div>}
-
-      <div>
-        <h2 className="text-xl font-medium mb-4">Social Media</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {prdctDataSourcePlatform.length === 0 && !loading && (
-            <div className="col-span-full text-center text-gray-400">
-              No platforms linked for this business.
-            </div>
+          {loading ? (
+            <option>Loading businesses...</option>
+          ) : businesses.length > 0 ? (
+            businesses.map(biz => (
+              <option key={biz.id} value={biz.id}>{biz.product_name}</option>
+            ))
+          ) : (
+            <option disabled>No businesses found. Add one first!</option>
           )}
-          {prdctDataSourcePlatform.map((platform) => (
-            <SocialMediaCard
-              key={platform.data_source_id}
-              platform={platform.platformType}
-              icon={platform.icon}
-              connected={platform.connected}
-              details={platform.details}
-              color={platform.color}
-              onLink={() => setShowConnectModal(true)}
-            />
-          ))}
-        </div>
+        </select>
+        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
       </div>
 
       <div>
-        <h2 className="text-xl font-medium mb-4">E-commerce</h2>
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow text-center">
-          <Package className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300">E-commerce Integrations</h3>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">Coming Soon!</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-            We're working hard to bring you seamless connections with your favorite e-commerce platforms.
-          </p>
+        <h2 className="text-2xl font-semibold mb-5 text-gray-700 dark:text-gray-200">Social Media Channels</h2>
+        {loading ? (
+          <div className="text-center">Loading channels...</div>
+        ) : businesses.length === 0 || !selectedBusinessId ? (
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg text-center border border-gray-200 dark:border-gray-700">
+            <Briefcase className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300">No Business Selected</h3>
+            <p className="text-gray-500 dark:text-gray-400 mt-2">Please add or select a business to view its channels.</p>
+            <button 
+              onClick={() => navigate('/add-business')}
+              className="mt-4 flex items-center gap-2 mx-auto px-4 py-2 bg-theme-primary hover:bg-opacity-90 text-white rounded-lg shadow-md transition-colors text-sm font-medium"
+            >
+              <PlusCircle className="w-4 h-4" />
+              Add New Business
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {baseSocialPlatforms.map((platform) => (
+              <PlatformCard 
+                key={platform.id}
+                platform={platform}
+                connectionStatus={currentBusinessChannels[platform.id]}
+                onConnect={() => handleConnectClick(platform.id)}
+                onEdit={() => handleEditClick(platform.id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <h2 className="text-2xl font-semibold mb-5 text-gray-700 dark:text-gray-200">E-commerce Platforms</h2>
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg text-center border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center min-h-[180px]">
+          <Package className="w-10 h-10 text-gray-400 dark:text-gray-500 mb-3" />
+          <h3 className="text-md font-semibold text-gray-700 dark:text-gray-300">E-commerce Integrations</h3>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-xs">Coming Soon!</p>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 max-w-md mx-auto">We're actively developing integrations for your e-commerce platforms.</p>
         </div>
       </div>
 
-      {showConnectModal && <ConnectChannelModal onClose={() => setShowConnectModal(false)} />}
+      {showConnectModal && 
+        <ConnectChannelModal 
+          onClose={() => setShowConnectModal(false)}
+          businessId={selectedBusinessId}
+          platformId={platformToConnect}
+        />
+      }
     </div>
   );
 };

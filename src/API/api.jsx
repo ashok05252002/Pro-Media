@@ -341,3 +341,46 @@ export const addPost = (payload) => {
     return axios.post(`/post_system/addposts`, payload);
     // return axios.get(`/ext-product/list`)   
 };
+
+export const updatePost = (updatePost) => {
+    console.log("UPDATEDPOST: ", updatePost)
+    return axios.patch(`/${updatePost[0]?.platform}_post/updateposts/${updatePost[0]?.post_id}`, updatePost);
+    // return axios.get(`/ext-product/list`)   
+};
+
+export const updateTimePost = (platform, scheduledTime, postId) => {
+    console.log("UPDATEDPOST: ", platform.toLowerCase())
+    return axios.patch(`/${platform.toLowerCase()}_post/updatetime/${postId}`, {"scheduled_time":scheduledTime});
+    // return axios.get(`/ext-product/list`)   
+};
+
+
+// // Mark notification as read by ID
+// export const markNotificationAsRead = async (id) => {
+//   try {
+//     const response = await axios.patch(
+//       `${import.meta.env.VITE_BASE_API_URL}/notification/read/${id}`,
+//       { status: "read" }
+//     );
+//     return response;
+//   } catch (error) {
+//     throw error;
+//   }
+// };
+
+// Mark multiple notifications as read
+export const markNotificationsAsRead = async (ids) => {
+  try {
+    const response = await axios.patch(
+      `${import.meta.env.VITE_BASE_API_URL}/notification/read`,
+      {
+        ids, // array of IDs
+        status: "read" // or "read", depending on your backend model
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Failed to mark notifications as read:", error);
+    throw error;
+  }
+};

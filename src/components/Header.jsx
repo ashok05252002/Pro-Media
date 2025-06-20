@@ -6,7 +6,8 @@ import NotificationPanel from './NotificationPanel';
 import socketService from '../services/SocketService';
 import io from 'socket.io-client';
 import { toast } from 'react-toastify';
-import { getNotification } from '../API/api';
+import { getNotification, markNotificationsAsRead } from '../API/api';
+
 
 const Header = () => {
   const { toggleSidebar } = useSidebar();
@@ -92,6 +93,47 @@ const Header = () => {
     }
   };
 
+  // const markNotificationsAsRead = async (id) => {
+  //   try {
+  //     const response = await axios.patch(
+  //       `${import.meta.env.VITE_BASE_API_URL}/notification/read/${id}`,
+  //       { status: "read" }
+  //     );
+  //     return response;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // };
+
+  const handleNotificationClick = async (notificationId) => {
+    try {
+      await markNotificationsAsRead([notificationId]);
+      // Optionally update local notification state/UI here
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.id === notificationId ? { ...n, read: true } : n
+        )
+      );
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+  const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
+
+  if (unreadIds.length === 0) return;
+
+  try {
+    await markNotificationsAsRead(unreadIds);
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, read: true }))
+    );
+  } catch (error) {
+    console.error("Failed to mark all notifications as read:", error);
+  }
+};
+
   return (
     <header className="border-b border-[#FFC9CA]/20 py-4 px-6 flex justify-between items-center transition-colors duration-200 bg-white dark:bg-primary-dark">
       <div className="flex items-center">
@@ -113,7 +155,7 @@ const Header = () => {
             <span className="absolute top-1 right-1 w-2 h-2 bg-theme-danger rounded-full"></span>
           </button>
 
-          {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)}  notifications={notifications}/>}
+          {showNotifications && <NotificationPanel onClose={() => setShowNotifications(false)}  notifications={notifications} onClick={handleNotificationClick} onMarkAllAsRead={handleMarkAllAsRead}/>}
         </div>
         <ThemeToggle />
       </div>
