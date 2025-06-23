@@ -53,8 +53,8 @@ const facebookAuthUrl = `https://www.facebook.com/v18.0/dialog/oauth?` +
   `redirect_uri=${encodeURIComponent(window.location.origin +'/auth/facebook/callback')}&` +
   `response_type=code&` +
   `scope=email,public_profile,pages_show_list,pages_read_engagement,pages_manage_metadata,instagram_basic,instagram_manage_insights`;
-
-const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?` +
+ 
+  const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?` +
   `response_type=code&client_id=${import.meta.env.REACT_APP_LINKEDIN_CLIENT_ID}&` +
   `redirect_uri=${import.meta.env.REACT_APP_REDIRECT_URI}&scope=r_liteprofile`;
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, use } from 'react';
 import { Building, PlusCircle, Link as LinkIcon, Facebook, Instagram, Twitter, Linkedin, Youtube, ChevronDown, CheckCircle, ExternalLink, ArrowRight } from 'lucide-react';
 import LinkPlatformModal from '../components/LinkPlatformModal';
 import { loginWithSocial } from '../services/SocialAuth';
-import { extCompanyProductData, extCompanyRegorAddPrdct } from '../API/api';
+import { extCompanyAuthTwitternew, extCompanyProductData, extCompanyRegorAddPrdct } from '../API/api';
 
 import { toast } from 'react-toastify';
 
@@ -73,10 +73,10 @@ const AddBusinessPage = () => {
       }
     } else if (businessType === 'new') {
       setPlatformDetails(initialPlatformState);
-      console.log(`22---->>>${ businessNameConfirmed}`);
+      console.log(`22---->>>${businessNameConfirmed}`);
     } else {
       setBusinessNameConfirmed(false);
-      console.log(`333---->>>${ businessNameConfirmed}`);
+      console.log(`333---->>>${businessNameConfirmed}`);
       setNewBusinessName('');
       setSelectedCompanyId('');
       setPlatformDetails(initialPlatformState);
@@ -97,15 +97,44 @@ const AddBusinessPage = () => {
     console.log(platformId);
     console.log(platformName);
     console.log(defaultDisplayLink);
+    var socialCode = null;
+    if (platformName != 'twitter') {
 
-    const { code } = await loginWithSocial(platformName, {
-      pagename: data.pageName,
-      producturl: data.productPageUrl,
-      productid: selectedCompanyId
+      const { code } = await loginWithSocial(platformName, {
+        pagename: data.pageName,
+        producturl: data.productPageUrl,
+        productid: selectedCompanyId
+      });
 
-    });
-    console.log(`loginresponse -->> ${code}`);
-    if (code != null) {
+      socialCode = code;
+    } else {
+      try {
+        const response = await extCompanyAuthTwitternew();
+        console.log('====================================');
+        console.log(response);
+        console.log('====================================');
+        const authUrl = response?.data?.auth_url;
+
+        if (authUrl) {
+          const popup = window.open(
+            authUrl,
+            'Twitter Login',
+            'width=600,height=600,scrollbars=yes'
+          );
+
+          if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+            alert("Popup blocked. Please allow popups for this site.");
+          }
+        } else {
+          alert("Twitter auth URL is missing.");
+        }
+      } catch (err) {
+        console.error("Twitter login error:", err);
+      }
+    }
+
+    console.log(`loginresponse -->> ${socialCode}`);
+    if (socialCode != null) {
       setPlatformDetails(prev => ({
         ...prev,
         [platformId]: {
@@ -122,6 +151,7 @@ const AddBusinessPage = () => {
     // console.log(platformDetails);
 
   };
+
 
   const handleSubmitBusiness = () => {
     let submissionData = {
@@ -141,7 +171,7 @@ const AddBusinessPage = () => {
 
   const handleConfirmBusinessName = async () => {
     console.log("handleConfirmBusinessName");
-    if(cbLoader) return;
+    if (cbLoader) return;
     if (newBusinessName.trim() === '') {
       alert('Please enter a business name.');
       return;
@@ -153,7 +183,7 @@ const AddBusinessPage = () => {
       console.log("Business added successfully", result);
       if (result.status === 201) {
         setProductDetail(result.data ?? {});
-        
+
         setSelectedCompanyId(result?.data?.product_id)
         toast.success('Business added successfully!');
         setBusinessNameConfirmed(true);
@@ -161,7 +191,7 @@ const AddBusinessPage = () => {
     } catch (error) {
       console.error("Add business error:", error);
     } finally {
-      console.log(`11---->>>${ businessNameConfirmed}`);
+      console.log(`11---->>>${businessNameConfirmed}`);
       setCbLoader(false);
     }
   };
@@ -312,7 +342,7 @@ const AddBusinessPage = () => {
 
           {businessType === 'new' && (
             <div>
-              <h2 className="text-2xl font-semibold mb-4">Add New Business{businessNameConfirmed }</h2>
+              <h2 className="text-2xl font-semibold mb-4">Add New Business{businessNameConfirmed}</h2>
               {businessNameConfirmed == false ? (
                 <>
                   <div className="mb-6">
@@ -332,7 +362,7 @@ const AddBusinessPage = () => {
                     onClick={handleConfirmBusinessName}
                     disabled={!newBusinessName.trim()}
                     className="w-full py-2.5 px-4 bg-theme-secondary hover:bg-opacity-90 text-white font-semibold rounded-lg shadow-md transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                  > 
+                  >
                     {cbLoader ? (
                       <div className="button_loader36"></div>
                     ) : (
@@ -341,15 +371,15 @@ const AddBusinessPage = () => {
                   </button>
                 </>
               ) :
-               (
-                <>
-                  <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Business Name:</p>
-                    <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">{newBusinessName}</p>
-                  </div>
-                  {renderPlatformList()}
-                </>
-              )}
+                (
+                  <>
+                    <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Business Name:</p>
+                      <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">{newBusinessName}</p>
+                    </div>
+                    {renderPlatformList()}
+                  </>
+                )}
             </div>
           )}
 

@@ -18,6 +18,7 @@ import CalendarViewPage from './pages/CalendarViewPage';
 import ComingSoonCard from './components/ComingSoonCard';
 import VerifyEmailPage from "./pages/VerifyEmailPage.jsx";
 import FacebookCallback from './components/FacebookCallback';
+import InstagramCallback from './components/InstagramCallback.jsx';
 import YoutubeCallback from './components/YoutubeCallback';
 import TWTCallbackWrapper from './components/TWTCallback.jsx';
 import LinkedinCallback from './components/LinkedinCallback.jsx';
@@ -74,6 +75,10 @@ function App() {
     {
       path: "/auth/facebook/callback",
       element: <FacebookCallback />
+    },
+    {
+      path: "/auth/instagram/callback",
+      element: <InstagramCallback />
     },
     {
       path: "/oauth2callback",

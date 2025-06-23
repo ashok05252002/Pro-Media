@@ -58,7 +58,7 @@ export const loginWithSocial = async (type, { pagename, producturl, productid })
             const state = crypto.randomUUID();
 
             sessionStorage.setItem("tw_state", state);
-            sessionStorage.setItem(`twitter_verifier_${state}`, code_verifier); 
+            sessionStorage.setItem(`twitter_verifier_${state}`, code_verifier);
 
             const TWITTER_CLIENT_ID = import.meta.env.VITE_REACT_APP_TWITTER_CLIENT_ID;
             const TWITTER_REDIRECT_URI = import.meta.env.VITE_REACT_APP_TWITTER_REDIRECT_URI;
@@ -74,13 +74,21 @@ export const loginWithSocial = async (type, { pagename, producturl, productid })
                 `&code_challenge_method=S256`;
             break;
         }
-        case 'facebook':
-        case 'instagram': {
+        case 'facebook': {
             authUrl = `https://www.facebook.com/v18.0/dialog/oauth` +
                 `?client_id=${import.meta.env.VITE_REACT_APP_FB_CLIENT_ID}` +
                 `&redirect_uri=${encodeURIComponent(`${window.location.origin}/auth/facebook/callback`)}` +
                 `&response_type=code` +
                 `&scope=${encodeURIComponent('email,public_profile,pages_show_list,pages_read_engagement,pages_manage_metadata,instagram_basic,instagram_manage_insights')}`;
+            break;
+        }
+     
+        case 'instagram': {
+            authUrl = `https://www.facebook.com/v18.0/dialog/oauth` +
+                `?client_id=${import.meta.env.VITE_REACT_APP_FB_CLIENT_ID}` +
+                `&redirect_uri=${encodeURIComponent(`${window.location.origin}/auth/instagram/callback`)}` +
+                `&response_type=code` +
+                `&scope=${encodeURIComponent('instagram_basic,instagram_manage_insights,instagram_manage_comments,pages_show_list,pages_read_engagement,pages_read_user_content')}`;
             break;
         }
         case 'youtube': {
@@ -104,7 +112,7 @@ export const loginWithSocial = async (type, { pagename, producturl, productid })
     return new Promise((resolve, reject) => {
         const listener = (event) => {
             if (event.origin !== window.location.origin) return;
-            if (event.data?.type === 'linkedin_auth' || event.data?.type === 'twitter_auth' || event.data?.type === 'facebook_auth' || event.data?.type === 'youtube_auth') {
+            if (event.data?.type === 'linkedin_auth' || event.data?.type === 'twitter_auth' || event.data?.type === 'facebook_auth' ||event.data?.type === 'instagram_auth' ||  event.data?.type === 'youtube_auth') {
                 window.removeEventListener('message', listener);
 
                 if (event.data.code) {

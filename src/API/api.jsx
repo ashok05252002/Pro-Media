@@ -89,7 +89,7 @@ export const extCompanyUserRegVerifyOTP = (userInput) => {
     })
 };
 
-export const extCompanyUserRegResendOTP = (email) => { 
+export const extCompanyUserRegResendOTP = (email) => {
     return axios.post(`/company/resent-otp`, {},
         {
             headers: {
@@ -101,14 +101,14 @@ export const extCompanyUserRegResendOTP = (email) => {
 
 export const extCompanyUserForgetpwd = (email) => {
     return axios.post(`/company/forgetpasswrd`, {}, {
-        headers : {
+        headers: {
             email
         }
     })
-}; 
+};
 export const extCompanyUserResetpwd = (userData) => {
     return axios.post(`/company/reset-password`, {
-        "email": userData.email, 
+        "email": userData.email,
         "new_password": userData.new_password,
     })
 };
@@ -168,16 +168,11 @@ export const extCompanyAuthTwitter = (inputData) => {
         "product_url": inputData.product_url,
         "page_name": inputData.page_name,
         "code_verifier": inputData.code_verifier
-
     },
-        // {
-        //         headers:{
-
-        //             "authCode":inputData.code,
-        //             "codeVerifier" : inputData.code_verifier
-        //         }
-        // }
     )
+};
+export const extCompanyAuthTwitternew = (inputData) => {
+    return axios.get(`/ext-product/login/twitter?redirect_url=${import.meta.env.VITE_REACT_APP_TWITTER_REDIRECT_URI}`, { "data_source_id": 8487 })
 };
 
 export const extCompanyAuthLinkedin = (inputData) => {
@@ -277,7 +272,7 @@ export const extCompanyPrdctListCommentsByPlatform = (postId, platform) => {
         case 'twitter':
             return axios.get(`/twitter/listcomments/${postId}`);
         case 'youtube':
-            return axios.get(`/youtube/listcomments/get-reviews`, {"product_data_source_video_id": postId});
+            return axios.get(`/youtube/listcomments/get-reviews`, { "product_data_source_video_id": postId });
         case 'instagram':
             return axios.get(`/instagram/listcomments/${postId}`);
         default:
@@ -292,11 +287,11 @@ export const extCompanyPrdctCreatePost = (selectedPlatform, payload) => {
 };
 
 export const extCompanyGetAllCreatePosts = (platform) => {
-    if (platform.name==="instagram"){
-         return axios.get(`/${platform.name}_post/instaposts`);
-    }else if (platform.name==="linkedin"){
+    if (platform.name === "instagram") {
+        return axios.get(`/${platform.name}_post/instaposts`);
+    } else if (platform.name === "linkedin") {
         return axios.get(`/${platform.name}_post/${platform.postCode}posts`);
-    }else
+    } else
         return axios.get(`/${platform.name}_post/${platform.postCode}posts`);
     // return axios.get(`/ext-product/list`)   
 };
@@ -325,7 +320,7 @@ export const extCompanyGetPostCreationByBusiness = (platformType, extDsId) => {
     console.log("inside api call")
     return axios.get(`${platformType}_post/datasource/posts/${extDsId}`);
 };
-export const getNotification = ()=>{
+export const getNotification = () => {
     return axios.get(`${import.meta.env.VITE_BASE_API_URL}/notification/user_notifications`)
 }
 
@@ -350,7 +345,7 @@ export const updatePost = (updatePost) => {
 
 export const updateTimePost = (platform, scheduledTime, postId) => {
     console.log("UPDATEDPOST: ", platform.toLowerCase())
-    return axios.patch(`/${platform.toLowerCase()}_post/updatetime/${postId}`, {"scheduled_time":scheduledTime});
+    return axios.patch(`/${platform.toLowerCase()}_post/updatetime/${postId}`, { "scheduled_time": scheduledTime });
     // return axios.get(`/ext-product/list`)   
 };
 
@@ -370,17 +365,17 @@ export const updateTimePost = (platform, scheduledTime, postId) => {
 
 // Mark multiple notifications as read
 export const markNotificationsAsRead = async (ids) => {
-  try {
-    const response = await axios.patch(
-      `${import.meta.env.VITE_BASE_API_URL}/notification/read`,
-      {
-        ids, // array of IDs
-        status: "read" // or "read", depending on your backend model
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Failed to mark notifications as read:", error);
-    throw error;
-  }
+    try {
+        const response = await axios.patch(
+            `${import.meta.env.VITE_BASE_API_URL}/notification/read`,
+            {
+                ids, // array of IDs
+                status: "read" // or "read", depending on your backend model
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Failed to mark notifications as read:", error);
+        throw error;
+    }
 };

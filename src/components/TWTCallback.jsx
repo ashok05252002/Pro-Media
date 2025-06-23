@@ -52,14 +52,14 @@ export default function TWTCallback() {
       code_verifier: code_verifier
     };
 
-    extCompanyAuthTwitter(inputData)
+    extCompanyAuthTwitter(inputData )
       .then((res) => {
         console.log("Access Token:", res.data.access_token);
         setMessage("Authentication successful!");
         // navigate("/reg_prdt_success");
-        if (window.opener) {
-          window.opener.postMessage({ type: 'twitter_auth', code: code }, window.location.origin);
-        }
+        // if (window.opener) {
+        //   window.opener.postMessage({ type: 'twitter_auth', code: code }, window.location.origin);
+        // }
       })
       .catch((err) => {
         console.error(err);

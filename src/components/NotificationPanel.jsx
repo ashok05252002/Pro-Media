@@ -65,7 +65,7 @@ const NotificationPanel = ({ onClose, notifications = [], onClick, onMarkAllAsRe
                 className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 ${notification.read ? 'opacity-70' : ''}`}
               >
                 <div className="flex items-start">
-                  {!notification.read && (
+                  {!notification.view_status && (
                     <div className="w-2 h-2 bg-theme-primary rounded-full mt-2 mr-2 flex-shrink-0"></div>
                   )}
                   <div className={notification.read ? 'ml-4' : ''}>
