@@ -90,6 +90,7 @@ const AddBusinessPage = () => {
   };
 
   const handleSavePlatformLink = async (platformId, data) => {
+    alert('sasa');
     const platformName = socialPlatforms.find(p => p.id === platformId)?.name.toLowerCase() || platformId;
     const defaultDisplayLink = data.productPageUrl || (data.pageName ? `https://${platformName}.com/${data.pageName}` : '');
 
@@ -329,9 +330,9 @@ const AddBusinessPage = () => {
                     className="w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md dark:bg-gray-700"
                   >
                     <option value="">-- Select a Company -- ${productList.length}</option>
-                    {productList.map(company => (
+                    {/* {productList?.map(company => (
                       <option key={company?.id} value={company?.id}>{company?.product_name}</option>
-                    ))}
+                    ))} */}
                   </select>
                   <ChevronDown className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                 </div>
@@ -339,6 +340,9 @@ const AddBusinessPage = () => {
               {selectedCompanyId && renderPlatformList()}
             </div>
           )}
+
+          <button onClick={(data) => handleSavePlatformLink('7378', {})}
+          >click</button>
 
           {businessType === 'new' && (
             <div>

@@ -79,16 +79,16 @@ export const loginWithSocial = async (type, { pagename, producturl, productid })
                 `?client_id=${import.meta.env.VITE_REACT_APP_FB_CLIENT_ID}` +
                 `&redirect_uri=${encodeURIComponent(`${window.location.origin}/auth/facebook/callback`)}` +
                 `&response_type=code` +
-                `&scope=${encodeURIComponent('email,public_profile,pages_show_list,pages_read_engagement,pages_manage_metadata,instagram_basic,instagram_manage_insights')}`;
+                `&scope=${encodeURIComponent('email', 'public_profile', 'pages_show_list',  'pages_read_engagement', 'pages_manage_metadata', 'pages_manage_posts',  'pages_read_user_content', 'pages_manage_engagement', 'pages_manage_ads', 'business_management',)}`;
             break;
         }
-     
+
         case 'instagram': {
             authUrl = `https://www.facebook.com/v18.0/dialog/oauth` +
                 `?client_id=${import.meta.env.VITE_REACT_APP_FB_CLIENT_ID}` +
                 `&redirect_uri=${encodeURIComponent(`${window.location.origin}/auth/instagram/callback`)}` +
                 `&response_type=code` +
-                `&scope=${encodeURIComponent('instagram_basic,instagram_manage_insights,instagram_manage_comments,pages_show_list,pages_read_engagement,pages_read_user_content')}`;
+                `&scope=${encodeURIComponent( 'instagram_basic','instagram_manage_insights','instagram_manage_comments','pages_show_list','pages_read_engagement','pages_read_user_content', 'instagram_content_publish', 'instagram_manage_messages', 'business_management')}`;
             break;
         }
         case 'youtube': {
@@ -98,12 +98,15 @@ export const loginWithSocial = async (type, { pagename, producturl, productid })
                 `response_type=code&` +
                 `scope=https://www.googleapis.com/auth/youtube.force-ssl&` +
                 `access_type=offline&` +
-                `prompt=consent`;
+                `prompt=consent` ;
             break;
         }
         default:
             throw new Error(`Unsupported social login type: ${type}`);
     }
+
+    console.log(authUrl);
+
 
     const popup = await openPopup(authUrl, `${type} Login`, 600, 600);
     console.log(popup);
@@ -112,7 +115,7 @@ export const loginWithSocial = async (type, { pagename, producturl, productid })
     return new Promise((resolve, reject) => {
         const listener = (event) => {
             if (event.origin !== window.location.origin) return;
-            if (event.data?.type === 'linkedin_auth' || event.data?.type === 'twitter_auth' || event.data?.type === 'facebook_auth' ||event.data?.type === 'instagram_auth' ||  event.data?.type === 'youtube_auth') {
+            if (event.data?.type === 'linkedin_auth' || event.data?.type === 'twitter_auth' || event.data?.type === 'facebook_auth' || event.data?.type === 'instagram_auth' || event.data?.type === 'youtube_auth') {
                 window.removeEventListener('message', listener);
 
                 if (event.data.code) {
