@@ -109,7 +109,10 @@ const AddBusinessPage = () => {
       socialCode = code;
     } else {
       try {
-        const response = await extCompanyAuthTwitternew();
+        const response = await extCompanyAuthTwitternew({
+          producturl: data.productPageUrl,
+          productid: selectedCompanyId
+        });
         console.log('====================================');
         console.log(response);
         console.log('====================================');

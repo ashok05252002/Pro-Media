@@ -171,8 +171,8 @@ export const extCompanyAuthTwitter = (inputData) => {
     },
     )
 };
-export const extCompanyAuthTwitternew = (inputData) => {
-    return axios.get(`/ext-product/login/twitter?redirect_url=${import.meta.env.VITE_REACT_APP_TWITTER_REDIRECT_URI}`, { "data_source_id": 8487 })
+export const extCompanyAuthTwitternew = ( { producturl, productid }) => {
+    return axios.get(`/ext-product/login/twitter?redirect_url=${import.meta.env.VITE_REACT_APP_TWITTER_REDIRECT_URI}&product_url=${producturl}&product_id=${productid}`, { "data_source_id": 8487 })
 };
 
 export const extCompanyAuthLinkedin = (inputData) => {
