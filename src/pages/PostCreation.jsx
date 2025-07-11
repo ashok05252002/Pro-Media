@@ -5,6 +5,9 @@ import VideoUploadModal from '../components/VideoUploadModal';
 import MediaUploadModal from '../components/MediaUploadModal';
 import { useTheme, themeOptions } from '../contexts/ThemeContext';
 
+//platform specific max char 
+import MaxChar from '../components/MaxChar';
+
 import axios from 'axios';
 // import { useNotification } from '../contexts/NotificationContext';
 import Tooltip from '../components/Tooltip';
@@ -73,6 +76,9 @@ const PostCreation = () => {
   const [selectedVideoPreviewUrl, setSelectedVideoPreviewUrl] = useState(null);
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
+
+  //max char length
+  const [maxChar, setMaxChar] = useState(0);
 
   // Modals and UI
   const [showMediaUploadModal, setShowMediaUploadModal] = useState(false);
@@ -470,12 +476,31 @@ const PostCreation = () => {
           {isOnlyYouTubeSelected && (
             <div className="mb-4">
               <label htmlFor="youtubeTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title (for YouTube) <span className="text-red-500">*</span></label>
-              <div className="relative"><TypeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" /><input type="text" id="youtubeTitle" value={youtubeTitle} onChange={(e) => setYoutubeTitle(e.target.value)} placeholder="Enter YouTube video title" className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700" required={isOnlyYouTubeSelected} /></div>
-            </div>
-          )}
+              <div className="relative"><TypeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" /><input type="text" id="youtubeTitle" maxLength={100} value={youtubeTitle} onChange={(e) => setYoutubeTitle(e.target.value)} placeholder="Enter YouTube video title" className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700" required={isOnlyYouTubeSelected} /></div>
+              <p className="text-xs text-right text-gray-500 mt-1">
+                {youtubeTitle.length}/{"100"} chars
+              </p>
+            </div>)}
           <div className="mb-4">
             <label htmlFor="postContent" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{isOnlyYouTubeSelected ? 'Description (for YouTube)' : 'Post Content'}</label>
-            <textarea id="postContent" className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary min-h-[150px] dark:bg-gray-700" placeholder={isOnlyYouTubeSelected ? "Describe your video..." : "What would you like to share today?"} value={postContent} onChange={(e) => setPostContent(e.target.value)}></textarea>
+            <textarea
+              id="postContent"
+              className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary min-h-[150px] dark:bg-gray-700"
+              placeholder={isOnlyYouTubeSelected ? "Describe your video..." : "What would you like to share today?"}
+              value={postContent}
+              maxLength={maxChar || undefined}
+              onChange={(e) => setPostContent(e.target.value)}
+            />
+
+            <p className="text-xs text-right text-gray-500 mt-1">
+              {postContent.length}/{maxChar || "∞"} chars
+              {maxChar ? (
+                !isOnlyYouTubeSelected && <>
+                  {" | Min char limit across platforms: "}
+                  <span className="font-medium text-blue-600">{maxChar}</span>
+                </>
+              ) : null}
+            </p>
           </div>
           {selectedMediaPreviewUrl && isAnyNonYouTubeSelected && (
             <div className="mb-4 relative">
@@ -551,6 +576,10 @@ const PostCreation = () => {
       {showPostPreviewModal && (<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"><div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg"><div className="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center"><h3 className="text-lg font-medium">Post Preview</h3><button onClick={() => setShowPostPreviewModal(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"><X className="w-5 h-5" /></button></div><div className="p-5"><div className="mb-6"><h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your post will appear like this:</h4><div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-900">{isOnlyYouTubeSelected && youtubeTitle && <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{youtubeTitle}</h4>}<p className="text-gray-800 dark:text-gray-200 mb-3 break-words">{postContent}</p>{selectedMediaPreviewUrl && isAnyNonYouTubeSelected && (selectedMediaType === 'image' ? <img src={selectedMediaPreviewUrl} alt="Preview" className="w-full max-h-60 object-contain rounded-md mb-2 bg-gray-100 dark:bg-gray-700" /> : selectedMediaType === 'video' ? <video controls src={selectedMediaPreviewUrl} className="w-full max-h-60 rounded-md bg-black">Your browser does not support video.</video> : selectedMediaType === 'gif' ? <img src={selectedMediaPreviewUrl} alt="GIF Preview" className="w-full max-h-60 object-contain rounded-md mb-2 bg-gray-100 dark:bg-gray-700" /> : null)}{selectedVideoPreviewUrl && isOnlyYouTubeSelected && (<video controls src={selectedVideoPreviewUrl} className="w-full max-h-60 rounded-md bg-black">Your browser does not support the video tag.</video>)}</div></div><div className="mb-4"><h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Will be posted to:</h4><div className="flex flex-wrap gap-2">{platforms.map((platform) => (selectedPlatforms[platform.id] && (<div key={platform.id} className="flex items-center gap-1 px-2 py-1 rounded-full text-xs" style={{ backgroundColor: `${platform.color}20`, color: platform.color }}>{React.cloneElement(platform.icon, { size: 14 })}<span>{platform.name}</span></div>)))}</div></div><div className="flex justify-end gap-3 mt-6"><button onClick={() => setShowPostPreviewModal(false)} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button><button onClick={handlePublishNow} disabled={isLoadingPublish || (isOnlyYouTubeSelected && !youtubeTitle.trim())} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center justify-center gap-1 disabled:opacity-50">{isLoadingPublish ? <><Loader2 className="w-4 h-4 animate-spin mr-1" />Publishing...</> : <><Check className="w-4 h-4" />Publish Now</>}</button></div></div></div></div>)}
       <ConfirmationModal isOpen={showDiscardConfirmModal} onClose={() => setShowDiscardConfirmModal(false)} onConfirm={resetPostState} title="Discard Post" message="Are you sure you want to discard this post? All content and selections will be lost." confirmText="Discard" />
       <ConfirmationModal isOpen={showSaveDraftConfirmModal} onClose={() => setShowSaveDraftConfirmModal(false)} onConfirm={handleSaveDraft} title="Save as Draft" message="Are you sure you want to save this post as a draft?" confirmText={isLoadingDraft ? 'Saving...' : 'Save Draft'} confirmButtonClass="bg-theme-secondary hover:bg-opacity-90 text-white" isDestructive={false} icon={<Save className="h-6 w-6 text-theme-secondary" />} disabled={isLoadingDraft} />
+      <MaxChar
+        selectedPlatforms={selectedPlatforms}
+        onLimitChange={setMaxChar}
+      />
     </div>
   );
 };

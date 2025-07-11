@@ -1,4 +1,5 @@
 import React, { useState, useEffect, use } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Building, PlusCircle, Link as LinkIcon, Facebook, Instagram, Twitter, Linkedin, Youtube, ChevronDown, CheckCircle, ExternalLink, ArrowRight } from 'lucide-react';
 import LinkPlatformModal from '../components/LinkPlatformModal';
 import { loginWithSocial } from '../services/SocialAuth';
@@ -22,6 +23,9 @@ const AddBusinessPage = () => {
   const [businessNameConfirmed, setBusinessNameConfirmed] = useState(false);
   const [cbLoader, setCbLoader] = useState(false);
   const [productDetail, setProductDetail] = useState({})
+
+  const location = useLocation();
+  const { businessId, platformToEdit } = location?.state || {};
 
   const initialPlatformState = socialPlatforms.reduce((acc, platform) => {
     acc[platform.id] = { pageName: '', productPageUrl: '', isLinked: false, displayLink: '' };
@@ -49,6 +53,23 @@ const AddBusinessPage = () => {
     getProductList();
   }, []);
 
+  // Auto-select business if redirected from MyBusiness.jsx
+  useEffect(() => {
+    if (businessId && productList.length > 0) {
+      setBusinessType('existing');
+      setSelectedCompanyId(String(businessId));
+    }
+  }, [businessId, productList]);
+
+  // Auto-open link modal after business is selected
+  useEffect(() => {
+    if (businessType === 'existing' && selectedCompanyId && platformToEdit && productList.length > 0) {
+      setTimeout(() => {
+        handleLinkPlatform(platformToEdit);
+      }, 300);
+    }
+  }, [businessType, selectedCompanyId, platformToEdit, productList]);
+
   useEffect(() => {
     if (businessType === 'existing' && selectedCompanyId) {
       const company = productList.find(c => c?.id == selectedCompanyId);
@@ -73,10 +94,10 @@ const AddBusinessPage = () => {
       }
     } else if (businessType === 'new') {
       setPlatformDetails(initialPlatformState);
-      console.log(`22---->>>${ businessNameConfirmed}`);
+      console.log(`22---->>>${businessNameConfirmed}`);
     } else {
       setBusinessNameConfirmed(false);
-      console.log(`333---->>>${ businessNameConfirmed}`);
+      console.log(`333---->>>${businessNameConfirmed}`);
       setNewBusinessName('');
       setSelectedCompanyId('');
       setPlatformDetails(initialPlatformState);
@@ -141,7 +162,7 @@ const AddBusinessPage = () => {
 
   const handleConfirmBusinessName = async () => {
     console.log("handleConfirmBusinessName");
-    if(cbLoader) return;
+    if (cbLoader) return;
     if (newBusinessName.trim() === '') {
       alert('Please enter a business name.');
       return;
@@ -153,7 +174,7 @@ const AddBusinessPage = () => {
       console.log("Business added successfully", result);
       if (result.status === 201) {
         setProductDetail(result.data ?? {});
-        
+
         setSelectedCompanyId(result?.data?.product_id)
         toast.success('Business added successfully!');
         setBusinessNameConfirmed(true);
@@ -161,7 +182,7 @@ const AddBusinessPage = () => {
     } catch (error) {
       console.error("Add business error:", error);
     } finally {
-      console.log(`11---->>>${ businessNameConfirmed}`);
+      console.log(`11---->>>${businessNameConfirmed}`);
       setCbLoader(false);
     }
   };
@@ -284,7 +305,10 @@ const AddBusinessPage = () => {
             <div>
               <h2 className="text-2xl font-semibold mb-4">Connect Existing Business</h2>
               <div className="mb-6">
-                <label htmlFor="companySelect" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label
+                  htmlFor="companySelect"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
                   Select Company
                 </label>
                 <div className="relative">
@@ -293,26 +317,28 @@ const AddBusinessPage = () => {
                     value={selectedCompanyId}
                     onChange={(e) => {
                       console.log(e.target.value);
-
-                      setSelectedCompanyId(e.target.value)
+                      setSelectedCompanyId(e.target.value);
                     }}
-                    className="w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md dark:bg-gray-700"
+                    className="w-full pl-3 pr-10 py-2 text-base border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-theme-primary focus:border-theme-primary sm:text-sm rounded-md dark:bg-gray-700 appearance-none" // 👈 added 'appearance-none'
                   >
-                    <option value="">-- Select a Company -- ${productList.length}</option>
-                    {productList.map(company => (
-                      <option key={company?.id} value={company?.id}>{company?.product_name}</option>
+                    <option value="">-- Select a Company -- ({productList.length})</option>
+                    {productList.map((company) => (
+                      <option key={company?.id} value={company?.id}>
+                        {company?.product_name}
+                      </option>
                     ))}
                   </select>
                   <ChevronDown className="w-5 h-5 text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" />
                 </div>
               </div>
+
               {selectedCompanyId && renderPlatformList()}
             </div>
           )}
 
           {businessType === 'new' && (
             <div>
-              <h2 className="text-2xl font-semibold mb-4">Add New Business{businessNameConfirmed }</h2>
+              <h2 className="text-2xl font-semibold mb-4">Add New Business{businessNameConfirmed}</h2>
               {businessNameConfirmed == false ? (
                 <>
                   <div className="mb-6">
@@ -332,7 +358,7 @@ const AddBusinessPage = () => {
                     onClick={handleConfirmBusinessName}
                     disabled={!newBusinessName.trim()}
                     className="w-full py-2.5 px-4 bg-theme-secondary hover:bg-opacity-90 text-white font-semibold rounded-lg shadow-md transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                  > 
+                  >
                     {cbLoader ? (
                       <div className="button_loader36"></div>
                     ) : (
@@ -341,15 +367,15 @@ const AddBusinessPage = () => {
                   </button>
                 </>
               ) :
-               (
-                <>
-                  <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Business Name:</p>
-                    <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">{newBusinessName}</p>
-                  </div>
-                  {renderPlatformList()}
-                </>
-              )}
+                (
+                  <>
+                    <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Business Name:</p>
+                      <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">{newBusinessName}</p>
+                    </div>
+                    {renderPlatformList()}
+                  </>
+                )}
             </div>
           )}
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState } from "react";
 import {
   Calendar,
   Clock,
@@ -9,10 +9,10 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import { extCompanyEditedCreateddPost } from "../../API/api";
 import { toast } from "react-toastify";
- 
+import TimeDisplay from "../../components/TimeDisplay"; // <-- import your TimeDisplay component
 
 const EditPostModal = ({ post, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -26,12 +26,6 @@ const EditPostModal = ({ post, onClose, onSave }) => {
     status: post?.status || "draft",
     repeat_interval: post?.repeat_interval || "weekly",
   });
-
-  const formatDateForInput = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -88,18 +82,17 @@ const EditPostModal = ({ post, onClose, onSave }) => {
       const token = localStorage.getItem("authToken")
 
 
-        const response = await extCompanyEditedCreateddPost(platform.name, post.id, payload);
-        console.log(response);
-       
-        if(response){
-            toast.success(response.message ?? '');
-            onSave(response);
-            onClose();
-        }
-        else if(!response.ok) {
-            throw new Error(`HTTP error: ${response.status}`);
-        }
- 
+      const response = await extCompanyEditedCreateddPost(platform.name, post.id, payload);
+      console.log(response);
+
+      if (response) {
+        toast.success(response.message ?? '');
+        onSave(response);
+        onClose();
+      }
+      else if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+      }
     } catch (error) {
       console.error("Error updating post:", error);
       alert("Failed to update post. Please try again.");
@@ -171,6 +164,13 @@ const EditPostModal = ({ post, onClose, onSave }) => {
               onChange={handleChange}
               className="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             />
+            {/* Show preview of formatted time */}
+            {formData.scheduled_time && (
+              <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Preview:
+                <TimeDisplay timestamp={formData.scheduled_time} />
+              </div>
+            )}
           </div>
 
           <div className="mb-4">

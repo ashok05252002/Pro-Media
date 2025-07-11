@@ -74,9 +74,8 @@ const InputField = ({ id, label, type, value, onChange, error, icon, required = 
         onChange={onChange}
         placeholder={placeholder}
         maxLength={maxLength}
-        className={`w-full ${icon ? 'pl-10' : 'px-3'} ${showPasswordToggle ? 'pr-10' : 'pr-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${
-          error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
-        }`}
+        className={`w-full ${icon ? 'pl-10' : 'px-3'} ${showPasswordToggle ? 'pr-10' : 'pr-3'} py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 sm:text-sm dark:bg-gray-700 dark:text-white ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-theme-primary focus:border-theme-primary'
+          }`}
       />
       {showPasswordToggle && (
         <button
@@ -133,7 +132,7 @@ const RegisterPage = () => {
   const [codeVerified, setCodeVerified] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
   const [canResendCode, setCanResendCode] = useState(false);
-   const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { isDarkMode } = useTheme();
@@ -164,23 +163,53 @@ const RegisterPage = () => {
 
   const validateStep1 = () => {
     const newErrors = {};
-    if (!formData.companyName.trim()) newErrors.companyName = 'Company name is required.';
-    if (!formData.companyType) newErrors.companyType = 'Company type is required.';
-    if (!formData.employeeSize) newErrors.employeeSize = 'Employee size is required.';
-    if (!formData.companyEmail.trim()) newErrors.companyEmail = 'Company email is required.';
-    else if (!/\S+@\S+\.\S+/.test(formData.companyEmail)) newErrors.companyEmail = 'Invalid email format.';
+    const nameRegex = /^[A-Za-z0-9\s\.,'-]{1,}$/; // allows letters, numbers, common punctuation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!formData.companyName.trim()) {
+      newErrors.companyName = 'Company name is required.';
+    }
+    else if (!nameRegex.test(formData.companyName.trim())) {
+      newErrors.companyName = 'Company name contains invalid characters.';
+    }
+    if (!formData.companyType || formData.companyType.trim() === '') {
+      newErrors.companyType = 'Company type is required.';
+    }
+    if (!formData.employeeSize || formData.employeeSize.trim() === '') {
+      newErrors.employeeSize = 'Employee size is required.';
+    }
+    if (!formData.companyEmail.trim()) {
+      newErrors.companyEmail = 'Company email is required.';
+    } else if (!emailRegex.test(formData.companyEmail)) {
+      newErrors.companyEmail = 'Invalid email format.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateStep2 = () => {
     const newErrors = {};
-    if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required.';
-    if (!formData.userEmail.trim()) newErrors.userEmail = 'User email is required.';
-    else if (!/\S+@\S+\.\S+/.test(formData.userEmail)) newErrors.userEmail = 'Invalid email format.';
-    if (!formData.password) newErrors.password = 'Password is required.';
-    else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters.';
-    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match.';
+    const nameRegex = /^[A-Za-z\s]{2,}$/; // Only letters and spaces, min 2 chars
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Full name is required.';
+    } else if (!nameRegex.test(formData.fullName.trim())) {
+      newErrors.fullName = 'Full name must contain only letters and spaces.';
+    }
+    if (!formData.userEmail.trim()) {
+      newErrors.userEmail = 'User email is required.';
+    } else if (!emailRegex.test(formData.userEmail.trim())) {
+      newErrors.userEmail = 'Invalid email format.';
+    }
+    if (!formData.password) {
+      newErrors.password = 'Password is required.';
+    } else if (!passwordRegex.test(formData.password)) {
+      newErrors.password =
+        'Password must be at least 8 characters, including uppercase, lowercase, number, and special character.';
+    }
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match.';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -211,7 +240,7 @@ const RegisterPage = () => {
         if (response.status === (200 || 201)) {
           // navigate("/")
           setCodeVerified(true);
-          setErrors({}); 
+          setErrors({});
         } else if (response.status === 401) {
           setCanResendCode(false);
           setErrors({ message: 'Invalid verification code. Pls Resend Code' });
@@ -297,7 +326,7 @@ const RegisterPage = () => {
           }
 
           console.log();
-          
+
 
         }).catch(error => {
           setErrors({ message: error?.response?.data?.error ?? error.message })
@@ -351,14 +380,14 @@ const RegisterPage = () => {
 
           {currentStep === 2 && (
             <form className="space-y-6" noValidate>
-              <InputField id="fullName" label="Full Name" type="text" value={formData.fullName} onChange={handleChange} error={errors.fullName} icon={<UserCircle />} placeholder="John Doe"/>
-              <InputField id="userEmail" label="Your Email" type="email" value={formData.userEmail} onChange={handleChange} error={errors.userEmail} icon={<Mail />} placeholder="you@example.com"/>
+              <InputField id="fullName" label="Full Name" type="text" value={formData.fullName} onChange={handleChange} error={errors.fullName} icon={<UserCircle />} placeholder="John Doe" />
+              <InputField id="userEmail" label="Your Email" type="email" value={formData.userEmail} onChange={handleChange} error={errors.userEmail} icon={<Mail />} placeholder="you@example.com" />
               <InputField id="password" label="Create Password " type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} error={errors.password} icon={<Lock />} placeholder="Min. 8 characters" showPasswordToggle={true}
                 onPasswordToggle={() => setShowPassword(!showPassword)}
-                isPasswordVisible={showPassword}/>
-              <InputField id="confirmPassword" label="Confirm Password" type={showConfirmPassword ? "text" : "password"}  value={formData.confirmPassword} onChange={handleChange} error={errors.confirmPassword} icon={<Lock />} placeholder="Re-enter your password" showPasswordToggle={true}
+                isPasswordVisible={showPassword} />
+              <InputField id="confirmPassword" label="Confirm Password" type={showConfirmPassword ? "text" : "password"} value={formData.confirmPassword} onChange={handleChange} error={errors.confirmPassword} icon={<Lock />} placeholder="Re-enter your password" showPasswordToggle={true}
                 onPasswordToggle={() => setShowConfirmPassword(!showConfirmPassword)}
-                isPasswordVisible={showConfirmPassword}/>
+                isPasswordVisible={showConfirmPassword} />
             </form>
           )}
 
@@ -367,7 +396,7 @@ const RegisterPage = () => {
               {!codeVerified ? (
                 <div className="space-y-6">
                   <p className="text-center text-gray-600 dark:text-gray-400">
-                    A 6-digit verification code has been sent to {formData.userEmail}. Please enter it below. 
+                    A 6-digit verification code has been sent to {formData.userEmail}. Please enter it below.
                   </p>
                   <InputField
                     id="verificationCode"
@@ -447,13 +476,13 @@ const RegisterPage = () => {
             )}
           </div>
         </div>
-         {currentStep < 3 && (
-            <div className="mt-6 text-center text-sm">
-                Already have an account?{' '}
-                <Link to="/login" className="font-medium text-theme-primary hover:text-opacity-80">
-                    Sign In here
-                </Link>
-            </div>
+        {currentStep < 3 && (
+          <div className="mt-6 text-center text-sm">
+            Already have an account?{' '}
+            <Link to="/login" className="font-medium text-theme-primary hover:text-opacity-80">
+              Sign In here
+            </Link>
+          </div>
         )}
       </div>
     </div>

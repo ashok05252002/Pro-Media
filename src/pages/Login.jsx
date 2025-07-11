@@ -3,22 +3,27 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { extCompanyLogin, extCompanyUserRegResendOTP } from '../API/api';
+import { Moon, Sun } from 'lucide-react';
 
 const Login = () => {
   const [formData, setFormData] = useState({
     // email: "demo@gmail.com",
     // password: "DemoPassword",
 
-    email: "kdharini25@gmail.com",
-    password: "Password@123",
+    email: "kishooreravi29@gmail.com",
+    password: "Kishoore*29",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, toggleTheme } = useTheme();
   const requestSent = useRef(false);
 
+  // getting local system time and timezone
+  const now = new Date();
+  const time = now.toLocaleTimeString();
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
@@ -42,6 +47,8 @@ const Login = () => {
             localStorage.setItem("username", user.fullName);
             localStorage.setItem("userData", JSON.stringify(user));
             localStorage.setItem("authToken", token);
+            localStorage.setItem('timezone', timeZone);
+            localStorage.setItem('timeformat', 12);
 
             console.log("Login successful");
             navigate("/dashboard");
@@ -107,16 +114,15 @@ const Login = () => {
 
   return (
     <div
-      className={`bg-gray-100`}>
+      className={`bg-gray-100 dark:bg-gray-900`}>
       <div className="min-h-screen flex items-center justify-center  py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-b;ack">Welcome Back</h2>
-            <p className="mt-2 text-sm text-gray-900">Sign in to your social media management account</p>
+            <h2 className="mt-6 text-4xl font-extrabold tracking-tight text-black dark:text-white">Welcome Back</h2>
+            <p className="mt-2 text-sm text-black dark:text-gray-700">Sign in to your social media management account</p>
           </div>
 
-          <div className={`mt-8 bg-white/30 backdrop-blur-md py-10 px-6 shadow-2xl border border-orange-200 sm:rounded-3xl sm:px-12 transition-all duration-300 ${isDarkMode ? 'bg-gray-800/50 border-gray-700 text-white' : ''}`}>
-
+          <div className={`mt-8 bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10 py-10 px-6 shadow-2xl border sm:rounded-3xl sm:px-12 transition-all duration-300 ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white'}`}>
             {error && (
               <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md" role="alert">
                 <span className="block sm:inline">{error}</span>
@@ -126,7 +132,7 @@ const Login = () => {
             <form className="space-y-6" onSubmit={handleSubmit}>
               {/* Email */}
               <div>
-                <label htmlFor="email" className={`block text-sm font-semibold mb-1 ${isDarkMode ? 'text-gray-900' : 'text-gray-700'}`}>Email address</label>
+                <label htmlFor="email" className={`block text-sm font-semibold mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>Email address</label>
                 <input
                   id="email"
                   name="email"
@@ -141,7 +147,7 @@ const Login = () => {
 
               {/* Password */}
               <div>
-                <label htmlFor="password" className={`block text-sm font-semibold mb-1 ${isDarkMode ? 'text-gray-900' : 'text-gray-700'}`}>Password</label>
+                <label htmlFor="password" className={`block text-sm font-semibold mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>Password</label>
                 <div className="relative">
                   <input
                     id="password"
@@ -168,7 +174,7 @@ const Login = () => {
                     type="checkbox"
                     className="h-4 w-4 text-orange-500 focus:ring-orange-400 border-gray-300 rounded"
                   />
-                  <span className={`${isDarkMode ? 'text-gray-900' : 'text-gray-700'}`}>Remember me</span>
+                  <span className={`${isDarkMode ? 'text-gray-300' : 'text-gray-900'}`}>Remember me</span>
                 </label>
                 <Link to="/forgotpwd" className="text-orange-500 hover:underline">
                   Forgot password?
@@ -184,8 +190,6 @@ const Login = () => {
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </button>
 
-              <div className="w-full flex justify-center text-gray-800 text-sm">or</div>
-
               {/* Sign Up */}
               {/* <button
             type="button"
@@ -195,12 +199,6 @@ const Login = () => {
           >
             {isLoading ? 'Redirecting...' : 'Sign Up'}
           </button> */}
-              <div className="mt-6 text-center text-sm">
-                Don't have an account?{' '}
-                <Link to="/register" className="font-medium text-[#F97316] hover:text-[#F97316]/80">
-                  Register here
-                </Link>
-              </div>
             </form>
 
             {/* Social */}
@@ -229,6 +227,23 @@ const Login = () => {
                 </a>
               </div>
             </div>
+            <div className="mt-6 text-center text-sm">
+              Don't have an account?{' '}
+              <Link to="/register" className="font-medium text-[#F97316] hover:text-[#F97316]/80">
+                Register here
+              </Link>
+            </div>
+          </div>
+          <div
+            className="mt-7 text-center text-sm flex items-center justify-center gap-2 cursor-pointer hover:text-orange-500 transition-colors duration-300"
+            onClick={() => toggleTheme()}  // Make the whole div clickable
+          >
+            {isDarkMode ? (
+              <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            ) : (
+              <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            )}
+            <span>Switch to {isDarkMode ? 'Light' : 'Dark'} mode</span>
           </div>
         </div>
       </div>

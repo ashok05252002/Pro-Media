@@ -1,6 +1,4 @@
-
-
-import React, { useState, useEffect, useMemo } from "react";
+import React from "react";
 import {
     Calendar,
     Clock,
@@ -11,7 +9,7 @@ import {
     Trash2,
     X,
 } from "lucide-react";
-
+import TimeDisplay from "../../components/TimeDisplay"; // ✅ Import the TimeDisplay component
 
 const PostCardItem = ({ post, onEdit, onDelete }) => {
     const getPlatformInfo = (dataSourceId) => {
@@ -39,6 +37,7 @@ const PostCardItem = ({ post, onEdit, onDelete }) => {
         if (!dateString) return "Not scheduled";
         const date = new Date(dateString);
         const today = new Date();
+
         if (date.toDateString() === today.toDateString()) return "Today";
         if (
             date.toDateString() ===
@@ -52,61 +51,54 @@ const PostCardItem = ({ post, onEdit, onDelete }) => {
         });
     };
 
-    const formatTime = (dateString) => {
-        if (!dateString) return "";
-        const date = new Date(dateString);
-        return date.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-        });
-    };
-
     const platformInfo = getPlatformInfo(post.data_source_id);
     const statusColor = getStatusColor(post.status);
+
     return (
-        <div key={post.id || idx} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4" >
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
             <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${platformInfo.color}`} >
-                        <span className="text-white font-bold">
-                            {platformInfo.icon}
-                        </span>
+                    <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${platformInfo.color}`}
+                    >
+                        <span className="text-white font-bold">{platformInfo.icon}</span>
                     </div>
                     <div>
-                        <h3 className="font-medium">
-                            {post.post_title}
-                        </h3>
+                        <h3 className="font-medium">{post.post_title}</h3>
                         <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-1">
                             <Calendar className="w-3 h-3 mr-1" />
                             <span>{formatDate(post.scheduled_time)}</span>
                             {post.scheduled_time && (
                                 <>
                                     <Clock className="w-3 h-3 ml-3 mr-1" />
-                                    <span>{formatTime(post.scheduled_time)}</span>
+                                    {/* ✅ Use TimeDisplay component */}
+                                    <TimeDisplay timestamp={post.scheduled_time} />
                                 </>
                             )}
                         </div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 text-xs rounded-full ${statusColor}`} >
-                        {post.status.charAt(0).toUpperCase() +
-                            post.status.slice(1)}
+                    <span className={`px-2 py-1 text-xs rounded-full ${statusColor}`}>
+                        {post.status.charAt(0).toUpperCase() + post.status.slice(1)}
                     </span>
                     <button
                         onClick={() => onEdit(post)}
                         className="text-gray-500 hover:text-blue-600"
-                        title="Edit" >
+                        title="Edit"
+                    >
                         <Pencil className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => onDelete(post)}
                         className="text-gray-500 hover:text-red-600"
-                        title="Delete" >
+                        title="Delete"
+                    >
                         <Trash2 className="w-4 h-4" />
                     </button>
                 </div>
             </div>
+
             <div className="mt-3 text-sm text-gray-700 dark:text-gray-300">
                 {post.description}
             </div>
@@ -120,9 +112,7 @@ const PostCardItem = ({ post, onEdit, onDelete }) => {
                 </div>
             )}
         </div>
-    )
-}
-
+    );
+};
 
 export default PostCardItem;
-
