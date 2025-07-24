@@ -1,72 +1,175 @@
-import React, {useEffect, useState} from 'react';
-import { Globe } from 'lucide-react';
-import { Plus, BarChart2, TrendingUp, Users, Calendar, ArrowUp, ArrowDown, Briefcase, FileEdit, Calendar as CalendarIconLucide,  BarChart3 as AnalyticsIcon } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
-import { useNavigate, Link } from 'react-router-dom';
-import { extCompanyProductData } from '../API/api';
+import React, { useState, useMemo } from 'react';
+import { BarChart2, TrendingUp, Users, Calendar as CalendarIconLucide, ArrowUp, ArrowDown, Youtube, Briefcase, FileEdit, BarChart3 as AnalyticsIcon, Globe, Zap, Newspaper, AlertTriangle, Instagram, LayoutList, MessageSquare, Rocket, Lightbulb, Facebook, Settings } from 'lucide-react';
+import { useTheme, themeOptions } from '../contexts/ThemeContext';
+import { BarChart as RechartsBarChartComponent, Bar as RechartsBar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useNavigate } from 'react-router-dom';
+import GettingStartedCard from '../components/dashboard/GettingStartedCard';
+import TipsCard from '../components/dashboard/TipsCard';
+import CalendarViewPage from './CalendarViewPage';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
-const StatCard = ({ title, value, change, icon, color }) => {
-  const isPositive = !change.includes('-');
-  
+// --- MOCK DATA ---
+const mockBusinessData = [
+  { id: 'biz1', name: 'TechCorp Solutions' },
+  { id: 'biz2', name: 'Innovate Hub' },
+  { id: 'biz3', name: 'GreenLeaf Organics' },
+];
+
+const mockDashboardDataByBusiness = {
+  biz1: {
+    stats: [
+      { title: "Total Posts", value: "248", change: "+12%", icon: <FileEdit /> },
+      { title: "Engagement Rate", value: "5.2%", change: "+0.8%", icon: <TrendingUp /> },
+      { title: "Scheduled Posts", value: "12", change: "Next: 2h", icon: <CalendarIconLucide /> },
+      { title: "New Followers", value: "1.2K", change: "-3%", icon: <Users /> }
+    ],
+    topPost: {
+      platform: 'Facebook',
+      icon: <Facebook size={16} style={{color: themeOptions.colors.blue.primary || '#4267B2'}}/>,
+      title: 'Our new AI-powered analytics is live!',
+      engagement: '1.8K Likes, 245 Comments',
+      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=60',
+    },
+    socialBeats: [
+      { type: 'tip', icon: <Zap size={18} className="text-yellow-500"/>, text: 'Tip for TechCorp: Share behind-the-scenes content to boost engagement.' },
+      { type: 'news', icon: <Newspaper size={18} className="text-blue-500"/>, text: 'News: LinkedIn algorithm now favors expert content.' },
+    ],
+    audienceGrowthData: [
+      { month: 'Jan', facebook: 2300, instagram: 2800, twitter: 1750, linkedin: 1200, youtube: 2080 },
+      { month: 'Feb', facebook: 2600, instagram: 3200, twitter: 2000, linkedin: 1400, youtube: 2360 },
+      { month: 'Mar', facebook: 2900, instagram: 3600, twitter: 2250, linkedin: 1600, youtube: 2640 },
+    ]
+  },
+  biz2: {
+    stats: [
+      { title: "Total Posts", value: "150", change: "+5%", icon: <FileEdit /> },
+      { title: "Engagement Rate", value: "8.9%", change: "+1.2%", icon: <TrendingUp /> },
+      { title: "Scheduled Posts", value: "8", change: "Next: 1d", icon: <CalendarIconLucide /> },
+      { title: "New Followers", value: "2.1K", change: "+8%", icon: <Users /> }
+    ],
+    topPost: {
+      platform: 'Instagram',
+      icon: <Instagram size={16} style={{color: themeOptions.colors.pink.primary || '#E1306C'}}/>,
+      title: 'Innovate Hub\'s Design Sprint was a huge success!',
+      engagement: '3.1K Likes, 450 Comments',
+      image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=60',
+    },
+    socialBeats: [
+      { type: 'tip', icon: <Zap size={18} className="text-yellow-500"/>, text: 'Tip for Innovate Hub: Use Instagram Reels to showcase your creative process.' },
+      { type: 'alert', icon: <AlertTriangle size={18} className="text-red-500"/>, text: 'Alert: Check your ad spend, it seems higher than usual.' },
+    ],
+    audienceGrowthData: [
+      { month: 'Jan', facebook: 1100, instagram: 4200, twitter: 900, linkedin: 2200, youtube: 1500 },
+      { month: 'Feb', facebook: 1200, instagram: 4800, twitter: 1000, linkedin: 2500, youtube: 1700 },
+      { month: 'Mar', facebook: 1300, instagram: 5500, twitter: 1100, linkedin: 2800, youtube: 1900 },
+    ]
+  },
+  biz3: {
+    stats: [
+      { title: "Total Posts", value: "98", change: "+20%", icon: <FileEdit /> },
+      { title: "Engagement Rate", value: "4.1%", change: "-0.5%", icon: <TrendingUp /> },
+      { title: "Scheduled Posts", value: "25", change: "Next: 4h", icon: <CalendarIconLucide /> },
+      { title: "New Followers", value: "800", change: "+15%", icon: <Users /> }
+    ],
+    topPost: {
+      platform: 'YouTube',
+      icon: <Youtube size={16} style={{color: '#FF0000'}}/>,
+      title: 'Our organic farming journey - A documentary.',
+      engagement: '5.5K Views, 600 Likes',
+      image: 'https://images.unsplash.com/photo-1597362925123-516541354213?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=60',
+    },
+    socialBeats: [
+      { type: 'tip', icon: <Zap size={18} className="text-yellow-500"/>, text: 'Tip for GreenLeaf: Share user-generated content to build community.' },
+      { type: 'news', icon: <Newspaper size={18} className="text-blue-500"/>, text: 'News: "Organic" is a top trending keyword on Pinterest.' },
+    ],
+    audienceGrowthData: [
+      { month: 'Jan', facebook: 3000, instagram: 1500, twitter: 500, linkedin: 300, youtube: 4000 },
+      { month: 'Feb', facebook: 3200, instagram: 1700, twitter: 600, linkedin: 400, youtube: 4500 },
+      { month: 'Mar', facebook: 3500, instagram: 2000, twitter: 700, linkedin: 500, youtube: 5000 },
+    ]
+  }
+};
+// --- END MOCK DATA ---
+
+const StatCard = ({ title, value, change, icon, iconBgColor, iconColor }) => {
+  const isPositive = change && !change.includes('-');
+
   return (
-    <div className={`bg-gradient-to-br ${color} p-6 rounded-lg shadow-lg`}>
+    <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-lg h-full border border-gray-200 dark:border-gray-700 flex flex-col justify-between hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-0.5">
       <div className="flex justify-between items-start">
-        <div>
-          <p className="text-sm font-medium text-white/80 mb-1">{title}</p>
-          <h3 className="text-3xl font-bold text-white">{value}</h3>
-          <p className={`text-sm mt-2 flex items-center ${isPositive ? 'text-green-200' : 'text-red-200'}`}>
-            {isPositive ? <ArrowUp className="w-3 h-3 mr-1" /> : <ArrowDown className="w-3 h-3 mr-1" />}
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <div className={`p-2.5 rounded-lg`} style={{backgroundColor: `${iconBgColor}20`}}>
+          {React.cloneElement(icon, { className: "w-5 h-5", style: {color: iconBgColor || '#6b7280'} })}
+        </div>
+      </div>
+      <div>
+        <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mt-2">{value}</h3>
+        {change && (
+          <p className={`text-xs mt-1 flex items-center ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+            {isPositive ? <ArrowUp className="w-3 h-3 mr-0.5" /> : <ArrowDown className="w-3 h-3 mr-0.5" />}
             {change}
           </p>
-        </div>
-        <div className={`p-3 rounded-full bg-white/20`}>
-          {icon}
-        </div>
+        )}
       </div>
     </div>
   );
 };
 
-const ActivityCard = ({ title, activities }) => {
+
+
+const AudienceGrowthCard = ({ data }) => {
+  const { isDarkMode } = useTheme();
+  const [selectedPlatforms, setSelectedPlatforms] = useState({
+    facebook: true, instagram: true, twitter: true, linkedin: true, youtube: true
+  });
+
+  const togglePlatform = (platform) => {
+    setSelectedPlatforms(prev => ({ ...prev, [platform]: !prev[platform] }));
+  };
+
+  const platformStaticColors = {
+    facebook: themeOptions.colors.blue.primary || "#4267B2",
+    instagram: themeOptions.colors.pink.primary || "#E1306C",
+    twitter: "#1DA1F2",
+    linkedin: themeOptions.colors.blue.dark || "#0077B5",
+    youtube: "#FF0000"
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h3 className="text-lg font-medium mb-4">{title}</h3>
-      <div className="space-y-4">
-        {activities.map((activity, index) => (
-          <div key={index} className="flex items-start pb-4 border-b dark:border-gray-700 last:border-0 last:pb-0">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activity.bgColor} mr-3 flex-shrink-0`}>
-              <span className={`${activity.textColor} font-medium`}>{activity.icon}</span>
-            </div>
-            <div>
-              <p className="font-medium">{activity.title}</p>
-              <p className="text-sm text-secondary">{activity.time}</p>
-            </div>
-          </div>
+
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 h-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-2">
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Audience Growth</h3>
+      </div>
+      <div className="flex flex-wrap gap-2 mb-5">
+        {Object.entries(selectedPlatforms).map(([platform, isSelected]) => (
+          <button
+            key={platform} onClick={() => togglePlatform(platform)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium flex items-center transition-all duration-200 shadow-sm border
+                        ${isSelected ? `text-white border-transparent` : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+            style={{ backgroundColor: isSelected ? platformStaticColors[platform] : '' }}
+          >
+            <span className={`w-2 h-2 rounded-full mr-1.5 ${isSelected ? 'bg-white/70' : ''}`} style={!isSelected ? { backgroundColor: platformStaticColors[platform] } : {}}></span>
+            <span className="capitalize">{platform}</span>
+          </button>
         ))}
       </div>
-    </div>
-  );
-};
-
-const PerformanceCard = ({ title, channels }) => {
-  return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h3 className="text-lg font-medium mb-4">{title}</h3>
-      <div className="space-y-4">
-        {channels.map((channel, index) => (
-          <div key={index} className="flex justify-between items-center pb-4 border-b dark:border-gray-700 last:border-0 last:pb-0">
-            <div className="flex items-center">
-              <div className={`w-8 h-8 rounded-full ${channel.bgColor} flex items-center justify-center mr-3`}>
-                <span className={`${channel.textColor} text-sm font-bold`}>{channel.icon}</span>
-              </div>
-              <div className="font-medium">{channel.name}</div>
-            </div>
-            <div className="text-right">
-              <div className="font-medium">{channel.followers}</div>
-              <div className="text-sm text-green-500">{channel.growth}</div>
-            </div>
-          </div>
-        ))}
+      <div className="h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <RechartsBarChartComponent data={data} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#374151" : "#e5e7eb"} />
+            <XAxis dataKey="month" tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} />
+            <YAxis tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} />
+            <Tooltip contentStyle={{ backgroundColor: isDarkMode ? "#1f2937" : "#ffffff", border: `1px solid ${isDarkMode ? "#374151" : "#e5e7eb"}`, borderRadius: '0.5rem', color: isDarkMode ? "#f9fafb" : "#111827"}} />
+            <Legend wrapperStyle={{fontSize: "12px"}}/>
+            {selectedPlatforms.facebook && (<RechartsBar dataKey="facebook" name="Facebook" fill={platformStaticColors.facebook} radius={[4, 4, 0, 0]} />)}
+            {selectedPlatforms.instagram && (<RechartsBar dataKey="instagram" name="Instagram" fill={platformStaticColors.instagram} radius={[4, 4, 0, 0]} />)}
+            {selectedPlatforms.twitter && (<RechartsBar dataKey="twitter" name="Twitter" fill={platformStaticColors.twitter} radius={[4, 4, 0, 0]} />)}
+            {selectedPlatforms.linkedin && (<RechartsBar dataKey="linkedin" name="LinkedIn" fill={platformStaticColors.linkedin} radius={[4, 4, 0, 0]} />)}
+            {selectedPlatforms.youtube && (<RechartsBar dataKey="youtube" name="YouTube" fill={platformStaticColors.youtube} radius={[4, 4, 0, 0]} />)}
+          </RechartsBarChartComponent>
+        </ResponsiveContainer>
       </div>
     </div>
   );
@@ -81,11 +184,11 @@ const QuickActionsCard = () => {
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 w-1/3 rounded-lg shadow-lg">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg h-full"> {/* Changed here */}
       <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-100">Quick Actions</h3>
       <div className="grid grid-cols-2 gap-3 hover:text-white">
         {actions.map(action => (
-          <button 
+          <button
             key={action.name}
             onClick={() => navigate(action.path)}
             className={`flex flex-col items-center justify-center p-4 rounded-lg bg-gray-100 dark:bg-gray-700 ${action.color} text-gray-700 dark:text-gray-200 hover:text-white transition-all duration-200 group`}
@@ -98,186 +201,75 @@ const QuickActionsCard = () => {
     </div>
   );
 };
-
 const Dashboard = () => {
-  console.log(localStorage.getItem('authToken'));
   const navigate = useNavigate();
-  const [registerPrdct, setResgisterPrdct] = useState(false)
+  const { themeColors } = useTheme();
+  const [selectedBusinessId, setSelectedBusinessId] = useState(mockBusinessData[0].id);
 
+  const currentBusinessData = useMemo(() => {
+    return mockDashboardDataByBusiness[selectedBusinessId] || mockDashboardDataByBusiness.biz1;
+  }, [selectedBusinessId]);
 
-  const handleRegNewProduct = () => {
-    navigate ("/regproduct")
-  } 
-  
-  
-  const stats = [
-    { 
-      title: "Total Posts", 
-      value: "248", 
-      change: "+12% from last month", 
-      icon: <BarChart2 className="w-6 h-6 text-white" />,
-      color: "from-[#FF6B6B] to-[#FF8E8E]"
-    },
-    { 
-      title: "Engagement Rate", 
-      value: "5.2%", 
-      change: "+0.8% from last month", 
-      icon: <TrendingUp className="w-6 h-6 text-white" />,
-      color: "from-[var(--color-primary)] to-[var(--color-accent)]"
-    },
-    { 
-      title: "Scheduled Posts", 
-      value: "12", 
-      change: "Next post in 2 hours", 
-      icon: <Calendar className="w-6 h-6 text-white" />,
-      color: "from-[#FFB31F] to-[#FFCB66]"
-    },
-    { 
-      title: "New Followers", 
-      value: "1.2K", 
-      change: "-3% from last month", 
-      icon: <Users className="w-6 h-6 text-white" />,
-      color: "from-[#36D399] to-[#6AE6B5]"
-    }
-  ];
-
-  const recentActivities = [
-    { 
-      title: "New post published on Facebook", 
-      time: "2 hours ago", 
-      icon: "FB", 
-      bgColor: "bg-blue-100", 
-      textColor: "text-blue-600" 
-    },
-    { 
-      title: "Instagram story viewed by 1.5K users", 
-      time: "4 hours ago", 
-      icon: "IG", 
-      bgColor: "bg-pink-100", 
-      textColor: "text-pink-600" 
-    },
-    { 
-      title: "New comment on LinkedIn post", 
-      time: "Yesterday", 
-      icon: "LI", 
-      bgColor: "bg-blue-100", 
-      textColor: "text-blue-800" 
-    },
-    { 
-      title: "Twitter post reached 5K impressions", 
-      time: "2 days ago", 
-      icon: "TW", 
-      bgColor: "bg-blue-100", 
-      textColor: "text-blue-400" 
-    }
-  ];
-
-  const channelPerformance = [
-    { name: 'Facebook', followers: '12.5K', growth: '+2.4%', icon: 'FB', bgColor: 'bg-blue-600', textColor: 'text-white' },
-    { name: 'Instagram', followers: '24.8K', growth: '+5.7%', icon: 'IG', bgColor: 'bg-pink-600', textColor: 'text-white' },
-    { name: 'Twitter', followers: '8.3K', growth: '+1.2%', icon: 'TW', bgColor: 'bg-blue-400', textColor: 'text-white' },
-    { name: 'LinkedIn', followers: '5.1K', growth: '+3.8%', icon: 'LI', bgColor: 'bg-blue-800', textColor: 'text-white' }
-  ];
-
-  useEffect(() => {
-      const token = localStorage.getItem('authToken');
-      extCompanyProductData()  // testing must use user_id
-            .then(response => {
-              console.log("debugging1",response)
-              if (response.status === ( 200 || 201))
-              { 
-                if(response.data.length !== 0)
-                { setResgisterPrdct (false) }
-                else
-                { setResgisterPrdct (true) }
-              }
-              else {
-                console.log(response.statusText)
-              }
-              })
-            .catch(error => {
-              console.error("Error fetching data:", error);
-            });
-    }, []);
-  
+  const statsWithColors = useMemo(() => [
+    { ...currentBusinessData.stats[0], iconBgColor: themeColors.primary },
+    { ...currentBusinessData.stats[1], iconBgColor: themeOptions.colors.pink.primary },
+    { ...currentBusinessData.stats[2], iconBgColor: themeOptions.colors.blue.primary },
+    { ...currentBusinessData.stats[3], iconBgColor: themeColors.success }
+  ], [currentBusinessData, themeColors]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Dashboard Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">Dashboard Overview</h1>
 
-      <div style={{justifyContent: "flex-end"}}>
-        {/* <button onClick={handleRegNewProduct}>
-            Register New Product
-        </button> */}
-        
-        <button 
-          onClick={() => navigate('/add-business')}
-          className="flex items-center gap-2 px-4 py-2 bg-theme-primary hover:bg-opacity-90 text-white rounded-md shadow-sm transition-colors"
-        >
-          <Briefcase className="w-4 h-4" />
-          <span className='text-white'>Add Business</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <select
+              value={selectedBusinessId}
+              onChange={(e) => setSelectedBusinessId(e.target.value)}
+              className="w-full appearance-none pl-3 pr-8 py-2.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-800 shadow-sm"
+            >
+              {mockBusinessData.map(biz => (
+                <option key={biz.id} value={biz.id}>{biz.name}</option>
+              ))}
+            </select>
+            <Briefcase className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
+
+          <button
+            onClick={() => navigate('/add-business')}
+            className="flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
+          >
+            <Settings className="w-4 h-4" />
+            <span>Manage</span>
+          </button>
+        </div>
       </div>
 
- <div className="space-y-6">
-          <QuickActionsCard />
-        </div>
-      {/* After use */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
-          <StatCard 
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            icon={stat.icon}
-            color={stat.color}
-          />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {statsWithColors.map((stat, index) => (
+          <StatCard key={index} {...stat} />
         ))}
-      </div> */}
-      
-      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ActivityCard title="Recent Activity" activities={recentActivities} />
-        <PerformanceCard title="Channel Performance" channels={channelPerformance} />
-      </div> */}
-      
-      {/* <div className="bg-gradient-to-r from-theme-light-accent to-theme-light-accent/60 dark:from-theme-dark-accent/20 dark:to-theme-dark-accent/20 p-6 rounded-lg shadow-lg">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0 md:mr-6">
-            <h3 className="text-xl font-semibold mb-2">Ready to boost your social presence?</h3>
-            <p className="text-gray-700 dark:text-gray-300">
-              Connect more platforms and reach a wider audience with our premium features.
-            </p>
-            <button className="mt-4 bg-theme-primary hover:bg-opacity-90 text-white font-medium py-2 px-6 rounded-md transition-colors">
-              Upgrade Now
-            </button>
-          </div>
-          <div className="w-full md:w-1/3 flex justify-center">
-            <div className="relative">
-              <div className="absolute -top-10 -right-10">
-                <img src="https://img-wrapper.vercel.app/image?url=https://s3-alpha-sig.figma.com/img/739b/c72e/00ccdfac86c98f764c0d40b9082c0948?Expires=1745798400&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=eVvY0kExVSk8VGAneULrqM2Pco4VJ7Mw6QwHRH9C2kFQJJ21zDnKl4S6a-WCgoEwGvLvtgLX3E1oXtEKZCtwV~QCZ3pJGZrULGwb-lFt50Vkz9GUkNWsO62AW-QJVvlMuyxEI83ze4I4AxRWtbP1KXpAoRanxyPfp1mIw6nW6HL~KYSVpIxOvBfCtsXhUdoYEuX23P2~2Is6e90aFNdD9hR5Nca-sXWaMFSqWRYx~SKcthrPBsV8l49eeiht-7BTEVIgpxNd2hJ75qJpaam6s7tRn9ADVHi7Fm5v1nvee-p9VJagdp-3DKc1-ADYXQm085srbBYWhiUY6mMb2HGYRg__" 
-                  alt="Instagram" 
-                  className="w-12 h-12 object-contain"
-                />
-              </div>
-              <div className="absolute -top-5 left-5">
-                <img src="https://img-wrapper.vercel.app/image?url=https://s3-alpha-sig.figma.com/img/2a24/b449/84b56ff07b56668620f15573e764d067?Expires=1745798400&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=d4LU~nmR0kPwxmfOJLTMj2-R6CYzM2MTiJbOXedjLLIIgbzh2oKG6wMtWin~vunusnHZkWKzpxRKlW-NnmpfjEzvuw4rl6PYzDEXppgI9y7qwzhgBdLjRYxsG8oMsa-T6xCRWe0sOoE~sPqX~vw3W4jrzTNSSv2M87qphVQvreislgx308iYLvFz9NhzM4vNcopE39P6-WeJ~5Md-slOmvlfolhpssogU4~vi61qtlZFnQQkrSYjFjAitk6rLi0MYLD8KpSikWS7aAjeXpnI0dmuQXq90nxUQoZwUzEXbbCqLBd6wg3LQxuoS2DKSivf-X6LiDUN2gN54Jwe5TOZZA__" 
-                  alt="Facebook" 
-                  className="w-12 h-12 object-contain"
-                />
-              </div>
-              <div className="absolute top-10 -left-10">
-                <img src="https://img-wrapper.vercel.app/image?url=https://s3-alpha-sig.figma.com/img/19e4/0fbd/c222f0e3a99098c46e9d51b2c4c453a9?Expires=1745798400&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=Ncr7dm2TqLQyaXmJTvEZIOYxi8typD1jNMmt~pVvI6kNQ6ZLwPrLrGzbxmStVqbsYV~sLs85lNdCFCim2Q-pWbrxJwjvGKzzjucDGBZg42YhLjJI6zRQsKkEhb6yvzBOGFBXVW3CgG3~i-SL4Tj7fM-6shcEcvumARjUzgMLInU~Btak2aylmeW~F8G8De4LG7wgfLcDf7f-IAqSUzXWqW0CeIPnr9FajtNrp~0aDWkS7p~OEpY1xPdQqWlCJ18mA8S0s4D1leV5aQr29ZP6gL5v~QIkehjUPuIFGtt8BobiDtD3e-UuE--jpakPkpZv4TmItEbp21wdlTMWuSHHSA__" 
-                  alt="X" 
-                  className="w-12 h-12 object-contain"
-                />
-              </div>
-            </div>
-          </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <GettingStartedCard />
+        <TipsCard />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <AudienceGrowthCard data={currentBusinessData.audienceGrowthData} />
         </div>
-      </div> */}
+        <div className="lg:col-span-1">
+            <QuickActionsCard />
+        </div>
+      </div>
+
+
     </div>
   );
 };
-
 
 export default Dashboard;
