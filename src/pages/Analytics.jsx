@@ -1,10 +1,41 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, ArrowUp, ArrowDown, TrendingUp, Users, Eye, MessageSquare, Share2, ThumbsUp, Activity, BarChart2, Facebook, Instagram, Twitter, Linkedin, Youtube as YoutubeIcon } from 'lucide-react'; // Added platform icons
+import { Download, ArrowUp, ArrowDown, TrendingUp, Users, Eye, MessageSquare, Share2, ThumbsUp, Activity, BarChart2, Facebook, Instagram, Twitter, Linkedin, Youtube as YoutubeIcon, Smile, Meh, Frown, Image as ImageIcon, Video as VideoIconLucide, FileText as FileTextIcon, Link as LinkIconLucide, Briefcase } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell, Sector } from 'recharts';
 import { faker } from '@faker-js/faker';
 import DateRangePicker from '../components/DateRangePicker';
-import PlatformFilter from '../components/PlatformFilter';
 import { useTheme } from '../contexts/ThemeContext';
+
+// Mock data for businesses and their linked platforms
+const mockBusinessData = [
+  { 
+    id: 'biz1', 
+    name: 'TechCorp Solutions', 
+    linkedPlatforms: {
+      facebook: { pageName: 'TechCorp Official' },
+      twitter: { pageName: '@TechCorp' },
+      youtube: { pageName: 'TechCorp TV'}
+    } 
+  },
+  { 
+    id: 'biz2', 
+    name: 'Innovate Hub', 
+    linkedPlatforms: {
+      instagram: { pageName: 'InnovateHubIG' },
+      linkedin: { pageName: 'Innovate Hub Company'}
+    }
+  },
+  { 
+    id: 'biz3', 
+    name: 'GreenLeaf Organics', 
+    linkedPlatforms: {
+        facebook: { pageName: 'GreenLeaf FB' },
+        instagram: { pageName: 'GreenLeaf IG' },
+        twitter: { pageName: 'GreenLeaf Twitter' },
+        linkedin: { pageName: 'GreenLeaf LinkedIn' },
+        youtube: { pageName: 'GreenLeaf YouTube' },
+    }
+  },
+];
 
 const platformDetails = {
   facebook: { name: 'Facebook', color: '#4267B2', icon: <Facebook size={16} /> },
@@ -14,6 +45,7 @@ const platformDetails = {
   youtube: { name: 'YouTube', color: '#FF0000', icon: <YoutubeIcon size={16} /> },
 };
 const platforms = Object.keys(platformDetails);
+const contentTypes = ['Image', 'Video', 'Text Post', 'Link Share'];
 
 const generateMockData = (startDate, endDate) => {
   const data = [];
@@ -22,19 +54,28 @@ const generateMockData = (startDate, endDate) => {
 
   while (currentDate <= finalEndDate) {
     platforms.forEach(platform => {
+      const likes = faker.number.int({ min: 10, max: 5000 });
+      const comments = faker.number.int({ min: 1, max: 1000 });
+      const shares = faker.number.int({ min: 0, max: 500 });
+      
       data.push({
         date: currentDate.toISOString().split('T')[0],
         platform: platform,
+        businessId: faker.helpers.arrayElement(mockBusinessData).id, // Assign a business ID
         followers: faker.number.int({ min: 500, max: 50000 }),
         newFollowers: faker.number.int({ min: -50, max: 200 }),
         engagementRate: parseFloat(faker.number.float({ min: 0.5, max: 10 }).toFixed(1)),
         posts: faker.number.int({ min: 0, max: 5 }),
         reach: faker.number.int({ min: 100, max: 100000 }),
         impressions: faker.number.int({ min: 200, max: 200000 }),
-        likes: faker.number.int({ min: 10, max: 5000 }),
-        comments: faker.number.int({ min: 1, max: 1000 }),
-        shares: faker.number.int({ min: 0, max: 500 }),
+        likes: likes,
+        comments: comments,
+        shares: shares,
         views: platform === 'youtube' ? faker.number.int({min: 100, max: 50000}) : faker.number.int({min: 50, max: 10000}),
+        sentimentPositive: faker.number.int({ min: 0, max: Math.floor((likes + comments + shares) * 0.7) }),
+        sentimentNeutral: faker.number.int({ min: 0, max: Math.floor((likes + comments + shares) * 0.2) }),
+        sentimentNegative: faker.number.int({ min: 0, max: Math.floor((likes + comments + shares) * 0.1) }),
+        contentType: faker.helpers.arrayElement(contentTypes),
       });
     });
     currentDate.setDate(currentDate.getDate() + 1);
@@ -44,10 +85,10 @@ const generateMockData = (startDate, endDate) => {
 
 const initialEndDate = new Date();
 const initialStartDate = new Date();
-initialStartDate.setDate(initialEndDate.getDate() - 29); // Default to last 30 days
+initialStartDate.setDate(initialEndDate.getDate() - 29); 
 
 const ALL_MOCK_DATA = generateMockData(
-  new Date(initialEndDate.getFullYear() -1, initialEndDate.getMonth(), initialEndDate.getDate()), // Generate data for past year
+  new Date(initialEndDate.getFullYear() -1, initialEndDate.getMonth(), initialEndDate.getDate()), 
   initialEndDate
 );
 
@@ -116,7 +157,7 @@ const ActiveShapePieChart = (props) => {
       <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
       <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="#333"  className="dark:fill-gray-300 text-xs">{`${value.toLocaleString()}`}</text>
       <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="#999" className="text-xs">
-        {`(Rate ${(percent * 100).toFixed(2)}%)`}
+        {`(${(percent * 100).toFixed(2)}%)`}
       </text>
     </g>
   );
@@ -130,38 +171,54 @@ const Analytics = () => {
     endDate: initialEndDate.toISOString().split('T')[0],
     label: 'Last 30 Days'
   });
-  const [activePlatforms, setActivePlatforms] = useState(platforms); // Initially all platforms
+  
+  const [selectedBusinessId, setSelectedBusinessId] = useState(mockBusinessData[0].id);
+
+  const availablePlatformsForBusiness = useMemo(() => {
+    const business = mockBusinessData.find(b => b.id === selectedBusinessId);
+    if (!business) return [];
+    return Object.keys(business.linkedPlatforms).filter(p => business.linkedPlatforms[p]);
+  }, [selectedBusinessId]);
+
+  const [activePlatform, setActivePlatform] = useState(availablePlatformsForBusiness[0] || '');
   const [filteredData, setFilteredData] = useState([]);
-  const [activePieIndex, setActivePieIndex] = useState(0);
+  const [activeEngagementPieIndex, setActiveEngagementPieIndex] = useState(0);
+  const [activeSentimentPieIndex, setActiveSentimentPieIndex] = useState(0);
+
+  // Reset platform filter when business changes
+  useEffect(() => {
+    setActivePlatform(availablePlatformsForBusiness[0] || '');
+  }, [availablePlatformsForBusiness]);
 
   useEffect(() => {
     const start = new Date(dateRange.startDate);
     const end = new Date(dateRange.endDate);
-    end.setHours(23,59,59,999); // Ensure end date includes the whole day
+    end.setHours(23,59,59,999); 
 
     const currentFilteredData = ALL_MOCK_DATA.filter(item => {
       const itemDate = new Date(item.date);
-      const platformMatch = activePlatforms.length === 0 || activePlatforms.includes(item.platform); // If no platforms selected, show all
-      return itemDate >= start && itemDate <= end && platformMatch;
+      const businessMatch = item.businessId === selectedBusinessId;
+      const platformMatch = item.platform === activePlatform; // Filter by single platform
+      return itemDate >= start && itemDate <= end && platformMatch && businessMatch;
     });
     setFilteredData(currentFilteredData);
-  }, [dateRange, activePlatforms]);
+  }, [dateRange, activePlatform, selectedBusinessId]);
   
   const aggregateMetrics = useMemo(() => {
     if (!filteredData.length) return {
       totalFollowers: 0, followersChange: '0%', engagementRate: '0%', engagementChange:'0%', totalPosts: 0, postsChange:'0 new posts', avgReach: '0', reachChange:'0%',
-      totalLikes: 0, totalComments: 0, totalShares: 0, totalViews: 0
+      totalLikes: 0, totalComments: 0, totalShares: 0, totalViews: 0,
+      totalSentimentPositive: 0, totalSentimentNeutral: 0, totalSentimentNegative: 0,
     };
 
     let totalFollowers = 0;
-    const latestFollowersByPlatform = {};
-    
+    let latestDate = new Date(0);
     filteredData.forEach(item => {
-        if (!latestFollowersByPlatform[item.platform] || new Date(item.date) > new Date(latestFollowersByPlatform[item.platform].date)) {
-            latestFollowersByPlatform[item.platform] = { followers: item.followers, date: item.date };
+        if (new Date(item.date) > latestDate) {
+            latestDate = new Date(item.date);
+            totalFollowers = item.followers;
         }
     });
-    totalFollowers = Object.values(latestFollowersByPlatform).reduce((sum, pf) => sum + pf.followers, 0);
 
     const followersChange = faker.number.int({ min: -5, max: 15 }); 
     const engagementRate = parseFloat(filteredData.reduce((sum, item) => sum + item.engagementRate, 0) / filteredData.length || 0).toFixed(1);
@@ -184,118 +241,104 @@ const Analytics = () => {
       totalComments: filteredData.reduce((sum, item) => sum + item.comments, 0),
       totalShares: filteredData.reduce((sum, item) => sum + item.shares, 0),
       totalViews: filteredData.reduce((sum, item) => sum + item.views, 0),
+      totalSentimentPositive: filteredData.reduce((sum, item) => sum + item.sentimentPositive, 0),
+      totalSentimentNeutral: filteredData.reduce((sum, item) => sum + item.sentimentNeutral, 0),
+      totalSentimentNegative: filteredData.reduce((sum, item) => sum + item.sentimentNegative, 0),
     };
-  }, [filteredData]);
-
-  const engagementByPlatformChartData = useMemo(() => {
-    const result = {};
-    filteredData.forEach(item => {
-      if (!result[item.platform]) {
-        result[item.platform] = { name: platformDetails[item.platform].name, likes: 0, comments: 0, shares: 0 };
-      }
-      result[item.platform].likes += item.likes;
-      result[item.platform].comments += item.comments;
-      result[item.platform].shares += item.shares;
-    });
-    return Object.values(result);
   }, [filteredData]);
 
   const followerGrowthChartData = useMemo(() => {
     const dailyData = {};
-    
-    // Initialize dailyData with all dates in the range for all active platforms
     let currentDate = new Date(dateRange.startDate);
     const endDate = new Date(dateRange.endDate);
     while(currentDate <= endDate) {
         const dateStr = currentDate.toISOString().split('T')[0];
         dailyData[dateStr] = { date: dateStr, followers: 0 };
-        activePlatforms.forEach(platform => {
-            dailyData[dateStr][platform] = 0; // Initialize follower count for each platform
-        });
         currentDate.setDate(currentDate.getDate() + 1);
     }
-
-    // Populate with actual follower data (latest for each day for each platform)
-    const latestPlatformFollowersPerDay = {};
-    filteredData.forEach(item => {
-        const dateKey = `${item.date}-${item.platform}`;
-        if (!latestPlatformFollowersPerDay[dateKey] || new Date(item.date) >= new Date(latestPlatformFollowersPerDay[dateKey].dateRecord)) {
-             latestPlatformFollowersPerDay[dateKey] = { followers: item.followers, dateRecord: item.date };
-        }
-    });
     
-    // Aggregate total followers per day
     Object.keys(dailyData).forEach(dateStr => {
-        let dailyTotal = 0;
-        activePlatforms.forEach(platform => {
-            // Find the latest record for this platform up to dateStr
-            let latestFollowersForPlatformOnDate = 0;
-            let recordDate = new Date(dateRange.startDate);
-            recordDate.setDate(recordDate.getDate() -1); // Start before range
+        let latestFollowersForPlatformOnDate = 0;
+        let recordDate = new Date(dateRange.startDate);
+        recordDate.setDate(recordDate.getDate() -1); 
 
-            filteredData.filter(d => d.platform === platform && new Date(d.date) <= new Date(dateStr))
-                        .forEach(d => {
-                            if(new Date(d.date) > recordDate) {
-                                latestFollowersForPlatformOnDate = d.followers;
-                                recordDate = new Date(d.date);
-                            }
-                        });
-            dailyTotal += latestFollowersForPlatformOnDate;
-        });
-        dailyData[dateStr].followers = dailyTotal;
+        filteredData.filter(d => new Date(d.date) <= new Date(dateStr))
+                    .forEach(d => {
+                        if(new Date(d.date) > recordDate) {
+                            latestFollowersForPlatformOnDate = d.followers;
+                            recordDate = new Date(d.date);
+                        }
+                    });
+        dailyData[dateStr].followers = latestFollowersForPlatformOnDate;
     });
-    
+
     const series = Object.values(dailyData).sort((a,b) => new Date(a.date) - new Date(b.date));
-    
-    if(series.length === 1) { // Handle single data point for line chart
-        return [series[0], {...series[0], date: new Date(new Date(series[0].date).getTime() + 86400000).toISOString().split('T')[0] }];
-    }
-
+    if(series.length === 1) return [series[0], {...series[0], date: new Date(new Date(series[0].date).getTime() + 86400000).toISOString().split('T')[0] }];
     return series.length > 0 ? series : [{date: dateRange.startDate, followers: 0}, {date: dateRange.endDate, followers: 0}];
-
-  }, [filteredData, activePlatforms, dateRange.startDate, dateRange.endDate]);
-
-
-  const audienceDistributionChartData = useMemo(() => {
-    const latestFollowersByPlatformForDist = {}; // Correctly initialize here
-
-    filteredData.forEach(item => {
-        if (!latestFollowersByPlatformForDist[item.platform] || new Date(item.date) > new Date(latestFollowersByPlatformForDist[item.platform].date)) {
-            latestFollowersByPlatformForDist[item.platform] = { followers: item.followers, date: item.date };
-        }
-    });
-
-    return activePlatforms.map(platform => ({
-      name: platformDetails[platform].name,
-      value: latestFollowersByPlatformForDist[platform]?.followers || 0,
-      color: platformDetails[platform].color,
-    })).filter(p => p.value > 0);
-  }, [filteredData, activePlatforms]);
+  }, [filteredData, dateRange.startDate, dateRange.endDate]);
 
   const topPerformingPosts = useMemo(() => {
-    // Create a map to store the latest version of each post based on its title and platform (as a pseudo-ID)
     const latestPostsMap = new Map();
     filteredData.forEach(item => {
-      const postTitle = item.title || faker.lorem.sentence(5).slice(0,-1); // Use existing title or generate one
-      const postId = `${postTitle}-${item.platform}`; // Create a unique ID based on title and platform
-      
-      if (!latestPostsMap.has(postId) || new Date(item.date) > new Date(latestPostsMap.get(postId).date)) {
+      const postTitle = item.title || faker.lorem.sentence(5).slice(0,-1); 
+      const postId = `${postTitle}-${item.platform}-${item.date}`; 
+      if (!latestPostsMap.has(postId)) {
         latestPostsMap.set(postId, {
           ...item,
-          id: postId, // Use the generated ID
+          id: postId,
           title: postTitle,
           engagementScore: item.likes + item.comments * 2 + item.shares * 3,
         });
       }
     });
-  
-    return Array.from(latestPostsMap.values())
-      .sort((a, b) => b.engagementScore - a.engagementScore)
-      .slice(0, 5);
+    return Array.from(latestPostsMap.values()).sort((a, b) => b.engagementScore - a.engagementScore).slice(0, 5);
   }, [filteredData]);
 
+  const sharesTrendChartData = useMemo(() => {
+    const dailyShares = {};
+    let currentDate = new Date(dateRange.startDate);
+    const endDate = new Date(dateRange.endDate);
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      dailyShares[dateStr] = { date: dateStr, shares: 0 };
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    filteredData.forEach(item => {
+      if (dailyShares[item.date]) {
+        dailyShares[item.date].shares += item.shares;
+      }
+    });
+    const series = Object.values(dailyShares).sort((a,b) => new Date(a.date) - new Date(b.date));
+    if (series.length === 1) return [series[0], {...series[0], date: new Date(new Date(series[0].date).getTime() + 86400000).toISOString().split('T')[0]}];
+    return series.length > 0 ? series : [{date: dateRange.startDate, shares: 0}, {date: dateRange.endDate, shares: 0}];
+  }, [filteredData, dateRange.startDate, dateRange.endDate]);
 
-  const onPieEnter = (_, index) => setActivePieIndex(index);
+  const sentimentChartData = useMemo(() => [
+    { name: 'Positive', value: aggregateMetrics.totalSentimentPositive, color: themeColors.success },
+    { name: 'Neutral', value: aggregateMetrics.totalSentimentNeutral, color: themeColors.secondary },
+    { name: 'Negative', value: aggregateMetrics.totalSentimentNegative, color: themeColors.danger },
+  ].filter(s => s.value > 0), [aggregateMetrics, themeColors]);
+
+  const contentTypePerformanceChartData = useMemo(() => {
+    const performance = {};
+    contentTypes.forEach(type => performance[type] = { name: type, engagement: 0 });
+    filteredData.forEach(item => {
+      if (performance[item.contentType]) {
+        performance[item.contentType].engagement += (item.likes + item.comments + item.shares);
+      }
+    });
+    return Object.values(performance).filter(ct => ct.engagement > 0);
+  }, [filteredData]);
+
+  const engagementBreakdownChartData = useMemo(() => [
+    { name: 'Likes', value: aggregateMetrics.totalLikes, color: themeColors.primary },
+    { name: 'Comments', value: aggregateMetrics.totalComments, color: themeColors.accent },
+    { name: 'Shares', value: aggregateMetrics.totalShares, color: themeColors.info },
+  ].filter(e => e.value > 0), [aggregateMetrics, themeColors]);
+
+  const onEngagementPieEnter = (_, index) => setActiveEngagementPieIndex(index);
+  const onSentimentPieEnter = (_, index) => setActiveSentimentPieIndex(index);
+
 
   const statCards = [
     { title: "Total Followers", value: aggregateMetrics.totalFollowers.toLocaleString(), change: aggregateMetrics.followersChange, icon: <Users />, color: "text-white", bgColor: "bg-gradient-to-br from-blue-500 to-blue-700 dark:from-blue-600 dark:to-blue-800" },
@@ -316,7 +359,38 @@ const Analytics = () => {
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <h1 className="text-2xl font-semibold">Analytics & Insights</h1>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <PlatformFilter selectedPlatforms={activePlatforms} onChange={setActivePlatforms} />
+          <div className="relative">
+            <select
+              value={selectedBusinessId}
+              onChange={(e) => setSelectedBusinessId(e.target.value)}
+              className="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700 shadow-sm"
+            >
+              {mockBusinessData.map(biz => (
+                <option key={biz.id} value={biz.id}>{biz.name}</option>
+              ))}
+            </select>
+            <Briefcase className="w-4 h-4 absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
+          <div className="relative">
+            <select
+              value={activePlatform}
+              onChange={(e) => setActivePlatform(e.target.value)}
+              className="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700 shadow-sm"
+            >
+              {availablePlatformsForBusiness.length > 0 ? (
+                availablePlatformsForBusiness.map(platformId => (
+                  <option key={platformId} value={platformId}>
+                    {platformDetails[platformId]?.name || platformId}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No platforms linked</option>
+              )}
+            </select>
+            <span className="absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              {activePlatform && platformDetails[activePlatform] ? React.cloneElement(platformDetails[activePlatform].icon, {size: 16}) : null}
+            </span>
+          </div>
           <DateRangePicker onRangeChange={setDateRange} />
           <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">
             <Download className="w-4 h-4" />
@@ -358,29 +432,7 @@ const Analytics = () => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h3 className="text-xl font-semibold mb-4">Engagement by Platform</h3>
-           <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={engagementByPlatformChartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#374151" : "#e5e7eb"} />
-                <XAxis dataKey="name" tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} />
-                <YAxis tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} />
-                <Tooltip 
-                    contentStyle={{ backgroundColor: isDarkMode ? '#1f2937' : '#fff', border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`}} 
-                    labelStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
-                    itemStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
-                />
-                <Legend wrapperStyle={{fontSize: "12px"}}/>
-                <Bar dataKey="likes" name="Likes" fill={themeColors.primary} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="comments" name="Comments" fill={themeColors.accent} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="shares" name="Shares" fill={themeColors.info} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg lg:col-span-2">
           <h3 className="text-xl font-semibold mb-4">Follower Growth</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -401,34 +453,109 @@ const Analytics = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h3 className="text-xl font-semibold mb-4">Audience Distribution by Platform</h3>
+          <h3 className="text-xl font-semibold mb-4">Shares/Reposts Trend</h3>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={sharesTrendChartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#374151" : "#e5e7eb"} />
+                <XAxis dataKey="date" tickFormatter={(tick) => new Date(tick).toLocaleDateString('en-US', {month:'short', day:'numeric'})} tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} />
+                <YAxis tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} tickFormatter={(value) => value.toLocaleString()} />
+                <Tooltip 
+                    contentStyle={{ backgroundColor: isDarkMode ? '#1f2937' : '#fff', border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`}}
+                    labelStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
+                    itemStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
+                    formatter={(value) => value.toLocaleString()}
+                />
+                <Legend wrapperStyle={{fontSize: "12px"}}/>
+                <Line type="monotone" dataKey="shares" name="Total Shares" stroke={themeColors.info} strokeWidth={2} dot={{ r: 4, fill: themeColors.info }} activeDot={{ r: 6 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-semibold mb-4">Sentiment Overview</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  activeIndex={activePieIndex}
+                  activeIndex={activeSentimentPieIndex}
                   activeShape={ActiveShapePieChart}
-                  data={audienceDistributionChartData}
+                  data={sentimentChartData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
                   outerRadius={80}
                   dataKey="value"
-                  onMouseEnter={(_, index) => setActivePieIndex(index)}
+                  onMouseEnter={onSentimentPieEnter}
                 >
-                  {audienceDistributionChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {sentimentChartData.map((entry, index) => (
+                    <Cell key={`cell-sentiment-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                 <Legend 
+                  layout="horizontal" 
+                  align="center" 
+                  verticalAlign="bottom" 
+                  iconSize={10}
+                  wrapperStyle={{fontSize: "12px", lineHeight: "20px", paddingTop: "10px"}}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-semibold mb-4">Content Type Performance</h3>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={contentTypePerformanceChartData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#374151" : "#e5e7eb"} />
+                <XAxis type="number" tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} width={80} />
+                <Tooltip 
+                    contentStyle={{ backgroundColor: isDarkMode ? '#1f2937' : '#fff', border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`}}
+                    labelStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
+                    itemStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
+                />
+                <Legend wrapperStyle={{fontSize: "12px"}}/>
+                <Bar dataKey="engagement" name="Total Engagement" fill={themeColors.accent} radius={[0, 4, 4, 0]} barSize={20} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+          <h3 className="text-xl font-semibold mb-4">Engagement Breakdown</h3>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  activeIndex={activeEngagementPieIndex}
+                  activeShape={ActiveShapePieChart}
+                  data={engagementBreakdownChartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  dataKey="value"
+                  onMouseEnter={onEngagementPieEnter}
+                >
+                  {engagementBreakdownChartData.map((entry, index) => (
+                    <Cell key={`cell-engagement-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <Legend 
-                  layout="vertical" 
-                  align="right" 
-                  verticalAlign="middle" 
+                  layout="horizontal" 
+                  align="center" 
+                  verticalAlign="bottom" 
                   iconSize={10}
-                  wrapperStyle={{fontSize: "12px", lineHeight: "20px"}}
+                  wrapperStyle={{fontSize: "12px", lineHeight: "20px", paddingTop: "10px"}}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -442,7 +569,6 @@ const Analytics = () => {
               <thead className="bg-gray-50 dark:bg-gray-700/50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Post</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Platform</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Engagement Score</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
                 </tr>
@@ -451,15 +577,6 @@ const Analytics = () => {
                 {topPerformingPosts.map((post) => (
                   <tr key={post.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium max-w-xs truncate" title={post.title}>{post.title}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm">
-                      <span 
-                        className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-max"
-                        style={{ backgroundColor: `${platformDetails[post.platform].color}20`, color: platformDetails[post.platform].color}}
-                      >
-                        {React.cloneElement(platformDetails[post.platform].icon, {size: 12})}
-                        {platformDetails[post.platform].name}
-                      </span>
-                    </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{post.engagementScore.toLocaleString()}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(post.date).toLocaleDateString()}</td>
                   </tr>

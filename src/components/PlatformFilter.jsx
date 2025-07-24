@@ -1,18 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Filter, Facebook, Instagram, Twitter, Linkedin, Youtube, Check } from 'lucide-react';
 
-const platformOptions = [
-  { id: 'all', name: 'All Platforms', icon: <Filter size={16} /> },
-  { id: 'facebook', name: 'Facebook', icon: <Facebook size={16} className="text-blue-600" /> },
-  { id: 'instagram', name: 'Instagram', icon: <Instagram size={16} className="text-pink-600" /> },
-  { id: 'twitter', name: 'Twitter', icon: <Twitter size={16} className="text-blue-400" /> },
-  { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin size={16} className="text-blue-700" /> },
-  { id: 'youtube', name: 'YouTube', icon: <Youtube size={16} className="text-red-600" /> },
-];
+const allPlatformDetails = {
+  'facebook': { name: 'Facebook', icon: <Facebook size={16} className="text-blue-600" /> },
+  'instagram': { name: 'Instagram', icon: <Instagram size={16} className="text-pink-600" /> },
+  'twitter': { name: 'Twitter', icon: <Twitter size={16} className="text-blue-400" /> },
+  'linkedin': { name: 'LinkedIn', icon: <Linkedin size={16} className="text-blue-700" /> },
+  'youtube': { name: 'YouTube', icon: <Youtube size={16} className="text-red-600" /> },
+};
 
-const PlatformFilter = ({ selectedPlatforms, onChange }) => {
+const PlatformFilter = ({ selectedPlatforms, onChange, availablePlatforms = [] }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  const platformOptions = [
+    { id: 'all', name: 'All Platforms', icon: <Filter size={16} /> },
+    ...availablePlatforms.map(platformId => ({
+      id: platformId,
+      name: allPlatformDetails[platformId]?.name || platformId,
+      icon: allPlatformDetails[platformId]?.icon || <Filter size={16} />
+    }))
+  ];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -21,26 +29,18 @@ const PlatformFilter = ({ selectedPlatforms, onChange }) => {
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
   const handleTogglePlatform = (platformId) => {
     if (platformId === 'all') {
-      const allActualPlatforms = platformOptions.slice(1).map(p => p.id);
-      const allCurrentlySelected = allActualPlatforms.every(pId => selectedPlatforms.includes(pId)) && selectedPlatforms.length === allActualPlatforms.length;
+      const allCurrentlySelected = availablePlatforms.every(pId => selectedPlatforms.includes(pId)) && selectedPlatforms.length === availablePlatforms.length;
       
       if (allCurrentlySelected) {
         onChange([]); 
       } else {
-        onChange(allActualPlatforms); 
+        onChange(availablePlatforms); 
       }
     } else {
       const newSelection = selectedPlatforms.includes(platformId)
@@ -51,13 +51,12 @@ const PlatformFilter = ({ selectedPlatforms, onChange }) => {
   };
   
   const getButtonLabel = () => {
-    const numActualPlatforms = platformOptions.length - 1;
-    if (selectedPlatforms.length === 0 || selectedPlatforms.length === numActualPlatforms) {
+    const numSelectablePlatforms = availablePlatforms.length;
+    if (selectedPlatforms.length === 0 || selectedPlatforms.length === numSelectablePlatforms) {
         return 'All Platforms';
     }
     if (selectedPlatforms.length === 1) {
-        const platform = platformOptions.find(p => p.id === selectedPlatforms[0]);
-        return platform ? platform.name : 'Select Platforms';
+        return allPlatformDetails[selectedPlatforms[0]]?.name || 'Select Platforms';
     }
     return `${selectedPlatforms.length} Platforms Selected`;
   };
@@ -85,7 +84,7 @@ const PlatformFilter = ({ selectedPlatforms, onChange }) => {
                     {platform.icon}
                     {platform.name}
                   </span>
-                  {(platform.id === 'all' ? (selectedPlatforms.length === platformOptions.length -1 || selectedPlatforms.length === 0) : selectedPlatforms.includes(platform.id)) && (
+                  {(platform.id === 'all' ? (selectedPlatforms.length === availablePlatforms.length) : selectedPlatforms.includes(platform.id)) && (
                     <Check size={16} className="text-theme-primary" />
                   )}
                 </button>
