@@ -3,7 +3,6 @@ import { Download, ArrowUp, ArrowDown, TrendingUp, Users, Eye, MessageSquare, Sh
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line, PieChart, Pie, Cell, Sector } from 'recharts';
 import { faker } from '@faker-js/faker';
 import DateRangePicker from '../components/DateRangePicker';
-import PlatformFilter from '../components/PlatformFilter';
 import { useTheme } from '../contexts/ThemeContext';
 
 // Mock data for businesses and their linked platforms
@@ -181,14 +180,14 @@ const Analytics = () => {
     return Object.keys(business.linkedPlatforms).filter(p => business.linkedPlatforms[p]);
   }, [selectedBusinessId]);
 
-  const [activePlatforms, setActivePlatforms] = useState(availablePlatformsForBusiness);
+  const [activePlatform, setActivePlatform] = useState(availablePlatformsForBusiness[0] || '');
   const [filteredData, setFilteredData] = useState([]);
-  const [activePieIndex, setActivePieIndex] = useState(0);
+  const [activeEngagementPieIndex, setActiveEngagementPieIndex] = useState(0);
   const [activeSentimentPieIndex, setActiveSentimentPieIndex] = useState(0);
 
   // Reset platform filter when business changes
   useEffect(() => {
-    setActivePlatforms(availablePlatformsForBusiness);
+    setActivePlatform(availablePlatformsForBusiness[0] || '');
   }, [availablePlatformsForBusiness]);
 
   useEffect(() => {
@@ -199,11 +198,11 @@ const Analytics = () => {
     const currentFilteredData = ALL_MOCK_DATA.filter(item => {
       const itemDate = new Date(item.date);
       const businessMatch = item.businessId === selectedBusinessId;
-      const platformMatch = activePlatforms.length === 0 || activePlatforms.includes(item.platform);
+      const platformMatch = item.platform === activePlatform; // Filter by single platform
       return itemDate >= start && itemDate <= end && platformMatch && businessMatch;
     });
     setFilteredData(currentFilteredData);
-  }, [dateRange, activePlatforms, selectedBusinessId]);
+  }, [dateRange, activePlatform, selectedBusinessId]);
   
   const aggregateMetrics = useMemo(() => {
     if (!filteredData.length) return {
@@ -213,14 +212,13 @@ const Analytics = () => {
     };
 
     let totalFollowers = 0;
-    const latestFollowersByPlatform = {};
-    
+    let latestDate = new Date(0);
     filteredData.forEach(item => {
-        if (!latestFollowersByPlatform[item.platform] || new Date(item.date) > new Date(latestFollowersByPlatform[item.platform].date)) {
-            latestFollowersByPlatform[item.platform] = { followers: item.followers, date: item.date };
+        if (new Date(item.date) > latestDate) {
+            latestDate = new Date(item.date);
+            totalFollowers = item.followers;
         }
     });
-    totalFollowers = Object.values(latestFollowersByPlatform).reduce((sum, pf) => sum + pf.followers, 0);
 
     const followersChange = faker.number.int({ min: -5, max: 15 }); 
     const engagementRate = parseFloat(filteredData.reduce((sum, item) => sum + item.engagementRate, 0) / filteredData.length || 0).toFixed(1);
@@ -249,19 +247,6 @@ const Analytics = () => {
     };
   }, [filteredData]);
 
-  const engagementByPlatformChartData = useMemo(() => {
-    const result = {};
-    filteredData.forEach(item => {
-      if (!result[item.platform]) {
-        result[item.platform] = { name: platformDetails[item.platform].name, likes: 0, comments: 0, shares: 0 };
-      }
-      result[item.platform].likes += item.likes;
-      result[item.platform].comments += item.comments;
-      result[item.platform].shares += item.shares;
-    });
-    return Object.values(result);
-  }, [filteredData]);
-
   const followerGrowthChartData = useMemo(() => {
     const dailyData = {};
     let currentDate = new Date(dateRange.startDate);
@@ -273,43 +258,24 @@ const Analytics = () => {
     }
     
     Object.keys(dailyData).forEach(dateStr => {
-        let dailyTotal = 0;
-        activePlatforms.forEach(platform => {
-            let latestFollowersForPlatformOnDate = 0;
-            let recordDate = new Date(dateRange.startDate);
-            recordDate.setDate(recordDate.getDate() -1); 
+        let latestFollowersForPlatformOnDate = 0;
+        let recordDate = new Date(dateRange.startDate);
+        recordDate.setDate(recordDate.getDate() -1); 
 
-            filteredData.filter(d => d.platform === platform && new Date(d.date) <= new Date(dateStr))
-                        .forEach(d => {
-                            if(new Date(d.date) > recordDate) {
-                                latestFollowersForPlatformOnDate = d.followers;
-                                recordDate = new Date(d.date);
-                            }
-                        });
-            dailyTotal += latestFollowersForPlatformOnDate;
-        });
-        dailyData[dateStr].followers = dailyTotal;
+        filteredData.filter(d => new Date(d.date) <= new Date(dateStr))
+                    .forEach(d => {
+                        if(new Date(d.date) > recordDate) {
+                            latestFollowersForPlatformOnDate = d.followers;
+                            recordDate = new Date(d.date);
+                        }
+                    });
+        dailyData[dateStr].followers = latestFollowersForPlatformOnDate;
     });
 
     const series = Object.values(dailyData).sort((a,b) => new Date(a.date) - new Date(b.date));
     if(series.length === 1) return [series[0], {...series[0], date: new Date(new Date(series[0].date).getTime() + 86400000).toISOString().split('T')[0] }];
     return series.length > 0 ? series : [{date: dateRange.startDate, followers: 0}, {date: dateRange.endDate, followers: 0}];
-  }, [filteredData, activePlatforms, dateRange.startDate, dateRange.endDate]);
-
-
-  const audienceDistributionChartData = useMemo(() => {
-    const latestFollowersByPlatformForDist = {};
-    filteredData.forEach(item => {
-        if (!latestFollowersByPlatformForDist[item.platform] || new Date(item.date) > new Date(latestFollowersByPlatformForDist[item.platform].date)) {
-            latestFollowersByPlatformForDist[item.platform] = { followers: item.followers, date: item.date };
-        }
-    });
-    return activePlatforms.map(platform => ({
-      name: platformDetails[platform].name,
-      value: latestFollowersByPlatformForDist[platform]?.followers || 0,
-      color: platformDetails[platform].color,
-    })).filter(p => p.value > 0);
-  }, [filteredData, activePlatforms]);
+  }, [filteredData, dateRange.startDate, dateRange.endDate]);
 
   const topPerformingPosts = useMemo(() => {
     const latestPostsMap = new Map();
@@ -364,7 +330,13 @@ const Analytics = () => {
     return Object.values(performance).filter(ct => ct.engagement > 0);
   }, [filteredData]);
 
-  const onPieEnter = (_, index) => setActivePieIndex(index);
+  const engagementBreakdownChartData = useMemo(() => [
+    { name: 'Likes', value: aggregateMetrics.totalLikes, color: themeColors.primary },
+    { name: 'Comments', value: aggregateMetrics.totalComments, color: themeColors.accent },
+    { name: 'Shares', value: aggregateMetrics.totalShares, color: themeColors.info },
+  ].filter(e => e.value > 0), [aggregateMetrics, themeColors]);
+
+  const onEngagementPieEnter = (_, index) => setActiveEngagementPieIndex(index);
   const onSentimentPieEnter = (_, index) => setActiveSentimentPieIndex(index);
 
 
@@ -399,11 +371,26 @@ const Analytics = () => {
             </select>
             <Briefcase className="w-4 h-4 absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
-          <PlatformFilter 
-            selectedPlatforms={activePlatforms} 
-            onChange={setActivePlatforms} 
-            availablePlatforms={availablePlatformsForBusiness}
-          />
+          <div className="relative">
+            <select
+              value={activePlatform}
+              onChange={(e) => setActivePlatform(e.target.value)}
+              className="w-full appearance-none pl-3 pr-8 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700 shadow-sm"
+            >
+              {availablePlatformsForBusiness.length > 0 ? (
+                availablePlatformsForBusiness.map(platformId => (
+                  <option key={platformId} value={platformId}>
+                    {platformDetails[platformId]?.name || platformId}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No platforms linked</option>
+              )}
+            </select>
+            <span className="absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              {activePlatform && platformDetails[activePlatform] ? React.cloneElement(platformDetails[activePlatform].icon, {size: 16}) : null}
+            </span>
+          </div>
           <DateRangePicker onRangeChange={setDateRange} />
           <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-sm">
             <Download className="w-4 h-4" />
@@ -445,29 +432,7 @@ const Analytics = () => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h3 className="text-xl font-semibold mb-4">Engagement by Platform</h3>
-           <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={engagementByPlatformChartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? "#374151" : "#e5e7eb"} />
-                <XAxis dataKey="name" tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} />
-                <YAxis tick={{ fill: isDarkMode ? "#9ca3af" : "#6b7280", fontSize: 12 }} />
-                <Tooltip 
-                    contentStyle={{ backgroundColor: isDarkMode ? '#1f2937' : '#fff', border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`}} 
-                    labelStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
-                    itemStyle={{color: isDarkMode ? '#e5e7eb' : '#1f2937'}}
-                />
-                <Legend wrapperStyle={{fontSize: "12px"}}/>
-                <Bar dataKey="likes" name="Likes" fill={themeColors.primary} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="comments" name="Comments" fill={themeColors.accent} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="shares" name="Shares" fill={themeColors.info} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg lg:col-span-2">
           <h3 className="text-xl font-semibold mb-4">Follower Growth</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -525,7 +490,7 @@ const Analytics = () => {
                   innerRadius={60}
                   outerRadius={80}
                   dataKey="value"
-                  onMouseEnter={(_, index) => setActiveSentimentPieIndex(index)}
+                  onMouseEnter={onSentimentPieEnter}
                 >
                   {sentimentChartData.map((entry, index) => (
                     <Cell key={`cell-sentiment-${index}`} fill={entry.color} />
@@ -566,31 +531,31 @@ const Analytics = () => {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
-          <h3 className="text-xl font-semibold mb-4">Audience Distribution by Platform</h3>
+          <h3 className="text-xl font-semibold mb-4">Engagement Breakdown</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  activeIndex={activePieIndex}
+                  activeIndex={activeEngagementPieIndex}
                   activeShape={ActiveShapePieChart}
-                  data={audienceDistributionChartData}
+                  data={engagementBreakdownChartData}
                   cx="50%"
                   cy="50%"
                   innerRadius={60}
                   outerRadius={80}
                   dataKey="value"
-                  onMouseEnter={onPieEnter}
+                  onMouseEnter={onEngagementPieEnter}
                 >
-                  {audienceDistributionChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  {engagementBreakdownChartData.map((entry, index) => (
+                    <Cell key={`cell-engagement-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <Legend 
-                  layout="vertical" 
-                  align="right" 
-                  verticalAlign="middle" 
+                  layout="horizontal" 
+                  align="center" 
+                  verticalAlign="bottom" 
                   iconSize={10}
-                  wrapperStyle={{fontSize: "12px", lineHeight: "20px"}}
+                  wrapperStyle={{fontSize: "12px", lineHeight: "20px", paddingTop: "10px"}}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -604,7 +569,6 @@ const Analytics = () => {
               <thead className="bg-gray-50 dark:bg-gray-700/50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Post</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Platform</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Engagement Score</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
                 </tr>
@@ -613,15 +577,6 @@ const Analytics = () => {
                 {topPerformingPosts.map((post) => (
                   <tr key={post.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium max-w-xs truncate" title={post.title}>{post.title}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm">
-                      <span 
-                        className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 w-max"
-                        style={{ backgroundColor: `${platformDetails[post.platform].color}20`, color: platformDetails[post.platform].color}}
-                      >
-                        {React.cloneElement(platformDetails[post.platform].icon, {size: 12})}
-                        {platformDetails[post.platform].name}
-                      </span>
-                    </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{post.engagementScore.toLocaleString()}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(post.date).toLocaleDateString()}</td>
                   </tr>

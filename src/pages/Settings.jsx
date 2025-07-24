@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Check, ChevronDown, Bell, Globe, Lock, Palette, Users, Moon, Sun } from 'lucide-react';
+import { Link } from 'react-router-dom'; // Import Link
+import { Check, ChevronDown, Bell, Globe, Lock, Palette, Users, Moon, Sun, ExternalLink } from 'lucide-react'; // Added ExternalLink
 import { useTheme, themeOptions } from '../contexts/ThemeContext';
 
 const ThemePreview = ({ name, colors, isActive, onClick }) => {
@@ -131,7 +132,41 @@ const Settings = () => {
             {activeTab === 'account' && (
               <div>
                 <h2 className="text-xl font-medium mb-6">Account Settings</h2>
-                <p className="text-gray-500 dark:text-gray-400">Manage your account settings and preferences.</p>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">
+                  Manage your account settings, preferences, and view product information.
+                </p>
+                
+                {/* Placeholder for other account settings */}
+                <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <h4 className="font-medium mb-2">Subscription Details</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Current Plan: Pro</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Next Billing Date: August 15, 2025</p>
+                  <button className="mt-2 text-sm text-theme-primary hover:underline">Manage Subscription</button>
+                </div>
+
+                <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <h4 className="font-medium mb-2">Product Information</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    Revisit our product's features, benefits, and pricing details on our landing page.
+                  </p>
+                  <Link
+                    to="/landing"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-theme-secondary hover:bg-opacity-90 text-white rounded-md shadow-sm transition-colors text-sm"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    <span>View Product Landing Page</span>
+                  </Link>
+                </div>
+
+                <div className="p-4 border border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/30 rounded-lg">
+                  <h4 className="font-medium text-red-700 dark:text-red-400 mb-2">Danger Zone</h4>
+                  <p className="text-sm text-red-600 dark:text-red-300 mb-3">
+                    Deleting your account is permanent and cannot be undone. All your data will be removed.
+                  </p>
+                  <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm">
+                    Delete My Account
+                  </button>
+                </div>
               </div>
             )}
             
@@ -139,6 +174,17 @@ const Settings = () => {
               <div>
                 <h2 className="text-xl font-medium mb-6">Notification Settings</h2>
                 <p className="text-gray-500 dark:text-gray-400">Control when and how you receive notifications.</p>
+                {/* Placeholder for notification settings */}
+                <div className="mt-4 space-y-4">
+                  <div className="flex items-center justify-between p-3 border rounded-md dark:border-gray-700">
+                    <label htmlFor="emailNotifs" className="text-sm">Email Notifications</label>
+                    <input type="checkbox" id="emailNotifs" className="form-checkbox h-5 w-5 text-theme-primary rounded focus:ring-theme-primary" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between p-3 border rounded-md dark:border-gray-700">
+                    <label htmlFor="pushNotifs" className="text-sm">Push Notifications</label>
+                    <input type="checkbox" id="pushNotifs" className="form-checkbox h-5 w-5 text-theme-primary rounded focus:ring-theme-primary" />
+                  </div>
+                </div>
               </div>
             )}
             
@@ -146,6 +192,12 @@ const Settings = () => {
               <div>
                 <h2 className="text-xl font-medium mb-6">Privacy & Security</h2>
                 <p className="text-gray-500 dark:text-gray-400">Manage your privacy settings and security preferences.</p>
+                {/* Placeholder for privacy settings */}
+                <div className="mt-4 space-y-4">
+                    <button className="w-full text-left px-4 py-3 border rounded-md dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">Change Password</button>
+                    <button className="w-full text-left px-4 py-3 border rounded-md dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">Two-Factor Authentication</button>
+                    <button className="w-full text-left px-4 py-3 border rounded-md dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">Download My Data</button>
+                </div>
               </div>
             )}
             
@@ -153,6 +205,25 @@ const Settings = () => {
               <div>
                 <h2 className="text-xl font-medium mb-6">Language & Region</h2>
                 <p className="text-gray-500 dark:text-gray-400">Choose your preferred language and regional settings.</p>
+                {/* Placeholder for language settings */}
+                <div className="mt-4 space-y-4">
+                    <div>
+                        <label htmlFor="languageSelect" className="block text-sm font-medium mb-1">Language</label>
+                        <select id="languageSelect" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700">
+                            <option>English (US)</option>
+                            <option>Español</option>
+                            <option>Français</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="timezoneSelect" className="block text-sm font-medium mb-1">Timezone</label>
+                        <select id="timezoneSelect" className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700">
+                            <option>(GMT-05:00) Eastern Time</option>
+                            <option>(GMT-08:00) Pacific Time</option>
+                            <option>(GMT+00:00) Greenwich Mean Time</option>
+                        </select>
+                    </div>
+                </div>
               </div>
             )}
           </div>
