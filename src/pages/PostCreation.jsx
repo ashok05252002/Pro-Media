@@ -5,6 +5,9 @@ import VideoUploadModal from '../components/VideoUploadModal';
 import MediaUploadModal from '../components/MediaUploadModal'; // This component will handle multi-file selection
 import { useTheme } from '../contexts/ThemeContext';
 
+//platform specific max char 
+import MaxChar from '../components/MaxChar';
+
 import axios from 'axios';
 import Tooltip from '../components/Tooltip';
 
@@ -382,6 +385,9 @@ const PostCreation = () => {
   const [locationTag, setLocationTag] = useState(initialFormState.locationTag); // New location state
   const [selectedPostType, setSelectedPostType] = useState(initialFormState.selectedPostType); // New post type state
 
+
+  //max char length
+  const [maxChar, setMaxChar] = useState(0);
 
   // Modals and UI
   const [showMediaUploadModal, setShowMediaUploadModal] = useState(false);
@@ -1106,9 +1112,11 @@ const PostCreation = () => {
           {isOnlyYouTubeSelected && (
             <div className="mb-4">
               <label htmlFor="youtubeTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title (for YouTube) <span className="text-red-500">*</span></label>
-              <div className="relative"><TypeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" /><input type="text" id="youtubeTitle" value={youtubeTitle} onChange={(e) => setYoutubeTitle(e.target.value)} placeholder="Enter YouTube video title" className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700" required={isOnlyYouTubeSelected} /></div>
-            </div>
-          )}
+              <div className="relative"><TypeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" /><input type="text" id="youtubeTitle" maxLength={100} value={youtubeTitle} onChange={(e) => setYoutubeTitle(e.target.value)} placeholder="Enter YouTube video title" className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary dark:bg-gray-700" required={isOnlyYouTubeSelected} /></div>
+              <p className="text-xs text-right text-gray-500 mt-1">
+                {youtubeTitle.length}/{"100"} chars
+              </p>
+            </div>)}
           <div className="mb-4">
             <label htmlFor="postContent" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{isOnlyYouTubeSelected ? 'Description (for YouTube)' : 'Post Content'}</label>
             <textarea id="postContent" className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-theme-primary min-h-[150px] dark:bg-gray-700" placeholder={isOnlyYouTubeSelected ? "Describe your video..." : "What would you like to share today? Use #hashtags for categorization."} value={postContent} onChange={(e) => setPostContent(e.target.value)}></textarea>

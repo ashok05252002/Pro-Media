@@ -384,3 +384,54 @@ export const markNotificationsAsRead = async (ids) => {
     throw error;
   }
 };
+
+// verify password in settings page
+export const verify_password=(payload)=>{
+    return axios.patch('/company/verifyto_newpassword',payload);
+}
+
+
+//analytics
+
+//facebook 
+export const fetchFBInsights = async () => {
+  const res = await axios.get("http://localhost:5000/fbinsights");
+  return res.data.data || res.data; // <- Adjust here
+};
+
+// Fetch Facebook Post-level insights
+export const fetchFBPostInsights = async () => {
+  const res = await axios.get('http://localhost:5000/fbinsights/posts');
+  return res.data;
+};
+
+//instagram
+export const fetchINInsights = async ()=>{
+  const res= await axios.get('http://localhost:5000/ininsights');
+  return res.data
+};
+
+//linkedin
+export const fetchLNInsights = async () => {
+  const res = await axios.get("http://localhost:5000/lninsights", {
+    withCredentials: true,
+  });
+  return res.data;
+};
+
+//x (twitter) 
+export const fetchXInsights = async ()=>{
+  const res= await axios.get('http://localhost:5000/xinsights');
+  return res.data
+};
+
+//youtube
+export const fetchYTAnalytics = async (dimension = 'video', days = 7) => {
+  const res = await axios.get(`http://localhost:5000/api/yt-analytics`, {
+    params: { dimension, days },
+    withCredentials: true,
+  });
+  return res.data;
+};
+
+

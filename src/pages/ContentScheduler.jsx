@@ -259,7 +259,7 @@ const ContentScheduler = () => {
               <button
                 key={tab}
                 className={`px-6 py-4 text-sm font-medium border-b-2 ${activeTab === tab
-                  ? "border-[#F97316] text-[#F97316]"
+                  ? "border-theme-primary text-theme-primary"
                   : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                   }`}
                 onClick={() => setActiveTab(tab)}
